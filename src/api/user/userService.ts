@@ -35,4 +35,19 @@ export const userService = {
       return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   },
+
+  // Retrieves a single user by their ID
+  addUser: async (user: User): Promise<ServiceResponse<User | null>> => {
+    try {
+      const userAdded = await userRepository.addUserAsync(user);
+      if (!userAdded) {
+        return new ServiceResponse(ResponseStatus.Failed, 'User not found', null, StatusCodes.NOT_FOUND);
+      }
+      return new ServiceResponse<User>(ResponseStatus.Success, 'User found', userAdded, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Cannot add user:, ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  },
 };

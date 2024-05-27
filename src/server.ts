@@ -1,3 +1,4 @@
+import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
 import helmet from 'helmet';
@@ -24,6 +25,14 @@ app.use(rateLimiter);
 
 // Request logging
 app.use(requestLogger);
+
+app.use(express.json());
+
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+);
 
 // Routes
 app.use('/health-check', healthCheckRouter);
