@@ -2,7 +2,7 @@ import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import express, { Request, Response, Router } from 'express';
 import { z } from 'zod';
 
-import { AddUserSchema, GetUserSchema, UserSchema } from '@/api/user/userModel';
+import { AddUserSchema, DeleteUserSchema, GetUserSchema, UserSchema } from '@/api/user/userModel';
 import { userService } from '@/api/user/userService';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
 import { handleServiceResponse, validateRequest } from '@/common/utils/httpHandlers';
@@ -43,11 +43,11 @@ export const userRouter: Router = (() => {
   userRegistry.registerPath({
     method: 'post',
     path: '/users',
-    tags: ['User'],
+    tags: ['AddUser'],
     request: {
       body: {
-        content: { 'application/json': { schema: UserSchema } },
-        description: 'UserSchema',
+        content: { 'application/json': { schema: AddUserSchema.shape.body } },
+        description: 'AddUserSchema',
         required: true,
       },
     },
@@ -59,5 +59,32 @@ export const userRouter: Router = (() => {
     const serviceResponse = await userService.addUser(user);
     handleServiceResponse(serviceResponse, res);
   });
+
+  userRegistry.registerPath({
+    method: 'delete',
+    path: '/users/all',
+    tags: ['DeleteAllUser'],
+    responses: createApiResponse(UserSchema, 'Success'),
+  });
+
+  router.delete('/all', async (req: Request, res: Response) => {
+    const serviceResponse = await userService.deleteAllUser();
+    handleServiceResponse(serviceResponse, res);
+  });
+
+  userRegistry.registerPath({
+    method: 'delete',
+    path: '/users/{id}',
+    tags: ['DeleteUser'],
+    request: { params: DeleteUserSchema.shape.params },
+    responses: createApiResponse(UserSchema, 'Success'),
+  });
+
+  router.delete('/:id', validateRequest(DeleteUserSchema), async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    const serviceResponse = await userService.deleteUser(id);
+    handleServiceResponse(serviceResponse, res);
+  });
+
   return router;
 })();
