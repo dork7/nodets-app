@@ -81,15 +81,15 @@ export const userService = {
     }
   },
 
-  setRedisData: async (dataSet: any = 'test'): Promise<ServiceResponse<string | null>> => {
+  setRedisData: async (key: string, dataSet: any = 'test'): Promise<ServiceResponse<string | null>> => {
     try {
-      const userDeleted: string | null = await redis.setValue('test', dataSet);
+      const userDeleted: string | null = await redis.setValue(key, dataSet);
       if (!userDeleted) {
         return new ServiceResponse(ResponseStatus.Failed, 'Unable to set data', null, StatusCodes.NOT_FOUND);
       }
       return new ServiceResponse<string>(ResponseStatus.Success, 'data set', userDeleted, StatusCodes.OK);
     } catch (ex) {
-      const errorMessage = `Cannot delete user:, ${(ex as Error).message}`;
+      const errorMessage = `Cannot add data into redis:, ${(ex as Error).message} , ${key}`;
       logger.error(errorMessage);
       return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
