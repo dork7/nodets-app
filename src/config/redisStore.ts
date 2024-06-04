@@ -2,7 +2,7 @@ import { createClient } from 'redis';
 
 import { logger } from '@/server';
 
-import { env } from './envConfig';
+import { env } from '../common/utils/envConfig';
 
 const CONF: any = {
   db: 5,

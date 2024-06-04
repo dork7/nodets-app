@@ -37,3 +37,10 @@ curl -X 'DELETE' \
 curl -X 'DELETE' \
   'http://localhost:2020/users/all' \
   -H 'accept: application/json'
+
+
+###
+
+curl -X 'POST' \
+  'http://localhost:2020/users/redis' \
+  -H 'accept: application/json'
