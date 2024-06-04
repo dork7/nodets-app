@@ -86,8 +86,9 @@ export const userRouter: Router = (() => {
     handleServiceResponse(serviceResponse, res);
   });
 
-  router.post('/redis', async (req: Request, res: Response) => {
-    const serviceResponse = await userService.setRedisData('id');
+  router.post('/redis/:key', async (req: Request, res: Response) => {
+    const key = req.params.key;
+    const serviceResponse = await userService.setRedisData(key, req.body);
     handleServiceResponse(serviceResponse, res);
   });
 

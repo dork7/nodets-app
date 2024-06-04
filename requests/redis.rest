@@ -1,0 +1,12 @@
+###
+
+curl -X 'POST' \
+  'http://localhost:2020/users/redis/12343' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "id": 2,
+  "name": "string",
+  "email": "user@example.com",
+  "age": 0
+}'
