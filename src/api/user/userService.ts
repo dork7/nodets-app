@@ -66,13 +66,13 @@ export const userService = {
     }
   },
 
-  deleteAllUser: async (): Promise<ServiceResponse<User[] | null>> => {
+  deleteAllUser: async (): Promise<ServiceResponse<object | null>> => {
     try {
-      const userDeleted: User[] = await userRepository.deleteAllUserAsync();
+      const userDeleted: boolean = await userRepository.deleteAllUserAsync();
       if (!userDeleted) {
-        return new ServiceResponse(ResponseStatus.Failed, 'User not found', null, StatusCodes.NOT_FOUND);
+        return new ServiceResponse(ResponseStatus.Failed, 'Users not found', null, StatusCodes.NOT_FOUND);
       }
-      return new ServiceResponse<User[]>(ResponseStatus.Success, 'Users deleted', userDeleted, StatusCodes.OK);
+      return new ServiceResponse<object>(ResponseStatus.Success, 'Users deleted', { userDeleted }, StatusCodes.OK);
     } catch (ex) {
       const errorMessage = `Cannot delete user:, ${(ex as Error).message}`;
       logger.error(errorMessage);

@@ -32,8 +32,11 @@ export const userRepository = {
     return true;
   },
 
-  deleteAllUserAsync: async (): Promise<User[]> => {
+  deleteAllUserAsync: async (): Promise<boolean> => {
+    if (users.length < 1) {
+      return false;
+    }
     users.length = 0;
-    return users;
+    return true;
   },
 };
