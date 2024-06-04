@@ -12,11 +12,17 @@ import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
+import { redisClient } from './common/utils/redisStore';
+
 const logger = pino({ name: 'server start' });
 const app: Express = express();
 
 // Set the application to trust the reverse proxy
 app.set('trust proxy', true);
+
+if (env.ENV === 'local') {
+  redisClient.connect();
+}
 
 // Middlewares
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));

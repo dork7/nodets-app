@@ -5,7 +5,6 @@ const server = app.listen(env.PORT, () => {
   const { NODE_ENV, HOST, PORT } = env;
   logger.info(`Server (${NODE_ENV}) running on port http://${HOST}:${PORT}`);
   logger.info(`Swaagger http://${HOST}:${PORT}`);
-
 });
 
 const onCloseSignal = () => {
@@ -19,3 +18,9 @@ const onCloseSignal = () => {
 
 process.on('SIGINT', onCloseSignal);
 process.on('SIGTERM', onCloseSignal);
+
+process.on('uncaughtException', (err) => {
+  logger.error(err, 'uncaughtException');
+  // Perform cleanup or any necessary actions
+  // process.exit(1); // Exit the application gracefully
+});
