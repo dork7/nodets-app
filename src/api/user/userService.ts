@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { User } from '@/api/user/userModel';
 import { userRepository } from '@/api/user/userRepository';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
+import { redis } from '@/common/utils/redisService';
 import { logger } from '@/server';
 
 export const userService = {
@@ -73,6 +74,20 @@ export const userService = {
         return new ServiceResponse(ResponseStatus.Failed, 'Users not found', null, StatusCodes.NOT_FOUND);
       }
       return new ServiceResponse<object>(ResponseStatus.Success, 'Users deleted', { userDeleted }, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Cannot delete user:, ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  },
+
+  setRedisData: async (dataSet: any = 'test'): Promise<ServiceResponse<string | null>> => {
+    try {
+      const userDeleted: string | null = await redis.setValue('test', dataSet);
+      if (!userDeleted) {
+        return new ServiceResponse(ResponseStatus.Failed, 'Unable to set data', null, StatusCodes.NOT_FOUND);
+      }
+      return new ServiceResponse<string>(ResponseStatus.Success, 'data set', userDeleted, StatusCodes.OK);
     } catch (ex) {
       const errorMessage = `Cannot delete user:, ${(ex as Error).message}`;
       logger.error(errorMessage);

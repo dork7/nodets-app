@@ -12,7 +12,7 @@ import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
-import { redisClient } from './common/utils/redisStore';
+import { redisClient } from './config/redisStore';
 
 const logger = pino({ name: 'server start' });
 const app: Express = express();

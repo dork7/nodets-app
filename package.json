@@ -14,7 +14,7 @@
     "format": "prettier --config .prettierrc --write .",
     "test": "vitest run",
     "test:dev": "vitest dev",
-    "test:cov": "vitest run --coverage",
+    "test:cover": "vitest run --coverage",
     "release": "semantic-release",
     "prepare": "husky"
   },
