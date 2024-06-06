@@ -3,9 +3,11 @@ import { z } from 'zod';
 
 extendZodWithOpenApi(z);
 
-export type Redis = z.infer<typeof RedisSchema>;
+export type IRedis = z.infer<typeof RedisSchema>;
 
-export const RedisSchema = z.object({});
+export const RedisSchema = z.object({
+ id: z.number(),
+});
 
 export const storeDataSchema = z.object({
  params: z.object({ key: z.string() }),
