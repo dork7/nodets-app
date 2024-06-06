@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { logger } from '@/server';
 
+import { IRedis } from './redisModel';
 import { redisRepository } from './redisRepository';
 
 export const redisService = {
@@ -20,13 +21,13 @@ export const redisService = {
   }
  },
 
- getDataById: async (key: string): Promise<ServiceResponse<{} | null>> => {
+ getDataById: async (key: string): Promise<ServiceResponse<IRedis | null>> => {
   try {
-   const dataSet: {} | null = await redisRepository.getDataByID(key);
+   const dataSet: IRedis | null = await redisRepository.getDataByID(key);
    if (!dataSet) {
     return new ServiceResponse(ResponseStatus.Failed, 'Data not found', null, StatusCodes.NOT_FOUND);
    }
-   return new ServiceResponse<{}>(ResponseStatus.Success, 'ok', dataSet, StatusCodes.OK);
+   return new ServiceResponse<IRedis>(ResponseStatus.Success, 'ok', dataSet, StatusCodes.OK);
   } catch (ex) {
    const errorMessage = `Cannot add data into redis:, ${(ex as Error).message} , ${key}`;
    logger.error(errorMessage);
