@@ -24,7 +24,7 @@ export const redisService = {
   try {
    const dataSet: {} | null = await redisRepository.getDataByID(key);
    if (!dataSet) {
-    return new ServiceResponse(ResponseStatus.Failed, 'Unable to get data', null, StatusCodes.NOT_FOUND);
+    return new ServiceResponse(ResponseStatus.Failed, 'Data not found', null, StatusCodes.NOT_FOUND);
    }
    return new ServiceResponse<{}>(ResponseStatus.Success, 'ok', dataSet, StatusCodes.OK);
   } catch (ex) {
