@@ -12,85 +12,79 @@ export const userRegistry = new OpenAPIRegistry();
 userRegistry.register('User', UserSchema);
 
 export const userRouter: Router = (() => {
-  const router = express.Router();
+ const router = express.Router();
 
-  userRegistry.registerPath({
-    method: 'get',
-    path: '/users',
-    tags: ['User'],
-    responses: createApiResponse(z.array(UserSchema), 'Success'),
-  });
+ userRegistry.registerPath({
+  method: 'get',
+  path: '/users',
+  tags: ['User'],
+  responses: createApiResponse(z.array(UserSchema), 'Success'),
+ });
 
-  router.get('/', async (_req: Request, res: Response) => {
-    const serviceResponse = await userService.findAll();
-    handleServiceResponse(serviceResponse, res);
-  });
+ router.get('/', async (_req: Request, res: Response) => {
+  const serviceResponse = await userService.findAll();
+  handleServiceResponse(serviceResponse, res);
+ });
 
-  userRegistry.registerPath({
-    method: 'get',
-    path: '/users/{id}',
-    tags: ['User'],
-    request: { params: GetUserSchema.shape.params },
-    responses: createApiResponse(UserSchema, 'Success'),
-  });
+ userRegistry.registerPath({
+  method: 'get',
+  path: '/users/{id}',
+  tags: ['User'],
+  request: { params: GetUserSchema.shape.params },
+  responses: createApiResponse(UserSchema, 'Success'),
+ });
 
-  router.get('/:id', validateRequest(GetUserSchema), async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id as string, 10);
-    const serviceResponse = await userService.findById(id);
-    handleServiceResponse(serviceResponse, res);
-  });
+ router.get('/:id', validateRequest(GetUserSchema), async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const serviceResponse = await userService.findById(id);
+  handleServiceResponse(serviceResponse, res);
+ });
 
-  userRegistry.registerPath({
-    method: 'post',
-    path: '/users',
-    tags: ['AddUser'],
-    request: {
-      body: {
-        content: { 'application/json': { schema: AddUserSchema.shape.body } },
-        description: 'AddUserSchema',
-        required: true,
-      },
-    },
-    responses: createApiResponse(UserSchema, 'Success'),
-  });
+ userRegistry.registerPath({
+  method: 'post',
+  path: '/users',
+  tags: ['AddUser'],
+  request: {
+   body: {
+    content: { 'application/json': { schema: AddUserSchema.shape.body } },
+    description: 'AddUserSchema',
+    required: true,
+   },
+  },
+  responses: createApiResponse(UserSchema, 'Success'),
+ });
 
-  router.post('/', validateRequest(AddUserSchema), async (req: Request, res: Response) => {
-    const user = req.body;
-    const serviceResponse = await userService.addUser(user);
-    handleServiceResponse(serviceResponse, res);
-  });
+ router.post('/', validateRequest(AddUserSchema), async (req: Request, res: Response) => {
+  const user = req.body;
+  const serviceResponse = await userService.addUser(user);
+  handleServiceResponse(serviceResponse, res);
+ });
 
-  userRegistry.registerPath({
-    method: 'delete',
-    path: '/users/all',
-    tags: ['DeleteAllUser'],
-    responses: createApiResponse(UserSchema, 'Success'),
-  });
+ userRegistry.registerPath({
+  method: 'delete',
+  path: '/users/all',
+  tags: ['DeleteAllUser'],
+  responses: createApiResponse(UserSchema, 'Success'),
+ });
 
-  router.delete('/all', async (req: Request, res: Response) => {
-    const serviceResponse = await userService.deleteAllUser();
-    handleServiceResponse(serviceResponse, res);
-  });
+ router.delete('/all', async (req: Request, res: Response) => {
+  const serviceResponse = await userService.deleteAllUser();
+  handleServiceResponse(serviceResponse, res);
+ });
 
-  userRegistry.registerPath({
-    method: 'delete',
-    path: '/users/{id}',
-    tags: ['DeleteUser'],
-    request: { params: DeleteUserSchema.shape.params },
-    responses: createApiResponse(UserSchema, 'Success'),
-  });
+ userRegistry.registerPath({
+  method: 'delete',
+  path: '/users/{id}',
+  tags: ['DeleteUser'],
+  request: { params: DeleteUserSchema.shape.params },
+  responses: createApiResponse(UserSchema, 'Success'),
+ });
 
-  router.delete('/:id', validateRequest(DeleteUserSchema), async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id as string, 10);
-    const serviceResponse = await userService.deleteUser(id);
-    handleServiceResponse(serviceResponse, res);
-  });
+ router.delete('/:id', validateRequest(DeleteUserSchema), async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const serviceResponse = await userService.deleteUser(id);
+  handleServiceResponse(serviceResponse, res);
+ });
 
-  router.post('/redis/:key', async (req: Request, res: Response) => {
-    const key = req.params.key;
-    const serviceResponse = await userService.setRedisData(key, req.body);
-    handleServiceResponse(serviceResponse, res);
-  });
-
-  return router;
+ return router;
 })();

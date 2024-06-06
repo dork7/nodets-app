@@ -12,6 +12,7 @@ import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
+import { redisRouter } from './api/redis/redisRouter';
 import { redisClient } from './config/redisStore';
 
 const logger = pino({ name: 'server start' });
@@ -21,7 +22,7 @@ const app: Express = express();
 app.set('trust proxy', true);
 
 if (env.ENV === 'local') {
-  redisClient.connect();
+ redisClient.connect();
 }
 
 // Middlewares
@@ -35,14 +36,15 @@ app.use(requestLogger);
 app.use(express.json());
 
 app.use(
-  bodyParser.urlencoded({
-    extended: true,
-  })
+ bodyParser.urlencoded({
+  extended: true,
+ })
 );
 
 // Routes
 app.use('/health-check', healthCheckRouter);
 app.use('/users', userRouter);
+app.use('/redis', redisRouter);
 
 // Swagger UI
 app.use(openAPIRouter);
