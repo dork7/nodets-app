@@ -1,24 +1,23 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import express, { Request, Response, Router } from 'express';
 
-import { UserSchema } from '@/api/user/userModel';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
 import { handleServiceResponse, validateRequest } from '@/common/utils/httpHandlers';
 
-import { getDataSchema, RedisSchema, storeDataSchema } from './redisModel';
+import { deleteDataSchema, getDataSchema, RedisSchema, storeDataSchema } from './redisModel';
 import { redisService } from './redisService';
 
-export const userRegistry = new OpenAPIRegistry();
+export const redisRegistry = new OpenAPIRegistry();
 
-userRegistry.register('User', UserSchema);
+redisRegistry.register('Redis', RedisSchema);
 
 export const redisRouter: Router = (() => {
  const router = express.Router();
 
- userRegistry.registerPath({
+ redisRegistry.registerPath({
   method: 'post',
   path: '/redis/{key}',
-  tags: ['RedisStoreData'],
+  tags: ['Redis'],
   request: { params: storeDataSchema.shape.params },
   responses: createApiResponse(RedisSchema, 'Success'),
  });
@@ -29,15 +28,29 @@ export const redisRouter: Router = (() => {
   handleServiceResponse(serviceResponse, res);
  });
 
- userRegistry.registerPath({
+ redisRegistry.registerPath({
   method: 'get',
   path: '/redis/{key}',
-  tags: ['RedisGetDataData'],
+  tags: ['Redis'],
   request: { params: getDataSchema.shape.params },
   responses: createApiResponse(RedisSchema, 'Success'),
  });
 
  router.get('/:key', validateRequest(getDataSchema), async (req: Request, res: Response) => {
+  const key = req.params.key;
+  const serviceResponse = await redisService.getDataById(key);
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ redisRegistry.registerPath({
+  method: 'delete',
+  path: '/redis/{key}',
+  tags: ['Redis'],
+  request: { params: getDataSchema.shape.params },
+  responses: createApiResponse(RedisSchema, 'Success'),
+ });
+
+ router.delete('/:key', validateRequest(deleteDataSchema), async (req: Request, res: Response) => {
   const key = req.params.key;
   const serviceResponse = await redisService.getDataById(key);
   handleServiceResponse(serviceResponse, res);

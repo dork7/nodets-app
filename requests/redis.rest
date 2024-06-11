@@ -1,7 +1,7 @@
 ###
 
 curl -X 'POST' \
-  'http://localhost:2020/redis/111' \
+  'http://localhost:2020/redis/aaa' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
