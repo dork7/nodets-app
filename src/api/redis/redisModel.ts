@@ -15,6 +15,13 @@ export const storeDataSchema = z.object({
   id: z.number(),
  }),
 });
+
+export const updateDataSchema = z.object({
+ params: z.object({ key: z.string() }),
+ body: z.object({
+  id: z.number(),
+ }),
+});
 export const getDataSchema = z.object({
  params: z.object({ key: z.string() }),
 });

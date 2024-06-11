@@ -4,7 +4,7 @@ import express, { Request, Response, Router } from 'express';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
 import { handleServiceResponse, validateRequest } from '@/common/utils/httpHandlers';
 
-import { deleteDataSchema, getDataSchema, RedisSchema, storeDataSchema } from './redisModel';
+import { deleteDataSchema, getDataSchema, RedisSchema, storeDataSchema, updateDataSchema } from './redisModel';
 import { redisService } from './redisService';
 
 export const redisRegistry = new OpenAPIRegistry();
@@ -18,7 +18,14 @@ export const redisRouter: Router = (() => {
   method: 'post',
   path: '/redis/{key}',
   tags: ['Redis'],
-  request: { params: storeDataSchema.shape.params },
+  request: {
+   params: storeDataSchema.shape.params,
+   body: {
+    content: { 'application/json': { schema: storeDataSchema.shape.body } },
+    description: 'StoreRedisSchema',
+    required: true,
+   },
+  },
   responses: createApiResponse(RedisSchema, 'Success'),
  });
 
@@ -52,7 +59,28 @@ export const redisRouter: Router = (() => {
 
  router.delete('/:key', validateRequest(deleteDataSchema), async (req: Request, res: Response) => {
   const key = req.params.key;
-  const serviceResponse = await redisService.getDataById(key);
+  const serviceResponse = await redisService.deleteDataById(key);
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ redisRegistry.registerPath({
+  method: 'put',
+  path: '/redis/{key}',
+  tags: ['Redis'],
+  request: {
+   params: getDataSchema.shape.params,
+   body: {
+    content: { 'application/json': { schema: updateDataSchema.shape.body } },
+    description: 'UpdateRedisSchema',
+    required: true,
+   },
+  },
+  responses: createApiResponse(RedisSchema, 'Success'),
+ });
+
+ router.put('/:key', validateRequest(updateDataSchema), async (req: Request, res: Response) => {
+  const key = req.params.key;
+  const serviceResponse = await redisService.updateDataById(key, req.body);
   handleServiceResponse(serviceResponse, res);
  });
 
