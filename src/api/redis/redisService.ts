@@ -34,4 +34,32 @@ export const redisService = {
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
   }
  },
+
+ deleteDataById: async (key: string): Promise<ServiceResponse<number | null>> => {
+  try {
+   const dataSet: number = await redisRepository.deleteDataByID(key);
+   if (!dataSet) {
+    return new ServiceResponse(ResponseStatus.Failed, 'Data not found', null, StatusCodes.NOT_FOUND);
+   }
+   return new ServiceResponse<number>(ResponseStatus.Success, 'ok', dataSet, StatusCodes.OK);
+  } catch (ex) {
+   const errorMessage = `Cannot add data into redis:, ${(ex as Error).message} , ${key}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
+
+ updateDataById: async (key: string, dataSet: any = 'test'): Promise<ServiceResponse<string | null>> => {
+   try {
+    const dataStored: string | null = await redisRepository.updateDataByID(key, dataSet);
+    if (!dataStored) {
+     return new ServiceResponse(ResponseStatus.Failed, 'Unable to set data', null, StatusCodes.NOT_FOUND);
+    }
+    return new ServiceResponse<string>(ResponseStatus.Success, 'data set', dataStored, StatusCodes.OK);
+   } catch (ex) {
+    const errorMessage = `Cannot add data into redis:, ${(ex as Error).message} , ${key}`;
+    logger.error(errorMessage);
+    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   }
+  },
 };
