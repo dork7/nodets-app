@@ -43,7 +43,7 @@ export const userRouter: Router = (() => {
  userRegistry.registerPath({
   method: 'post',
   path: '/users',
-  tags: ['AddUser'],
+  tags: ['User'],
   request: {
    body: {
     content: { 'application/json': { schema: AddUserSchema.shape.body } },
@@ -63,7 +63,7 @@ export const userRouter: Router = (() => {
  userRegistry.registerPath({
   method: 'delete',
   path: '/users/all',
-  tags: ['DeleteAllUser'],
+  tags: ['User'],
   responses: createApiResponse(UserSchema, 'Success'),
  });
 
@@ -75,7 +75,7 @@ export const userRouter: Router = (() => {
  userRegistry.registerPath({
   method: 'delete',
   path: '/users/{id}',
-  tags: ['DeleteUser'],
+  tags: ['User'],
   request: { params: DeleteUserSchema.shape.params },
   responses: createApiResponse(UserSchema, 'Success'),
  });

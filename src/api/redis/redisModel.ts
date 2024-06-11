@@ -18,3 +18,7 @@ export const storeDataSchema = z.object({
 export const getDataSchema = z.object({
  params: z.object({ key: z.string() }),
 });
+
+export const deleteDataSchema = z.object({
+ params: z.object({ key: z.string() }),
+});
