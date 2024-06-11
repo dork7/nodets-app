@@ -1,6 +1,5 @@
 import { IRedis } from '@/api/redis/redisModel';
 import { redisClient } from '@/config/redisStore';
-import { logger } from '@/server';
 
 export const redis = {
  setValue: async (key: string, value: any): Promise<string | null> => {
