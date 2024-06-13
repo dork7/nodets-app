@@ -1,6 +1,7 @@
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
+import { graphqlHTTP } from 'express-graphql';
 import helmet from 'helmet';
 import { pino } from 'pino';
 
@@ -12,6 +13,7 @@ import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
+import { schema } from './api/graphql/schema';
 import { redisRouter } from './api/redis/redisRouter';
 import { redisClient } from './config/redisStore';
 
@@ -45,6 +47,14 @@ app.use(
 app.use('/health-check', healthCheckRouter);
 app.use('/users', userRouter);
 app.use('/redis', redisRouter);
+
+app.use(
+ '/graphql',
+ graphqlHTTP({
+  schema: schema,
+  graphiql: true, // Enable GraphiQL for testing
+ })
+);
 
 // Swagger UI
 app.use(openAPIRouter);
