@@ -1,10 +1,3 @@
-export const typeDefs = `
-    type Query {
-        hello: String
-        hi : String
-    }
-    type Mutation {
-        hello: String
-        hi(message: String) : String
-    }
-`;
+import { userTypes } from './user';
+
+export const typeDefs = userTypes;
