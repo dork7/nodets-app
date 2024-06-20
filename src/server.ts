@@ -15,7 +15,7 @@ import { env } from '@/common/utils/envConfig';
 
 import { schema } from './api/graphql/schema';
 import { redisRouter } from './api/redis/redisRouter';
-import { run } from './config/kafka';
+import { initKafka } from './config/kafka';
 import { redisClient } from './config/redisStore';
 
 const logger = pino({ name: 'server start' });
@@ -26,7 +26,7 @@ app.set('trust proxy', true);
 
 if (env.ENV === 'local') {
  redisClient.connect();
- run().catch(console.error);
+ initKafka().catch(console.error);
 }
 
 // Middlewares
