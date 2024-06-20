@@ -10,9 +10,10 @@ const consumer = kafka.consumer({ groupId: 'test-group' });
 export const run = async () => {
  // Producing
  await producer.connect();
+
  await producer.send({
   topic: 'test-topic',
-  messages: [{ value: 'Hello KafkaJS user! 123 123 123 123 456' }],
+  messages: [{ value: ` test ` }],
  });
 
  // Consuming
@@ -22,6 +23,7 @@ export const run = async () => {
  await consumer.run({
   eachMessage: async ({ topic, partition, message }) => {
    console.log({
+    topic,
     partition,
     offset: message.offset,
     value: message.value.toString(),
@@ -29,4 +31,3 @@ export const run = async () => {
   },
  });
 };
-
