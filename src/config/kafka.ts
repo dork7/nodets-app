@@ -20,7 +20,7 @@ export const sendMessage = async (topic: string, message) => {
 };
 
 const subscribeTopics = (topicsList: ITopicList[]) => {
- topicsList.map(async (item: ITopicList) => await consumer.subscribe({ topic: item.name, fromBeginning: true }));
+ return topicsList.map(async (item: ITopicList) => await consumer.subscribe({ topic: item.name, fromBeginning: true }));
 };
 
 export const initKafka = async () => {
