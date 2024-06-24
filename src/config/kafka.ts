@@ -12,7 +12,7 @@ const kafka = new Kafka({
 const producer = kafka.producer();
 const consumer = kafka.consumer({ groupId: 'test-group' });
 
-export const sendMessage = async (topic: string, message) => {
+export const sendMessage = async (topic: string, message: any) => {
  return await producer.send({
   topic,
   messages: [{ value: message }],
@@ -30,8 +30,6 @@ export const initKafka = async () => {
  await consumer.connect();
 
  subscribeTopics(TOPIC_LIST);
-
- sendKafkaMessage('', 'testing message');
 
  await consumer.run({
   eachMessage: readKafkaMessage,
