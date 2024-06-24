@@ -14,6 +14,7 @@ import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
 import { schema } from './api/graphql/schema';
+import { kafkaRouter } from './api/kafka/kafkaRouter';
 import { redisRouter } from './api/redis/redisRouter';
 import { initKafka } from './config/kafka';
 import { redisClient } from './config/redisStore';
@@ -49,6 +50,7 @@ app.use(
 app.use('/health-check', healthCheckRouter);
 app.use('/users', userRouter);
 app.use('/redis', redisRouter);
+app.use('/kafka', kafkaRouter);
 
 app.use(
  '/graphql',
