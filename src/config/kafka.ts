@@ -1,8 +1,8 @@
 import { Kafka } from 'kafkajs';
 
+import { TTopicList } from '@/api/kafka/kafkaModel';
 import { TOPIC_LIST } from '@/common/data/kafkaTopics';
-import { ITopicList } from '@/common/interfaces/kafka';
-import { readKafkaMessage, sendKafkaMessage } from '@/common/utils/kafkaService';
+import { readKafkaMessage } from '@/common/utils/kafkaService';
 
 const kafka = new Kafka({
  clientId: 'my-app',
@@ -19,8 +19,8 @@ export const sendMessage = async (topic: string, message: any) => {
  });
 };
 
-const subscribeTopics = (topicsList: ITopicList[]) => {
- return topicsList.map(async (item: ITopicList) => await consumer.subscribe({ topic: item.name, fromBeginning: true }));
+const subscribeTopics = (topicsList: TTopicList[]) => {
+ return topicsList.map(async (item: TTopicList) => await consumer.subscribe({ topic: item.name, fromBeginning: true }));
 };
 
 export const initKafka = async () => {

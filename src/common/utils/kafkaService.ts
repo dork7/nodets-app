@@ -6,7 +6,7 @@ export const readKafkaMessage = async ({ topic, partition, message }) => {
   topic,
   partition,
   offset: message.offset,
-  value: message.value.toString(),
+  value: JSON.parse(message.value.toString()),
  });
 };
 

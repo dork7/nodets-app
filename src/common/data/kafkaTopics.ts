@@ -1,6 +1,6 @@
-import { ITopicList } from '../interfaces/kafka';
+import { TTopicList } from '@/api/kafka/kafkaModel';
 
-export const TOPIC_LIST: ITopicList[] = [
+export const TOPIC_LIST: TTopicList[] = [
  {
   name: 'test',
  },
