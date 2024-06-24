@@ -6,7 +6,7 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "topic": "test",
-  "data" : {"test" : "this is the data 2333"}
+  "data" : {"test" : "this is the data 2333111"}
 }'
 ###
  
