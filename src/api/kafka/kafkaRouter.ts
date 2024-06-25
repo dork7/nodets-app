@@ -44,7 +44,7 @@ export const kafkaRouter: Router = (() => {
 
  router.post('/postMessage', validateRequest(PostKafkaSchema), async (req: Request, res: Response) => {
   const kafkaMessage = req.body;
-  const serviceResponse = await kafkaService.postMessage(kafkaMessage);
+  const serviceResponse = await kafkaService.postMessage(kafkaMessage, res);
   handleServiceResponse(serviceResponse, res);
  });
 

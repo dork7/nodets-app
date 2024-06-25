@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+
 import { sendMessage } from '@/config/kafka';
 import { logger } from '@/server';
 
@@ -11,8 +13,8 @@ export const readKafkaMessage = async ({ topic, partition, message, heartbeat, p
  });
 };
 
-export const sendKafkaMessage = async (topic: string, message) => {
- return sendMessage(topic, JSON.stringify(message));
+export const sendKafkaMessage = async (topic: string, message: any, correlationID: string) => {
+ return sendMessage(topic, JSON.stringify(message), correlationID ?? randomUUID());
 };
 
 const parseHeaders = (headers: any) => {
