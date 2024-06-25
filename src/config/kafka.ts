@@ -13,13 +13,13 @@ const kafka = new Kafka({
 const producer = kafka.producer();
 const consumer = kafka.consumer({ groupId: 'test-group' });
 
-export const sendMessage = async (topic: string, message: any) => {
+export const sendMessage = async (topic: string, message: any, correlationId: string) => {
  return await producer.send({
   topic,
   messages: [
    {
     key: 'key',
-    headers: { 'correlation-id': '2bfb68bb-893a-423b-a7fa-7b568cad5b67', 'system-id': 'my-system' },
+    headers: { 'correlation-id': correlationId, ENV: env.ENV },
     value: message,
    },
   ],

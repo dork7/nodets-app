@@ -1,3 +1,4 @@
+import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
@@ -23,10 +24,11 @@ export const kafkaService = {
  //  },
 
  // Adds a single user
- postMessage: async (dataSet: TKafka): Promise<ServiceResponse<any>> => {
+ postMessage: async (dataSet: TKafka, res: Response): Promise<ServiceResponse<any>> => {
   try {
    const { topic, data } = dataSet;
-   const dataSent: any = await sendKafkaMessage(topic, data);
+   const correlationId = res.getHeaders()['x-request-id'] as string;
+   const dataSent: any = await sendKafkaMessage(topic, data, correlationId);
    if (!dataSent) {
     return new ServiceResponse(ResponseStatus.Failed, 'Unable to send message', null, StatusCodes.NOT_FOUND);
    }

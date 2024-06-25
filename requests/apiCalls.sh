@@ -1,0 +1,80 @@
+curl -X 'POST' \
+  'http://localhost:2020/kafka/postMessage' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "topic": "test",
+  "data" : {"test" : "this is the data 2333111"}
+}'
+
+
+curl -X 'POST' \
+  'http://localhost:2020/kafka/postMessage' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "topic": "test",
+  "data" : {"test" : "this is the data 2333111"}
+}'
+
+
+curl -X 'POST' \
+  'http://localhost:2020/kafka/postMessage' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "topic": "test",
+  "data" : {"test" : "this is the data 2333111"}
+}'
+
+
+curl -X 'POST' \
+  'http://localhost:2020/kafka/postMessage' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "topic": "test",
+  "data" : {"test" : "this is the data 2333111"}
+}'
+
+
+curl -X 'POST' \
+  'http://localhost:2020/kafka/postMessage' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "topic": "test",
+  "data" : {"test" : "this is the data 2333111"}
+}'
+
+
+curl -X 'POST' \
+  'http://localhost:2020/kafka/postMessage' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "topic": "test",
+  "data" : {"test" : "this is the data 2333111"}
+}'
+
+
+curl -X 'POST' \
+  'http://localhost:2020/kafka/postMessage' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "topic": "test",
+  "data" : {"test" : "this is the data 1"}
+}'
+
+
+curl -X 'POST' \
+  'http://localhost:2020/kafka/postMessage' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "topic": "test",
+  "data" : {"test" : "this is the data 2"}
+}'
+
+
