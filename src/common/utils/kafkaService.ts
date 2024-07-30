@@ -3,6 +3,8 @@ import { randomUUID } from 'crypto';
 import { sendMessage } from '@/config/kafka';
 import { logger } from '@/server';
 
+import { writeDataInFile } from './fileUtils';
+
 export const readKafkaMessage = async ({ topic, partition, message, heartbeat, pause }) => {
  logger.info({
   topic,
@@ -11,6 +13,9 @@ export const readKafkaMessage = async ({ topic, partition, message, heartbeat, p
   headers: parseHeaders(message.headers),
   value: JSON.parse(message.value.toString()),
  });
+ if (topic === 'file') {
+  await writeDataInFile(message.value.toString(), 'file.txt');
+ }
 };
 
 export const sendKafkaMessage = async (topic: string, message: any, correlationID: string) => {
