@@ -4,4 +4,7 @@ export const TOPIC_LIST: TTopicList[] = [
  {
   name: 'test',
  },
+ {
+  name: 'file',
+ },
 ];
