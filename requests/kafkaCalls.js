@@ -7,18 +7,27 @@ const requestOptions = {
  headers: myHeaders,
  redirect: 'follow',
 };
-
-Array(10)
+let counter = 0;
+Array(3)
  .fill(0)
  .forEach((_item, idx) => {
   requestOptions.body = JSON.stringify({
-   topic: 'file',
+   config: {
+    topic: 'file',
+    partition: counter,
+   },
    data: {
-    test: `this is the data ${idx}`,
+    test: `this is the data ${idx} - ${counter}`,
    },
   });
+   counter += 1;
+  if (counter > 2) {
+   counter = 0;
+  }
   fetch('http://localhost:2020/kafka/postMessage', requestOptions)
    .then((response) => response.text())
-   .then((result) => console.log(result))
+   .then((result) => {
+    console.log(result);
+    })
    .catch((error) => console.error(error));
  });
