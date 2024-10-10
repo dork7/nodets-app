@@ -6,7 +6,7 @@ const server = app.listen(env.PORT, () => {
  logger.info(`Server (${NODE_ENV}) running on port http://${HOST}:${PORT}`);
  logger.info(`Swaagger http://${HOST}:${PORT}`);
  logger.info(`Redis http://${HOST}:8001`);
- logger.info(`KAFKA http://${HOST}:8083`);
+ logger.info(`KAFKA UI http://${HOST}:8083/ui/clusters/kafka/all-topics`);
 });
 
 const onCloseSignal = () => {
