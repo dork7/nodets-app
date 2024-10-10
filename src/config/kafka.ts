@@ -49,10 +49,13 @@ const createTopics = async () => {
 };
 
 export const initKafka = async () => {
+ 
  createTopics().then(async () => {
   await producer.connect();
   await consumer.connect();
-  subscribeTopics(TOPIC_LIST);
+
+  await subscribeTopics(TOPIC_LIST);
+  
   await consumer.run({
    eachMessage: readKafkaMessage,
   });
