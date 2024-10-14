@@ -5,7 +5,7 @@ export const catalogue: Catalogue[] = [
  { id: 2, name: 'Bob', createdAt: new Date(), updatedAt: new Date() },
 ];
 
-export const userRepository = {
+export const catalogueRepository = {
  findAllAsync: async (): Promise<Catalogue[]> => {
   return catalogue;
  },
@@ -14,14 +14,14 @@ export const userRepository = {
   return catalogue.find((user) => user.id === id) || null;
  },
 
- addUserAsync: async (user: Catalogue): Promise<Catalogue[] | null> => {
+ addAsync: async (user: Catalogue): Promise<Catalogue[] | null> => {
   user.createdAt = new Date();
   user.updatedAt = new Date();
   catalogue.unshift(user);
   return catalogue;
  },
 
- deleteUserAsync: async (id: number): Promise<boolean> => {
+ deleteAsync: async (id: number): Promise<boolean> => {
   const idx: number = catalogue.findIndex((item: Catalogue) => item.id === id);
   if (idx < 0) {
    return false;
@@ -32,7 +32,7 @@ export const userRepository = {
   return true;
  },
 
- deleteAllUserAsync: async (): Promise<boolean> => {
+ deleteAllAsync: async (): Promise<boolean> => {
   if (catalogue.length < 1) {
    return false;
   }

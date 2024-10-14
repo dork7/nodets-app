@@ -1,82 +1,81 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { User } from '@/api/user/userModel';
-import { userRepository } from '@/api/user/userRepository';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { logger } from '@/server';
 
 import { Catalogue } from './catalogueModel';
+import { catalogueRepository } from './catalogueRepository';
 
 export const catalogueService = {
- // Retrieves all users from the database
+ // Retrieves all catalogue from the database
  findAll: async (): Promise<ServiceResponse<Catalogue[] | null>> => {
   try {
-   const users = await userRepository.findAllAsync();
-   if (!users) {
-    return new ServiceResponse(ResponseStatus.Failed, 'No Users found', null, StatusCodes.NOT_FOUND);
+   const catalogue = await catalogueRepository.findAllAsync();
+   if (!catalogue) {
+    return new ServiceResponse(ResponseStatus.Failed, 'No catalogue found', null, StatusCodes.NOT_FOUND);
    }
-   return new ServiceResponse<Catalogue[]>(ResponseStatus.Success, 'Users found', users, StatusCodes.OK);
+   return new ServiceResponse<Catalogue[]>(ResponseStatus.Success, 'catalogue found', catalogue, StatusCodes.OK);
   } catch (ex) {
-   const errorMessage = `Error finding all users: $${(ex as Error).message}`;
+   const errorMessage = `Error finding all catalogue: $${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
   }
  },
 
- // Retrieves a single user by their ID
+ // Retrieves a single catalogue by their ID
  findById: async (id: number): Promise<ServiceResponse<Catalogue | null>> => {
   try {
-   const user = await userRepository.findByIdAsync(id);
-   if (!user) {
-    return new ServiceResponse<null>(ResponseStatus.Failed, 'User not found', null, StatusCodes.NOT_FOUND);
+   const catalogue = await catalogueRepository.findByIdAsync(id);
+   if (!catalogue) {
+    return new ServiceResponse<null>(ResponseStatus.Failed, 'catalogue not found', null, StatusCodes.NOT_FOUND);
    }
-   return new ServiceResponse<Catalogue>(ResponseStatus.Success, 'User found', user, StatusCodes.OK);
+   return new ServiceResponse<Catalogue>(ResponseStatus.Success, 'catalogue found', catalogue, StatusCodes.OK);
   } catch (ex) {
-   const errorMessage = `Error finding user with id ${id}:, ${(ex as Error).message}`;
+   const errorMessage = `Error finding catalogue with id ${id}:, ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
   }
  },
 
- // Adds a single user
- addUser: async (user: User): Promise<ServiceResponse<Catalogue[] | null>> => {
+ // Adds a single catalogue
+ add: async (catalogue: Catalogue): Promise<ServiceResponse<Catalogue[] | null>> => {
   try {
-   const userAdded: User[] | null = await userRepository.addUserAsync(user);
-   if (!userAdded) {
-    return new ServiceResponse(ResponseStatus.Failed, 'User not found', null, StatusCodes.NOT_FOUND);
+   const catalogueAdded: Catalogue[] | null = await catalogueRepository.addAsync(catalogue);
+   if (!catalogueAdded) {
+    return new ServiceResponse(ResponseStatus.Failed, 'catalogue not found', null, StatusCodes.NOT_FOUND);
    }
-   return new ServiceResponse<Catalogue[]>(ResponseStatus.Success, 'User found', userAdded, StatusCodes.OK);
+   return new ServiceResponse<Catalogue[]>(ResponseStatus.Success, 'catalogue found', catalogueAdded, StatusCodes.OK);
   } catch (ex) {
-   const errorMessage = `Cannot add user:, ${(ex as Error).message}`;
+   const errorMessage = `Cannot add catalogue:, ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
   }
  },
 
- // Adds a single user
- deleteUser: async (id: number): Promise<ServiceResponse<boolean | null>> => {
+ // Adds a single catalogue
+ delete: async (id: number): Promise<ServiceResponse<boolean | null>> => {
   try {
-   const userDeleted: boolean = await userRepository.deleteUserAsync(id);
-   if (!userDeleted) {
-    return new ServiceResponse(ResponseStatus.Failed, 'User not found', null, StatusCodes.NOT_FOUND);
+   const catalogueDeleted: boolean = await catalogueRepository.deleteAsync(id);
+   if (!catalogueDeleted) {
+    return new ServiceResponse(ResponseStatus.Failed, 'catalogue not found', null, StatusCodes.NOT_FOUND);
    }
-   return new ServiceResponse<boolean>(ResponseStatus.Success, 'User deleted', userDeleted, StatusCodes.OK);
+   return new ServiceResponse<boolean>(ResponseStatus.Success, 'catalogue deleted', catalogueDeleted, StatusCodes.OK);
   } catch (ex) {
-   const errorMessage = `Cannot delete user:, ${(ex as Error).message}`;
+   const errorMessage = `Cannot delete catalogue:, ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
   }
  },
 
- deleteAllUser: async (): Promise<ServiceResponse<boolean | null>> => {
+ deleteAll: async (): Promise<ServiceResponse<boolean | null>> => {
   try {
-   const userDeleted: boolean = await userRepository.deleteAllUserAsync();
-   if (!userDeleted) {
-    return new ServiceResponse(ResponseStatus.Failed, 'Users not found', null, StatusCodes.NOT_FOUND);
+   const catalogueDeleted: boolean = await catalogueRepository.deleteAllAsync();
+   if (!catalogueDeleted) {
+    return new ServiceResponse(ResponseStatus.Failed, 'catalogue not found', null, StatusCodes.NOT_FOUND);
    }
-   return new ServiceResponse<boolean>(ResponseStatus.Success, 'Users deleted', userDeleted, StatusCodes.OK);
+   return new ServiceResponse<boolean>(ResponseStatus.Success, 'catalogue deleted', catalogueDeleted, StatusCodes.OK);
   } catch (ex) {
-   const errorMessage = `Cannot delete user:, ${(ex as Error).message}`;
+   const errorMessage = `Cannot delete catalogue:, ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
   }

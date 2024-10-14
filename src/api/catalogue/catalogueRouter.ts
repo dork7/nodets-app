@@ -2,16 +2,16 @@ import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import express, { Request, Response, Router } from 'express';
 import { z } from 'zod';
 
-import { GetUserSchema, UserSchema } from '@/api/user/userModel';
-import { userService } from '@/api/user/userService';
+import { GetUserSchema } from '@/api/user/userModel';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
 import { handleServiceResponse, validateRequest } from '@/common/utils/httpHandlers';
 
 import { AddCatalogueSchema, CatalogueSchema, DeleteCatalogueSchema, GetCatalogueSchema } from './catalogueModel';
+import { catalogueService } from './catalogueService';
 
 export const catalogueRegistery = new OpenAPIRegistry();
 
-catalogueRegistery.register('User', UserSchema);
+catalogueRegistery.register('Catalogue', CatalogueSchema);
 
 export const catalogueRouter: Router = (() => {
  const router = express.Router();
@@ -24,7 +24,7 @@ export const catalogueRouter: Router = (() => {
  });
 
  router.get('/', async (_req: Request, res: Response) => {
-  const serviceResponse = await userService.findAll();
+  const serviceResponse = await catalogueService.findAll();
   handleServiceResponse(serviceResponse, res);
  });
 
@@ -38,7 +38,7 @@ export const catalogueRouter: Router = (() => {
 
  router.get('/:id', validateRequest(GetUserSchema), async (req: Request, res: Response) => {
   const id = parseInt(req.params.id as string, 10);
-  const serviceResponse = await userService.findById(id);
+  const serviceResponse = await catalogueService.findById(id);
   handleServiceResponse(serviceResponse, res);
  });
 
@@ -58,7 +58,7 @@ export const catalogueRouter: Router = (() => {
 
  router.post('/', validateRequest(AddCatalogueSchema), async (req: Request, res: Response) => {
   const user = req.body;
-  const serviceResponse = await userService.addUser(user);
+  const serviceResponse = await catalogueService.add(user);
   handleServiceResponse(serviceResponse, res);
  });
 
@@ -70,7 +70,7 @@ export const catalogueRouter: Router = (() => {
  });
 
  router.delete('/all', async (req: Request, res: Response) => {
-  const serviceResponse = await userService.deleteAllUser();
+  const serviceResponse = await catalogueService.deleteAll();
   handleServiceResponse(serviceResponse, res);
  });
 
@@ -84,7 +84,7 @@ export const catalogueRouter: Router = (() => {
 
  router.delete('/:id', validateRequest(DeleteCatalogueSchema), async (req: Request, res: Response) => {
   const id = parseInt(req.params.id as string, 10);
-  const serviceResponse = await userService.deleteUser(id);
+  const serviceResponse = await catalogueService.delete(id);
   handleServiceResponse(serviceResponse, res);
  });
 
