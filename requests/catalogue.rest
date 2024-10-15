@@ -30,7 +30,7 @@ curl -X 'POST' \
 ###
 
 curl -X 'DELETE' \
-  'http://localhost:2020/catalogue/1' \
+  'http://localhost:2020/catalogue/12' \
   -H 'accept: application/json'
 
 

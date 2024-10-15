@@ -12,6 +12,7 @@ export const UserSchema = z.object({
  name: z.string(),
  email: z.string().email(),
  age: z.number(),
+ hobbies: z.array(z.string()),
  createdAt: z.date(),
  updatedAt: z.date(),
 });

@@ -22,7 +22,8 @@ curl -X 'POST' \
   "id": 2,
   "name": "string",
   "email": "user@example.com",
-  "age": 0
+  "age": 0,
+  "hobbies" : ["test","test2"]
 }'
 
 ###
