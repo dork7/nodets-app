@@ -1,8 +1,26 @@
 import { Catalogue } from './catalogueModel';
 
 export const catalogue: Catalogue[] = [
- { id: 1, name: 'Alice', createdAt: new Date(), updatedAt: new Date() },
- { id: 2, name: 'Bob', createdAt: new Date(), updatedAt: new Date() },
+ {
+  id: 12,
+  category: 'old product',
+  name: 'fake product',
+  stock: 9999999,
+  price: 300000,
+  description: 'Descp',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+ },
+ {
+  id: 55,
+  category: 'new product',
+  name: 'second product',
+  stock: 12,
+  price: 55,
+  description: 'Descp',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+ },
 ];
 
 export const catalogueRepository = {

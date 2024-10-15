@@ -7,25 +7,24 @@ extendZodWithOpenApi(z);
 
 export type Catalogue = z.infer<typeof CatalogueSchema>;
 
-export const CatalogueSchema = z.object({
+const common = {
  id: z.number(),
  name: z.string(),
  category: z.string().optional(),
  stock: z.number().optional(),
  price: z.number().optional(),
  description: z.string().optional(),
+};
+
+export const CatalogueSchema = z.object({
+ ...common,
  createdAt: z.date(),
  updatedAt: z.date(),
 });
 
 export const AddCatalogueSchema = z.object({
  body: z.object({
-  id: z.number(),
-  category: z.string(),
-  name: z.string(),
-  stock: z.number(),
-  price: z.number(),
-  description: z.string(),
+  ...common,
  }),
 });
 

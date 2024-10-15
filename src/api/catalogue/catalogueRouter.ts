@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { GetUserSchema } from '@/api/user/userModel';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
+import { cacheHandler } from '@/common/middleware/cacheHandler';
 import { handleServiceResponse, validateRequest } from '@/common/utils/httpHandlers';
 
 import { AddCatalogueSchema, CatalogueSchema, DeleteCatalogueSchema, GetCatalogueSchema } from './catalogueModel';
@@ -36,7 +37,7 @@ export const catalogueRouter: Router = (() => {
   responses: createApiResponse(CatalogueSchema, 'Success'),
  });
 
- router.get('/:id', validateRequest(GetUserSchema), async (req: Request, res: Response) => {
+ router.get('/:id', cacheHandler, validateRequest(GetUserSchema), async (req: Request, res: Response) => {
   const id = parseInt(req.params.id as string, 10);
   const serviceResponse = await catalogueService.findById(id);
   handleServiceResponse(serviceResponse, res);
