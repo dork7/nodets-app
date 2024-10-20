@@ -25,7 +25,7 @@ app.set('trust proxy', true);
 
 if (env.ENV === 'local') {
  redisClient.connect();
- initKafka().catch(console.error);
+ initKafka().catch((err) => logger.error(err));
 }
 
 // Middlewares
@@ -47,6 +47,10 @@ app.use(
 app.use(cacheConfigHandler, cacheHandler);
 // Routes
 app.use('/v1', apis);
+
+app.get('/', function (req, res) {
+ res.sendFile(__dirname + '/public/index.html');
+});
 
 app.use(
  '/graphql',
