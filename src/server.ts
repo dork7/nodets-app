@@ -5,21 +5,18 @@ import { graphqlHTTP } from 'express-graphql';
 import helmet from 'helmet';
 import { pino } from 'pino';
 
+import apis from '@/api';
 import { openAPIRouter } from '@/api-docs/openAPIRouter';
-import { healthCheckRouter } from '@/api/healthCheck/healthCheckRouter';
-import { userRouter } from '@/api/user/userRouter';
 import errorHandler from '@/common/middleware/errorHandler';
 import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
-import { catalogueRouter } from './api/catalogue/catalogueRouter';
 import { schema } from './api/graphql/schema';
-import { kafkaRouter } from './api/kafka/kafkaRouter';
-import { redisRouter } from './api/redis/redisRouter';
+import { cacheHandler } from './common/utils/cacheHandler';
+import { cacheConfigHandler } from './config/cacheConfig';
 import { initKafka } from './config/kafka';
 import { redisClient } from './config/redisStore';
-
 const logger = pino({ name: 'server start' });
 const app: Express = express();
 
@@ -47,12 +44,9 @@ app.use(
  })
 );
 
+app.use(cacheConfigHandler, cacheHandler);
 // Routes
-app.use('/health-check', healthCheckRouter);
-app.use('/users', userRouter);
-app.use('/redis', redisRouter);
-app.use('/kafka', kafkaRouter);
-app.use('/catalogue', catalogueRouter);
+app.use('/v1', apis);
 
 app.use(
  '/graphql',
