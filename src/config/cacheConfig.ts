@@ -10,15 +10,23 @@ export const cacheConfig: CacheConfig[] = [
 ];
 
 const checkQueryRule = (cacheConfig: CacheConfig[], queryRule: string[]) => {
- return cacheConfig.filter((item) => item.query.includes(queryRule.map((item) => item)[0])).length > 0;
+ return cacheConfig.some((item) => item.query.includes(queryRule[0]));
 };
 
 const checkURL = (cacheConfig: CacheConfig[], url: string) => {
- return cacheConfig.filter((item) => item.url == url).length > 0;
+ return cacheConfig.some((item) => item.url === url);
 };
 
 const getRule = (cacheConfig: CacheConfig[], url: string) => {
- return cacheConfig.filter((item) => item.url == url)[0];
+ return cacheConfig.find((item) => item.url === url);
+};
+
+const generateHashKey = (req: RequestProps) => {
+ const reqToHash = {
+  query: req.query,
+  body: req.body,
+ };
+ return hashObject(reqToHash, {});
 };
 
 export const cacheConfigHandler = async (req: RequestProps, res: Response, next: NextFunction) => {
@@ -30,36 +38,15 @@ export const cacheConfigHandler = async (req: RequestProps, res: Response, next:
  if (!hasUrlRule) {
   next();
  } else {
-  const ttl: number = getRule(cacheConfig, url).ttl;
-  const queryRules: string[] = getRule(cacheConfig, url).query ?? [];
+  const rule = getRule(cacheConfig, url);
+  if (!rule) {
+   next();
+   return;
+  }
+
+  const { ttl, query: queryRules = [] } = rule;
   if (queryRules.length > 0 && checkQueryRule(cacheConfig, queryKeys)) {
-   const reqToHash = {
-    query: req.query,
-    body: req.body,
-   };
-   const objectHash = hashObject(reqToHash, {});
-   // create hash of the requst params
-   req.hashKey = objectHash;
-   req.cacheTTL = ttl;
-   next();
-  } else if (queryRules.length === 0) {
-   const reqToHash = {
-    query: req.query,
-    body: req.body,
-   };
-   const objectHash = hashObject(reqToHash, {});
-   // create hash of the requst params
-   req.hashKey = objectHash;
-   req.cacheTTL = ttl;
-   next();
-  } else if (hasUrlRule && queryRules.length < 1) {
-   const reqToHash = {
-    query: req.query,
-    body: req.body,
-   };
-   const objectHash = hashObject(reqToHash, {});
-   // create hash of the requst params
-   req.hashKey = objectHash;
+   req.hashKey = generateHashKey(req);
    req.cacheTTL = ttl;
    next();
   } else {
