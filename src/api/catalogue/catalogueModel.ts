@@ -5,33 +5,35 @@ import { commonValidations } from '@/common/utils/commonValidation';
 
 extendZodWithOpenApi(z);
 
-export type User = z.infer<typeof UserSchema>;
+export type Catalogue = z.infer<typeof CatalogueSchema>;
 
-export const UserSchema = z.object({
+const common = {
  id: z.number(),
  name: z.string(),
- email: z.string().email(),
- age: z.number(),
- hobbies: z.array(z.string()),
+ category: z.string().optional(),
+ stock: z.number().optional(),
+ price: z.number().optional(),
+ description: z.string().optional(),
+};
+
+export const CatalogueSchema = z.object({
+ ...common,
  createdAt: z.date(),
  updatedAt: z.date(),
 });
 
-export const AddUserSchema = z.object({
+export const AddCatalogueSchema = z.object({
  body: z.object({
-  id: z.number(),
-  name: z.string(),
-  email: z.string().email(),
-  age: z.number(),
+  ...common,
  }),
 });
 
 // Input Validation for 'GET users/:id' endpoint
-export const GetUserSchema = z.object({
+export const GetCatalogueSchema = z.object({
  params: z.object({ id: commonValidations.id }),
 });
 
 // Input Validation for 'GET users/:id' endpoint
-export const DeleteUserSchema = z.object({
+export const DeleteCatalogueSchema = z.object({
  params: z.object({ id: commonValidations.id }),
 });

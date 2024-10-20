@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { AddUserSchema, DeleteUserSchema, GetUserSchema, UserSchema } from '@/api/user/userModel';
 import { userService } from '@/api/user/userService';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
+import { userMiddleWare } from '@/common/middleware/users';
 import { handleServiceResponse, validateRequest } from '@/common/utils/httpHandlers';
 
 export const userRegistry = new OpenAPIRegistry();
@@ -20,8 +21,11 @@ export const userRouter: Router = (() => {
   tags: ['User'],
   responses: createApiResponse(z.array(UserSchema), 'Success'),
  });
+ const lol = () => {
+  return 'lol';
+ };
 
- router.get('/', async (_req: Request, res: Response) => {
+ router.get('/', userMiddleWare(lol), async (_req: Request, res: Response) => {
   const serviceResponse = await userService.findAll();
   handleServiceResponse(serviceResponse, res);
  });
