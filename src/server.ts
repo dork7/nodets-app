@@ -20,6 +20,7 @@ import { redisClient } from './config/redisStore';
 const logger = pino({ name: 'server start' });
 const app: Express = express();
 import ejs from 'ejs';
+import path from 'path';
 
 // Set the application to trust the reverse proxy
 app.set('trust proxy', true);
@@ -33,8 +34,6 @@ if (env.ENV === 'local') {
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(helmet());
 app.use(rateLimiter);
-
-app.set('view engine', 'ejs');
 
 // Request logging
 app.use(requestLogger);
@@ -51,8 +50,11 @@ app.use(cacheConfigHandler, cacheHandler);
 // Routes
 app.use('/v1', apis);
 
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'public'));
+
 app.get('/dashboard', async function (req, res) {
- return await ejs.renderFile('src/public/index.html', {
+ res.render(path.join(__dirname, 'public'), {
   //you may include the variable you want to send from backend to UI or can just skip this object incase not required
   users: [{ user_name: 'test' }], //appUsers might be array of objects of users fetched from the database
   appUsers: [{ user_name: 'test' }], //appUsers might be array of objects of users fetched from the database
