@@ -1,3 +1,7 @@
+import { env } from '@/common/utils/envConfig';
+import customAxios from '@/config/axios';
+import { logger } from '@/server';
+
 import { Catalogue } from './catalogueModel';
 
 export const catalogue: Catalogue[] = [
@@ -56,5 +60,18 @@ export const catalogueRepository = {
   }
   catalogue.length = 0;
   return true;
+ },
+
+ // get profucts from mock API
+ fetchProducts: async (): Promise<any> => {
+  const products = await customAxios.get(env.PRODUCTS_API);
+  return products.data;
+ },
+
+ fetchProductsById: async (id: number): Promise<any> => {
+  const url = `${env.PRODUCTS_API}/${id}`;
+  const products = await customAxios.get(url);
+  logger.info(products.status);
+  return products;
  },
 };
