@@ -3,11 +3,11 @@ import hashObject from 'object-hash';
 
 import { CacheConfig } from '@/common/interfaces/caching';
 import { RequestProps } from '@/common/interfaces/common';
-
-import { cacheRules } from './cacheRules';
+import { logger } from '@/server';
 
 export const cacheConfig = {
  createHash: (cacheConfig: CacheConfig[]) => {
+  logger.info('Creating cache hash');
   return cacheConfig.map((item: CacheConfig) => hashObject({ url: item.url, query: item.query }));
  },
  decodeHash: (hash: string): CacheConfig => {
@@ -33,7 +33,7 @@ export const cacheConfig = {
 };
 
 export const cacheConfigHandler = async (req: RequestProps, res: Response, next: NextFunction) => {
- const hasCacheRule: string | undefined = cacheConfig.checkConfig(req, cacheConfig.createHash(cacheRules));
+ const hasCacheRule: string | undefined = cacheConfig.checkConfig(req, global.cacheHash);
  if (!hasCacheRule) {
   next();
  } else {
