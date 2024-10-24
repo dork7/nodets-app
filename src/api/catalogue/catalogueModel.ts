@@ -37,3 +37,49 @@ export const GetCatalogueSchema = z.object({
 export const DeleteCatalogueSchema = z.object({
  params: z.object({ id: commonValidations.id }),
 });
+
+const commonCatelogueAPIResp = {
+ id: z.number(),
+ title: z.string(),
+ description: z.string(),
+ category: z.string(),
+ price: z.number(),
+ discountPercentage: z.number(),
+ rating: z.number(),
+ stock: z.number(),
+ tags: z.string().array(),
+ brand: z.string().optional(),
+ sku: z.string(),
+ weight: z.number(),
+ dimensions: z.object({
+  width: z.number(),
+  height: z.number(),
+  depth: z.number(),
+ }),
+ warrantyInformation: z.string(),
+ shippingInformation: z.string(),
+ availabilityStatus: z.string(),
+ reviews: z
+  .object({
+   rating: z.number(),
+   comment: z.string(),
+   date: z.string(),
+   reviewerName: z.string(),
+   reviewerEmail: z.string(),
+  })
+  .array(),
+
+ returnPolicy: z.string(),
+ minimumOrderQuantity: z.number(),
+ meta: z.object({
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  barcode: z.string(),
+  qrCode: z.string(),
+ }),
+ images: z.string().array(),
+ thumbnail: z.string(),
+};
+
+export const CatelogueAPIRespSchema = z.object(commonCatelogueAPIResp);
+export const CatelogueAPIRespSchemaArray = z.object(commonCatelogueAPIResp).array();
