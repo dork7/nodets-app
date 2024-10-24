@@ -1,0 +1,27 @@
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+
+<body style="text-align:center;">
+    <p style="text-align:center;margin-top:10%;">Welcome</p>
+            <select id="application">
+                <option value="" disabled selected>Select an User</option>
+                <% appUsers.forEach(function(user){ %>
+                    <option value="<%= user.user_name%>">
+                        <%= user.user_name %>
+                    </option>
+                    <% }); %>
+            </select>
+            <br></br>
+            <a id="app_redirect" href="#" style="text-align:center;margin-top:10%;">Login</a>
+
+    <script>
+        $("#application").change(function () {
+            $("#app_redirect").attr('href', '/dashboard/' + this.value);
+        });
+    </script>
+</body>
+
+</html>

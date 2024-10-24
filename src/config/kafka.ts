@@ -4,6 +4,7 @@ import { TTopicList } from '@/api/kafka/kafkaModel';
 import { TOPIC_LIST } from '@/common/data/kafkaTopics';
 import { env } from '@/common/utils/envConfig';
 import { readKafkaMessage } from '@/common/utils/kafkaService';
+import { logger } from '@/server';
 
 const kafka = new Kafka({
  clientId: env.CLIENT_ID,
@@ -12,15 +13,17 @@ const kafka = new Kafka({
 
 const producer = kafka.producer();
 const consumer = kafka.consumer({ groupId: 'test-group' });
+const admin = kafka.admin();
 
-export const sendMessage = async (topic: string, message: any, correlationId: string) => {
+export const sendMessage = async (config: any, message: any, correlationId: string) => {
  return await producer.send({
-  topic,
+  ...config,
   messages: [
    {
+    partition: config.partition,
     key: 'key',
     headers: { 'correlation-id': correlationId, ENV: env.ENV },
-    value: message,
+    value: JSON.stringify(message),
    },
   ],
   acks: 1,
@@ -28,18 +31,33 @@ export const sendMessage = async (topic: string, message: any, correlationId: st
 };
 
 const subscribeTopics = (topicsList: TTopicList[]) => {
- return topicsList.map(async (item: TTopicList) => await consumer.subscribe({ topic: item.name, fromBeginning: true }));
+ return topicsList.map(
+  async (item: TTopicList) => await consumer.subscribe({ topic: item.topic, fromBeginning: true })
+ );
+};
+
+const createTopics = async () => {
+ await admin.connect();
+
+ // Set retention policy to 1 hour (3600000 milliseconds)
+ const res = await admin.createTopics({
+  topics: TOPIC_LIST,
+ });
+ logger.info(`Topics created: ${res}`);
+ await admin.disconnect();
+ return true;
 };
 
 export const initKafka = async () => {
- // Producing
- await producer.connect();
- // Consuming
- await consumer.connect();
+ 
+ createTopics().then(async () => {
+  await producer.connect();
+  await consumer.connect();
 
- subscribeTopics(TOPIC_LIST);
-
- await consumer.run({
-  eachMessage: readKafkaMessage,
+  await subscribeTopics(TOPIC_LIST);
+  
+  await consumer.run({
+   eachMessage: readKafkaMessage,
+  });
  });
 };

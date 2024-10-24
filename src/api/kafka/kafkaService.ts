@@ -24,11 +24,15 @@ export const kafkaService = {
  //  },
 
  // Adds a single user
- postMessage: async (dataSet: TKafka, res: Response): Promise<ServiceResponse<any>> => {
+ postMessage: async (kafkaBody: TKafka, res: Response): Promise<ServiceResponse<any>> => {
   try {
-   const { topic, data } = dataSet;
    const correlationId = res.getHeaders()['x-request-id'] as string;
-   const dataSent: any = await sendKafkaMessage(topic, data, correlationId);
+   //    Array(10000)
+   //     .fill(0)
+   //     .forEach((_, idx) => {
+   //      sendKafkaMessage(topic, idx, correlationId);
+   //     });
+   const dataSent: any = await sendKafkaMessage(kafkaBody, correlationId);
    if (!dataSent) {
     return new ServiceResponse(ResponseStatus.Failed, 'Unable to send message', null, StatusCodes.NOT_FOUND);
    }
