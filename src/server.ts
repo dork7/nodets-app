@@ -15,7 +15,8 @@ import { env } from '@/common/utils/envConfig';
 
 import { schema } from './api/graphql/schema';
 import { cacheHandler } from './common/utils/cacheHandler';
-import { cacheConfigHandler } from './config/cacheConfig';
+import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
+import { cacheRules } from './config/cacheConfig/cacheRules';
 import { initKafka } from './config/kafka';
 import { redisClient } from './config/redisStore';
 const logger = pino({ name: 'server start' });
@@ -28,6 +29,8 @@ if (env.ENV === 'local') {
  redisClient.connect();
  initKafka().catch((err) => logger.error(err));
 }
+
+global.cacheHash = cacheConfig.createHash(cacheRules);
 
 // Middlewares
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
