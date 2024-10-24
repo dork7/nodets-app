@@ -18,3 +18,12 @@ export const validateRequest = (schema: ZodSchema) => (req: Request, res: Respon
   res.status(statusCode).send(new ServiceResponse<null>(ResponseStatus.Failed, errorMessage, null, statusCode));
  }
 };
+
+export const validateExternalAPIResponse = (schema: ZodSchema, data: any) => {
+ try {
+  schema.parse(data);
+ } catch (err) {
+  const errorMessage = `Invalid input: ${(err as ZodError).errors.map((e) => `${e.path} ${e.message}`).join(', ')}`;
+  throw new Error(errorMessage);
+ }
+};

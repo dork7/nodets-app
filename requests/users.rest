@@ -2,45 +2,46 @@
 ###
 
 curl -X 'GET' \
-  'http://localhost:2020/users' \
+  'http://localhost:2020/v1/users' \
   -H 'accept: application/json'
 
 ###
 
 curl -X 'GET' \
-  'http://localhost:2020/users/1' \
+  'http://localhost:2020/v1/users/1' \
   -H 'accept: application/json'
 
 
 ###
 
 curl -X 'POST' \
-  'http://localhost:2020/users' \
+  'http://localhost:2020/v1/users' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
   "id": 2,
   "name": "string",
   "email": "user@example.com",
-  "age": 0
+  "age": 0,
+  "hobbies" : ["test","test2"]
 }'
 
 ###
 
 curl -X 'DELETE' \
-  'http://localhost:2020/users/1' \
+  'http://localhost:2020/v1/users/1' \
   -H 'accept: application/json'
 
 
 ###
 
 curl -X 'DELETE' \
-  'http://localhost:2020/users/all' \
+  'http://localhost:2020/v1/users/all' \
   -H 'accept: application/json'
 
 
 ###
 
 curl -X 'POST' \
-  'http://localhost:2020/users/redis' \
+  'http://localhost:2020/v1/users/redis' \
   -H 'accept: application/json'

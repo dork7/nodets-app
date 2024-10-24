@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { cleanEnv, host, num, port, str, testOnly } from 'envalid';
+import { cleanEnv, host, num, port, str, testOnly, url } from 'envalid';
 
 dotenv.config();
 
@@ -15,4 +15,5 @@ export const env = cleanEnv(process.env, {
  KAFKA_BROKER: str(),
  CLIENT_ID: str(),
  ENV: str(),
+ PRODUCTS_API: url(),
 });

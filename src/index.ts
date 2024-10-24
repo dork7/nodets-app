@@ -4,9 +4,10 @@ import { app, logger } from '@/server';
 const server = app.listen(env.PORT, () => {
  const { NODE_ENV, HOST, PORT } = env;
  logger.info(`Server (${NODE_ENV}) running on port http://${HOST}:${PORT}`);
+ logger.info(`Logger (${NODE_ENV}) running on port http://${HOST}:${PORT}/dashboard`);
  logger.info(`Swaagger http://${HOST}:${PORT}`);
  logger.info(`Redis http://${HOST}:8001`);
- logger.info(`KAFKA http://${HOST}:8083`);
+ logger.info(`KAFKA UI http://${HOST}:8083/ui/clusters/kafka/all-topics`);
 });
 
 const onCloseSignal = () => {
