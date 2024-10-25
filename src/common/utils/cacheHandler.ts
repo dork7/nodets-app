@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express';
 
+import { redis } from '../../services/redisStore';
 import { RequestProps } from '../interfaces/common';
-import { redis } from '../utils/redisStore';
 
 const revalidateCache = (key: string) => {
  redis.deleteValue(key);

@@ -2,8 +2,8 @@ import { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
-import { sendKafkaMessage } from '@/common/utils/kafkaService';
 import { logger } from '@/server';
+import { sendKafkaMessage } from '@/services/kafkaService';
 
 import { TKafka } from './kafkaModel';
 
