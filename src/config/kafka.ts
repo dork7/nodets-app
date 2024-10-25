@@ -3,8 +3,8 @@ import { Kafka } from 'kafkajs';
 import { TTopicList } from '@/api/kafka/kafkaModel';
 import { TOPIC_LIST } from '@/common/data/kafkaTopics';
 import { env } from '@/common/utils/envConfig';
-import { readKafkaMessage } from '@/common/utils/kafkaService';
 import { logger } from '@/server';
+import { readKafkaMessage } from '@/services/kafkaService';
 
 const kafka = new Kafka({
  clientId: env.CLIENT_ID,
@@ -49,13 +49,12 @@ const createTopics = async () => {
 };
 
 export const initKafka = async () => {
- 
  createTopics().then(async () => {
   await producer.connect();
   await consumer.connect();
 
   await subscribeTopics(TOPIC_LIST);
-  
+
   await consumer.run({
    eachMessage: readKafkaMessage,
   });

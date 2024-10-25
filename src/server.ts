@@ -15,6 +15,7 @@ import { env } from '@/common/utils/envConfig';
 
 import { cacheRules } from '../cacheRules';
 import { schema } from './api/graphql/schema';
+import { reqLoggerKafka } from './common/middleware/reqLoggerKafka';
 import { cacheHandler } from './common/utils/cacheHandler';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
 import { initKafka } from './config/kafka';
@@ -46,7 +47,7 @@ app.use(
   extended: true,
  })
 );
-
+app.use(reqLoggerKafka);
 app.use(cacheConfigHandler, cacheHandler);
 // Routes
 app.use('/v1', apis);

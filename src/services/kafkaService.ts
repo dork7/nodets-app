@@ -4,7 +4,7 @@ import { TKafka } from '@/api/kafka/kafkaModel';
 import { sendMessage } from '@/config/kafka';
 import { logger } from '@/server';
 
-import { writeDataInFile } from './fileUtils';
+import { writeDataInFile } from '../common/utils/fileUtils';
 
 export const readKafkaMessage = async ({ topic, partition, message, heartbeat, pause }) => {
  logger.info({
