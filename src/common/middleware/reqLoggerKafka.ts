@@ -15,11 +15,10 @@ export const reqLoggerKafka = (req: Request, res: Response, next: NextFunction) 
     nativeResponseBody: body,
    },
   };
-
   sendKafkaMessage(reqLogBody, res.getHeaders()['x-request-id'] as string);
-
   res.locals.body = body;
-
   return oldJson.call(res, body);
  };
+
+ console.log("t")
 };
