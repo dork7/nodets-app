@@ -60,7 +60,7 @@ app.get('/dashboard', async function (req, res) {
  const fileContent = await readFileData('file.txt');
  res.render(path.join(__dirname, 'public'), {
   appUsers: [{ user_name: 'test' }, { user_name: 'test2' }],
-  fileContent: '123',
+  fileContent: fileContent,
  });
 });
 
