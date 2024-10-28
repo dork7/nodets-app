@@ -17,7 +17,7 @@ curl -X 'GET' \
 
 curl -X 'GET' \
   'http://localhost:2020/v1/catalogue?id=2' \
-  -H 'cache-control: max-age=2'
+  -H 'cache-control: max-age=1'
 
 
 ###

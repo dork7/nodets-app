@@ -8,6 +8,7 @@ export const proxyHandler = (req: RequestProps, res: Response, next: NextFunctio
  const found = proxyList.find((item) => item.url === req.originalUrl);
  if (found) {
   req.enableKafkaLog = true;
+  res.setHeader('x-kafka-logging', 'TRUE');
  }
  next();
 };
