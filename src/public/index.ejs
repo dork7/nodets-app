@@ -6,14 +6,11 @@
 
 <body style="text-align:center;">
     <p style="text-align:center;margin-top:10%;">Welcome</p>
-            <select id="application">
-                <option value="" disabled selected>Select an User</option>
-                <% appUsers.forEach(function(user){ %>
-                    <option value="<%= user.user_name%>">
-                        <%= user.user_name %>
-                    </option>
-                    <% }); %>
-            </select>
+    <p>
+        <% JSON.stringify(fileContent) %>
+        <% fileContent %>
+    </p>
+             
             <br></br>
             <a id="app_redirect" href="#" style="text-align:center;margin-top:10%;">Login</a>
 

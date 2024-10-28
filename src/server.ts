@@ -20,6 +20,7 @@ import { cacheHandler } from './common/utils/cacheHandler';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
 import { initKafka } from './config/kafka';
 import { redisClient } from './config/redisStore';
+import { readFileData } from './common/utils/fileUtils';
 const logger = pino({ name: 'server start' });
 const app: Express = express();
 
@@ -56,8 +57,10 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public'));
 
 app.get('/dashboard', async function (req, res) {
+ const fileContent = await readFileData('file.txt');
  res.render(path.join(__dirname, 'public'), {
   appUsers: [{ user_name: 'test' }, { user_name: 'test2' }],
+  fileContent: '123',
  });
 });
 

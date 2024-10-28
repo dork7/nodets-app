@@ -6,6 +6,7 @@ import { healthCheckRouter } from '@/api/healthCheck/healthCheckRouter';
 import { kafkaRouter } from '@/api/kafka/kafkaRouter';
 import { redisRouter } from '@/api/redis/redisRouter';
 import { userRouter } from '@/api/user/userRouter';
+import { readFileData } from '@/common/utils/fileUtils';
 
 const router = express.Router();
 
@@ -14,9 +15,12 @@ router.use('/users', userRouter);
 router.use('/redis', redisRouter);
 router.use('/kafka', kafkaRouter);
 router.use('/catalogue', catalogueRouter);
-router.use('/dashboard', (req, res) => {
+
+router.use('/dashboard', async (req, res) => {
+ const fileContent = await readFileData('file.txt');
  res.render(path.join(__dirname, 'public'), {
   appUsers: [{ user_name: 'test' }, { user_name: 'test2' }],
+  fileContent: '123',
  });
 });
 
