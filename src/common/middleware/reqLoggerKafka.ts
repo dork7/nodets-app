@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import * as zlib from 'zlib';
 
 import { TKafka } from '@/api/kafka/kafkaModel';
 import { sendKafkaMessage } from '@/services/kafkaService';
@@ -12,7 +11,7 @@ export const reqLoggerKafka = (req: Request, res: Response, next: NextFunction) 
   const reqLogBody: TKafka = {
    config: { topic: 'logging', key: 'logKey' },
    data: {
-    nativeResponseBody: zlib.gzipSync(body).toString('base64'),
+    nativeResponseBody: body,
     nativeHeader: req.headers,
     nativeRequestURL: req.baseUrl,
     apiURL: `${req.hostname}${req.baseUrl}`,

@@ -1,32 +1,21 @@
 import { randomUUID } from 'crypto';
 
-import { TKafka } from '@/api/kafka/kafkaModel';
+import { TKafka, TTopicList } from '@/api/kafka/kafkaModel';
+import { TOPIC_LIST } from '@/common/data/kafkaTopics';
 import { sendMessage } from '@/config/kafka';
 import { logger } from '@/server';
 
-import { writeDataInFile } from '../common/utils/fileUtils';
-
-export const readKafkaMessage = async ({ topic, partition, message, heartbeat, pause }) => {
- logger.info({
-//   topic,
-  partition,
-//   offset: message.offset,
-//   headers: parseHeaders(message.headers),
-  value: JSON.parse(message.value.toString()),
- });
- if (topic === 'file') {
-  await writeDataInFile(message.value.toString(), 'file.txt');
+export const readKafkaMessage = async (kafkaData: any) => {
+ logger.info(kafkaData);
+ const { topic } = kafkaData;
+ const filteredTopics = TOPIC_LIST.filter((item) => item.topic === topic);
+ if (filteredTopics.length > 0 && filteredTopics[0].readConfig) {
+  filteredTopics[0].readConfig(kafkaData);
+ } else {
+  logger.error(`Topic ${topic} not found in TOPIC_LIST`);
  }
 };
 
 export const sendKafkaMessage = async (kafkaBody: TKafka, correlationID: string) => {
  return sendMessage(kafkaBody.config, kafkaBody.data, correlationID ?? randomUUID());
-};
-
-const parseHeaders = (headers: any) => {
- return Object.keys(headers).map((item: any) => {
-  return {
-   [item]: Buffer.from(headers[item]).toString(),
-  };
- });
 };
