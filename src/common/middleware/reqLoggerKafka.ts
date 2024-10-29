@@ -13,14 +13,15 @@ export const reqLoggerKafka = (req: RequestProps, res: Response, next: NextFunct
    const reqLogBody: TKafka = {
     config: { topic: 'logging', key: 'logKey' },
     data: {
-     nativeResponseBody: body,
+     nativeResponse: body,
      nativeHeader: req.headers,
-     nativeRequestURL: req.baseUrl,
-     apiURL: `${req.hostname}${req.baseUrl}`,
+     nativeRequestURL: req.originalUrl,
+     apiURL: `${req.hostname}${req.originalUrl}`,
      nativeRequestBody: req.body,
      nativeRequestQuery: req.query,
      nativeRequestParams: req.params,
      nativeResponseHeaders: res.getHeaders(),
+     'X-Request-Id': req.headers['X-Request-Id'],
     },
    };
    sendKafkaMessage(reqLogBody, res.getHeaders()['x-request-id'] as string);
