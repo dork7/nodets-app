@@ -15,9 +15,9 @@ import { env } from '@/common/utils/envConfig';
 
 import { cacheRules } from '../cacheRules';
 import { schema } from './api/graphql/schema';
+import { cacheHandler } from './common/middleware/cacheHandler';
 import { proxyHandler } from './common/middleware/proxy';
 import { reqLoggerKafka } from './common/middleware/reqLoggerKafka';
-import { cacheHandler } from './common/utils/cacheHandler';
 import { readFileData } from './common/utils/fileUtils';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
 import { initKafka } from './config/kafka';
@@ -63,10 +63,12 @@ app.get('/dashboard', async function (req, res) {
  const splitted = fileContent.split('\n');
 
  const objects = splitted.filter((item) => item.trim() !== '').map((item) => JSON.parse(item));
+ const recordCount = objects.length;
 
  res.render(path.join(__dirname, 'public'), {
   appUsers: [{ user_name: 'test' }, { user_name: 'test2' }],
   fileContent: objects, //&& JSON.parse(fileContent),
+  recordCount,
  });
 });
 

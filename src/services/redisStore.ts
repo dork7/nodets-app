@@ -2,7 +2,7 @@ import { IRedis } from '@/api/redis/redisModel';
 import { redisClient } from '@/config/redisStore';
 
 export const redis = {
- setValue: async (key: string, value: any, ttl: number): Promise<string | null> => {
+ setValue: async (key: string, value: any, ttl: number): Promise<number | undefined> => {
   return redisClient.set(key, JSON.stringify(value), {
    EX: ttl,
   });

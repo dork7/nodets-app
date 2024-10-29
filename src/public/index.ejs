@@ -6,11 +6,13 @@
 
 <body style="">
     <p style="">LOGS</p>
-
+    <h3>Number of entires <%= recordCount %></h3>
+    
  
             <table border="1" style="">
                 <thead>
                     <tr>
+                        <th>requestId</th>
                         <th>apiURL</th>
                         <th>nativeRequestParams</th>
                         <th>nativeRequestQuery</th>
@@ -24,6 +26,7 @@
                 <tbody>
                     <% for (const key in fileContent) { %>
                         <tr>
+                            <td><%= fileContent[key].requestId %></td>
                             <td><%= fileContent[key].apiURL %></td>
                             <td><%= JSON.stringify(fileContent[key].nativeRequestParams) %></td>
                             <td><%= JSON.stringify(fileContent[key].nativeRequestQuery) %></td>

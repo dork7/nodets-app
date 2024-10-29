@@ -6,7 +6,6 @@ import { sendMessage } from '@/config/kafka';
 import { logger } from '@/server';
 
 export const readKafkaMessage = async (kafkaData: any) => {
- logger.info(kafkaData);
  const { topic } = kafkaData;
  const filteredTopics = TOPIC_LIST.filter((item) => item.topic === topic);
  if (filteredTopics.length > 0 && filteredTopics[0].readConfig) {
