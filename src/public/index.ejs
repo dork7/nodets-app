@@ -4,12 +4,42 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 
-<body style="text-align:center;">
-    <p style="text-align:center;margin-top:10%;">Welcome</p>
+<body style="">
+    <p style="">LOGS</p>
+
+ 
+            <table border="1" style="">
+                <thead>
+                    <tr>
+                        <th>apiURL</th>
+                        <th>nativeRequestParams</th>
+                        <th>nativeRequestQuery</th>
+                        <th>nativeRequestURL</th>
+                        <th>nativeHeader</th>
+                        <th>nativeResponseHeaders</th>
+                        <th>nativeRequestBody</th>
+                        <th>nativeResponse</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (const key in fileContent) { %>
+                        <tr>
+                            <td><%= fileContent[key].apiURL %></td>
+                            <td><%= JSON.stringify(fileContent[key].nativeRequestParams) %></td>
+                            <td><%= JSON.stringify(fileContent[key].nativeRequestQuery) %></td>
+                            <td><%= JSON.stringify(fileContent[key].nativeRequestURL) %></td>
+                            <td><%= JSON.stringify(fileContent[key].nativeHeader) %></td>
+                            <td><%= JSON.stringify(fileContent[key].nativeResponseHeaders) %></td>
+                            <td><%= JSON.stringify(fileContent[key].nativeRequestBody) %></td>
+                            <td><%= JSON.stringify(fileContent[key].nativeResponse) %></td>
    
-            <pre><%= fileContent %></pre>
-            <br></br>
-            <a id="app_redirect" href="#" style="text-align:center;margin-top:10%;">Login</a>
+   
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+             <br></br>
+            <a id="app_redirect" href="#" style="">Login</a>
 
     <script>
         $("#application").change(function () {
