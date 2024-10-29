@@ -22,10 +22,13 @@ export const reqLoggerKafka = (req: RequestProps, res: Response, next: NextFunct
      nativeRequestParams: req.params,
      nativeResponseHeaders: res.getHeaders(),
      'X-Request-Id': req.headers['X-Request-Id'],
+     requestId: req.headers['X-Request-Id'],
     },
    };
+
+   oldJson.call(res, body);
    sendKafkaMessage(reqLogBody, res.getHeaders()['x-request-id'] as string);
-   return oldJson.call(res, body);
+   return;
   };
  }
 };

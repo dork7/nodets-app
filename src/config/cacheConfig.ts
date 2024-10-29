@@ -8,10 +8,13 @@ import { logger } from '@/server';
 export const cacheConfig = {
  createHash: (cacheConfig: CacheConfig[]) => {
   logger.info('Creating cache hash');
-  return cacheConfig.map((item: CacheConfig) => hashObject({ url: item.url, query: item.query }));
+  return cacheConfig.map((item: CacheConfig) => {
+   return `${hashObject({ url: item.url, query: item.query })}_#${item.ttl}`;
+  });
  },
  decodeHash: (hash: string): CacheConfig => {
-  return hashObject.keys(hash) as unknown as CacheConfig;
+  const decoded = hashObject.keys(hash);
+  return decoded as unknown as CacheConfig;
  },
  checkConfig: (req: RequestProps, cacheConfigHash: string[]) => {
   const queryKeys = Object.keys(req.query) ?? [];
@@ -20,7 +23,7 @@ export const cacheConfig = {
    url: url,
    query: queryKeys,
   });
-  return cacheConfigHash.find((item: string) => item === hash);
+  return cacheConfigHash.find((item: string) => item.split('_#')[0] === hash);
  },
  generateHashKey: (req: RequestProps) => {
   const reqToHash = {
@@ -30,6 +33,9 @@ export const cacheConfig = {
   };
   return hashObject(reqToHash, {});
  },
+ getTTL: (hash: string) => {
+  return hash.split('_#')[1];
+ },
 };
 
 export const cacheConfigHandler = async (req: RequestProps, res: Response, next: NextFunction) => {
@@ -37,8 +43,7 @@ export const cacheConfigHandler = async (req: RequestProps, res: Response, next:
  if (!hasCacheRule) {
   next();
  } else {
-  const rule = cacheConfig.decodeHash(hasCacheRule);
-  const { ttl } = rule;
+  const ttl = cacheConfig.getTTL(hasCacheRule);
   req.hashKey = cacheConfig.generateHashKey(req);
   req.cacheTTL = ttl;
   next();
