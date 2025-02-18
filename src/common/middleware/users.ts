@@ -4,9 +4,12 @@ import { logger } from '@/server';
 
 import { RequestProps } from '../interfaces/common';
 
-export const userMiddleWare = (test) => (_req: RequestProps, _res: Response, next: NextFunction) => {
+export const userMiddleWare = (test: any) => async (_req: RequestProps, _res: Response, next: NextFunction) => {
  logger.info(test());
+
+ 
  next();
- return;
- logger.info('here2');
+//  await new Promise((resolve) => setTimeout(resolve, 1000));
+ //  return;
+ logger.info('');
 };

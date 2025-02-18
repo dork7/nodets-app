@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+import { env } from '@/common/utils/envConfig';
 import { logger } from '@/server';
 
 // set mongoose Promise to Bluebird
@@ -11,9 +12,12 @@ mongoose.connection.on('error', (err) => {
  process.exit(-1);
 });
 
+let mongoURL = env.MONGO_URI_LOCAL;
 // print mongoose logs in dev env
-if (env === 'development') {
+if (env.NODE_ENV === 'development') {
  mongoose.set('debug', true);
+} else {
+ mongoURL = env.MONGO_URI;
 }
 
 /**
@@ -22,15 +26,8 @@ if (env === 'development') {
  * @returns {object} Mongoose connection
  * @public
  */
-exports.connect = () => {
- mongoose
-  .connect(mongo.uri, {
-   useCreateIndex: false,
-   keepAlive: 1,
-   useNewUrlParser: true,
-   useUnifiedTopology: true,
-   useFindAndModify: false,
-  })
-  .then(() => logger.info('mongoDB connected...'));
+
+export default () => {
+ mongoose.connect(mongoURL, {}).then(() => logger.info('mongoDB connected...'));
  return mongoose.connection;
 };

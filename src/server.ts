@@ -21,6 +21,7 @@ import { reqLoggerKafka } from './common/middleware/reqLoggerKafka';
 import { readFileData } from './common/utils/fileUtils';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
 import { initKafka } from './config/kafka';
+import mongoDB from './config/mongoose';
 import { redisClient } from './config/redisStore';
 const logger = pino({ name: 'server start' });
 const app: Express = express();
@@ -32,6 +33,7 @@ if (env.ENV === 'local') {
  redisClient.connect();
  initKafka().catch((err) => logger.error(err));
  global.cacheHash = cacheConfig.createHash(cacheRules);
+//  mongoDB();
 }
 
 // Middlewares
