@@ -3,9 +3,7 @@ import mongoose from 'mongoose';
 import { env } from '@/common/utils/envConfig';
 import { logger } from '@/server';
 
-// set mongoose Promise to Bluebird
-mongoose.Promise = Promise;
-
+ 
 // Exit application on error
 mongoose.connection.on('error', (err) => {
  logger.error(`MongoDB connection error: ${err}`);

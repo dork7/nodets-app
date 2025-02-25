@@ -20,4 +20,6 @@ export const env = cleanEnv(process.env, {
  MONGO_URI_TESTS_LOCAL: str(),
  MONGO_URI: str(),
  MONGO_URI_TESTS: str(),
+ SLACK_TOKEN: str(),
+ SLACK_CHANNEL: str(),
 });
