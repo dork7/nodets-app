@@ -1,4 +1,4 @@
-import { redis } from '@/common/utils/redisStore';
+import { redis } from '@/services/redisStore';
 
 import { IRedis } from './redisModel';
 

@@ -6,3 +6,13 @@ export const writeDataInFile = async (data: string, fileName: string) => {
   console.log(error);
  }
 };
+
+export const readFileData = async (fileName: string): Promise<string> => {
+ try {
+  const data = await fs.readFile(fileName, 'utf8');
+  return data;
+ } catch (error) {
+  console.log(error);
+  throw error;
+ }
+};
