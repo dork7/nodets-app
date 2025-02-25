@@ -16,4 +16,10 @@ export const env = cleanEnv(process.env, {
  CLIENT_ID: str(),
  ENV: str(),
  PRODUCTS_API: url(),
+ MONGO_URI_LOCAL: str(),
+ MONGO_URI_TESTS_LOCAL: str(),
+ MONGO_URI: str(),
+ MONGO_URI_TESTS: str(),
+ SLACK_TOKEN: str(),
+ SLACK_CHANNEL: str(),
 });

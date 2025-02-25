@@ -21,11 +21,11 @@ export const userRouter: Router = (() => {
   tags: ['User'],
   responses: createApiResponse(z.array(UserSchema), 'Success'),
  });
- const lol = () => {
-  return 'lol';
+ const middlewareFunc = () => {
+  return 'middlewareFunc passed into the middleware';
  };
 
- router.get('/', userMiddleWare(lol), async (_req: Request, res: Response) => {
+ router.get('/', userMiddleWare(middlewareFunc), async (_req: Request, res: Response) => {
   const serviceResponse = await userService.findAll();
   handleServiceResponse(serviceResponse, res);
  });

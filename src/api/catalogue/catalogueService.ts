@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes';
-import { z } from 'zod';
 
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { env } from '@/common/utils/envConfig';
@@ -7,7 +6,7 @@ import { validateExternalAPIResponse } from '@/common/utils/httpHandlers';
 import customAxios from '@/config/axios';
 import { logger } from '@/server';
 
-import { Catalogue, CatelogueAPIRespSchema, CatelogueAPIRespSchemaArray } from './catalogueModel';
+import { Catalogue, CatelogueAPIRespSchema } from './catalogueModel';
 import { catalogueRepository } from './catalogueRepository';
 
 export const catalogueService = {

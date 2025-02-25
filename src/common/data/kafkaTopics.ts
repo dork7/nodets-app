@@ -1,6 +1,9 @@
 import { TTopicList } from '@/api/kafka/kafkaModel';
+import { logger } from '@/server';
 
-export const TOPIC_LIST: TTopicList = [
+import { writeDataInFile } from '../utils/fileUtils';
+
+export const TOPIC_LIST: TTopicList[] = [
  {
   topic: 'test',
   configEntries: [
@@ -8,6 +11,22 @@ export const TOPIC_LIST: TTopicList = [
    { name: 'local.retention.ms', value: '360000' }, // 1 hour
    { name: 'file.delete.delay.ms', value: '360000' },
   ],
+  readConfig: async ({ topic, partition, message, heartbeat, pause }: any) => {
+   await writeDataInFile(JSON.parse(message.value.toString()), 'file.txt');
+  },
+ },
+ {
+  topic: 'logging',
+  configEntries: [
+   { name: 'retention.ms', value: '360000' }, // 1 hour
+   { name: 'local.retention.ms', value: '360000' }, // 1 hour
+   { name: 'file.delete.delay.ms', value: '360000' },
+  ],
+  readConfig: async ({ topic, partition, message, heartbeat, pause }) => {
+   //    logger.info(JSON.parse(message.value.toString()));
+   await writeDataInFile(message.value.toString(), 'file.txt');
+   return null;
+  },
  },
  {
   topic: 'file',
@@ -18,5 +37,8 @@ export const TOPIC_LIST: TTopicList = [
    { name: 'local.retention.ms', value: '360000' }, // 1 hour
    { name: 'file.delete.delay.ms', value: '360000' },
   ],
+  readConfig: (data) => {
+   console.log(data);
+  },
  },
 ];
