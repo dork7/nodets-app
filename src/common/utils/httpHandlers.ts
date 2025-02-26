@@ -7,7 +7,9 @@ import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse
 import { sendSlackMessage } from './slack';
 
 export const handleServiceResponse = (serviceResponse: ServiceResponse<any>, response: Response) => {
- sendSlackMessage(serviceResponse.message);
+ if (!serviceResponse.success) {
+  sendSlackMessage(serviceResponse.stack ?? serviceResponse.message);
+ }
  return response.status(serviceResponse.statusCode).send(serviceResponse);
 };
 

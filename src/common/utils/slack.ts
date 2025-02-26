@@ -13,19 +13,34 @@ export const sendSlackMessage = async (message: any, channel: any = env.SLACK_CH
    const resp: any = await web.chat.postMessage({
     blocks: [
      {
-      type: 'section',
-      text: {
-       type: 'mrkdwn',
-       text: message,
-      },
-     },
-     {
-      type: 'divider',
+      type: 'rich_text',
+      elements: [
+       {
+        type: 'rich_text_section',
+        elements: [
+         {
+          type: 'text',
+          text: 'Error occured',
+          style: {
+           bold: true,
+          },
+         },
+        ],
+       },
+       {
+        type: 'rich_text_preformatted',
+        elements: [
+         {
+          type: 'text',
+          text: message,
+         },
+        ],
+       },
+      ],
      },
     ],
     channel: channelId,
    });
-   //    console.log('Slack message sent', resp);
    return resolve(true);
   } catch (error) {
    logger.error(error);
