@@ -13,7 +13,7 @@ export const catalogueService = {
  // Retrieves all catalogue from the database
  findAll: async (): Promise<ServiceResponse<Catalogue[] | null>> => {
   try {
-   const url = `${env.PRODUCTS_API}`;
+   const url = `${env.aa}/`;
    const catalogue = await customAxios.get(url);
    if (catalogue.status === StatusCodes.NOT_FOUND) {
     return new ServiceResponse<null>(ResponseStatus.Failed, 'catalogue not found', null, catalogue.status);
@@ -21,10 +21,10 @@ export const catalogueService = {
    //    CatelogueAPIRespSchema.parse(catalogue.data);
    validateExternalAPIResponse(CatelogueAPIRespSchema.array(), catalogue.data.products);
    return new ServiceResponse<Catalogue[]>(ResponseStatus.Success, 'catalogue found', catalogue.data, catalogue.status);
-  } catch (ex) {
+  } catch (ex: any) {
    const errorMessage = `Error finding all catalogue: $${(ex as Error).message}`;
    logger.error(errorMessage);
-   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
  },
 
