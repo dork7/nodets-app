@@ -3,42 +3,35 @@ import { WebClient } from '@slack/web-api';
 import { env } from '@/common/utils/envConfig';
 import { logger } from '@/server';
 
+import { slackBlocks } from '../data/slackBlocks';
+
 const options = {};
 const web = new WebClient(env.SLACK_TOKEN, options);
 
-export const sendSlackMessage = async (message: any, channel: any = env.SLACK_CHANNEL) => {
+export const sendSlackMessage = async (
+ message: any,
+ context: 'ERROR' | 'INFO' = 'ERROR',
+ channel: any = env.SLACK_CHANNEL
+) => {
  return new Promise(async (resolve, reject) => {
-  const channelId = channel || env.SLACK_CHANNEL;
+  const channelId = channel;
+  let body: any = [];
   try {
+   switch (context) {
+    case 'ERROR':
+     logger.error(message);
+     body = slackBlocks.errorBlock(message);
+     break;
+    case 'INFO':
+     logger.info(message);
+     body = slackBlocks.infoBlock(message);
+     break;
+    default:
+     break;
+   }
+
    const resp: any = await web.chat.postMessage({
-    blocks: [
-     {
-      type: 'rich_text',
-      elements: [
-       {
-        type: 'rich_text_section',
-        elements: [
-         {
-          type: 'text',
-          text: 'Error occured',
-          style: {
-           bold: true,
-          },
-         },
-        ],
-       },
-       {
-        type: 'rich_text_preformatted',
-        elements: [
-         {
-          type: 'text',
-          text: message,
-         },
-        ],
-       },
-      ],
-     },
-    ],
+    blocks: [slackBlocks.dividerBlock, slackBlocks.contextBlock(`*${context}*`), slackBlocks.dividerBlock, ...body],
     channel: channelId,
    });
    return resolve(true);
