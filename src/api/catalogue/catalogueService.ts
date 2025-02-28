@@ -13,7 +13,7 @@ export const catalogueService = {
  // Retrieves all catalogue from the database
  findAll: async (): Promise<ServiceResponse<Catalogue[] | null>> => {
   try {
-   const url = `${env.aa}/`;
+   const url = `${env.PRODUCTS_API}`;
    const catalogue = await customAxios.get(url);
    if (catalogue.status === StatusCodes.NOT_FOUND) {
     return new ServiceResponse<null>(ResponseStatus.Failed, 'catalogue not found', null, catalogue.status);
@@ -21,7 +21,7 @@ export const catalogueService = {
    //    CatelogueAPIRespSchema.parse(catalogue.data);
    validateExternalAPIResponse(CatelogueAPIRespSchema.array(), catalogue.data.products);
    return new ServiceResponse<Catalogue[]>(ResponseStatus.Success, 'catalogue found', catalogue.data, catalogue.status);
-  } catch (ex: any) {
+  } catch (ex) {
    const errorMessage = `Error finding all catalogue: $${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
@@ -41,7 +41,7 @@ export const catalogueService = {
    return new ServiceResponse<Catalogue>(ResponseStatus.Success, 'catalogue found', catalogue.data, catalogue.status);
   } catch (ex) {
    const errorMessage = `Error finding catalogue with id ${id}:, ${(ex as Error).message}`;
-   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
  },
 
@@ -61,7 +61,7 @@ export const catalogueService = {
   } catch (ex) {
    const errorMessage = `Cannot add catalogue:, ${(ex as Error).message}`;
    logger.error(errorMessage);
-   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
  },
 
@@ -81,7 +81,7 @@ export const catalogueService = {
   } catch (ex) {
    const errorMessage = `Cannot delete catalogue:, ${(ex as Error).message}`;
    logger.error(errorMessage);
-   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
  },
 
@@ -100,7 +100,7 @@ export const catalogueService = {
   } catch (ex) {
    const errorMessage = `Cannot delete catalogue:, ${(ex as Error).message}`;
    logger.error(errorMessage);
-   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
  },
 };
