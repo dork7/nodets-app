@@ -34,7 +34,7 @@ if (env.ENV === 'local') {
  redisClient.connect();
  initKafka().catch((err) => logger.error(err));
  global.cacheHash = cacheConfig.createHash(cacheRules);
- //  mongoDB();
+  mongoDB();
 }
 
 // Middlewares
