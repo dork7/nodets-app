@@ -8,7 +8,7 @@ import { slackBlocks } from '../data/slackBlocks';
 const options = {};
 const web = new WebClient(env.SLACK_TOKEN, options);
 
-export const sendSlackMessage = async (
+export const sendSlackNotification = async (
  message: any,
  context: 'ERROR' | 'INFO' = 'ERROR',
  channel: any = env.SLACK_CHANNEL
@@ -49,7 +49,7 @@ const joinSlackChannel = (channel, message = null) => {
     channel: channel,
    });
    if (message) {
-    await sendSlackMessage(message, channel);
+    await sendSlackNotification(message, channel);
    }
    return resolve(true);
   } catch (error) {

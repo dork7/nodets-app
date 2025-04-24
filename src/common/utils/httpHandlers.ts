@@ -4,11 +4,11 @@ import { ZodError, ZodSchema } from 'zod';
 
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 
-import { sendSlackMessage } from './slack';
+import { sendSlackNotification } from './slack';
 
 export const handleServiceResponse = (serviceResponse: ServiceResponse<any>, response: Response) => {
  if (!serviceResponse.success) {
-  sendSlackMessage(serviceResponse.stack ?? serviceResponse.message);
+  sendSlackNotification(serviceResponse.stack ?? serviceResponse.message);
  }
  return response.status(serviceResponse.statusCode).send(serviceResponse);
 };
