@@ -3,6 +3,7 @@ import { Kafka } from 'kafkajs';
 import { TTopicList } from '@/api/kafka/kafkaModel';
 import { TOPIC_LIST } from '@/common/data/kafkaTopics';
 import { env } from '@/common/utils/envConfig';
+import { sendSlackMessage } from '@/common/utils/slack';
 import { logger } from '@/server';
 import { readKafkaMessage } from '@/services/kafkaService';
 
@@ -16,18 +17,26 @@ const consumer = kafka.consumer({ groupId: 'test-group' });
 const admin = kafka.admin();
 
 export const sendMessage = async (config: any, message: any, correlationId: string) => {
- return await producer.send({
-  ...config,
-  messages: [
-   {
-    partition: config.partition,
-    key: 'key',
-    headers: { 'correlation-id': correlationId, ENV: env.ENV },
-    value: JSON.stringify(message),
-   },
-  ],
-  acks: 1,
- });
+ try {
+  return await producer.send({
+   ...config,
+   messages: [
+    {
+     partition: config.partition,
+     key: 'key',
+     headers: { 'correlation-id': correlationId, ENV: env.ENV },
+     value: JSON.stringify(message),
+    },
+   ],
+   acks: 1,
+  });
+ } catch (error: any) {
+  sendSlackMessage(
+   `Error sending message to Kafka: , Topic: ${config.topic}, Message: ${JSON.stringify(error.message)}`
+  );
+  logger.error(`Error sending message: ${error}`);
+  throw error;
+ }
 };
 
 const subscribeTopics = (topicsList: TTopicList[]) => {
