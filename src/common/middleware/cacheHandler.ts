@@ -30,7 +30,7 @@ export const cacheHandler = async (req: RequestProps, res: Response, next: NextF
    next();
   }
 
-  if (req.headers['cache-control'] === 'max-age=1') {
+  if (req.headers['cache-control'] === 'max-age=0') {
    revalidateCache(key);
   }
 
