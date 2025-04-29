@@ -54,7 +54,7 @@ export const userService = {
  },
 
  // Adds a single user
- deleteUser: async (id: number): Promise<ServiceResponse<object | null>> => {
+ deleteUser: async (id: string): Promise<ServiceResponse<object | null>> => {
   try {
    const userDeleted: boolean = await userRepository.deleteUserAsync(id);
    if (!userDeleted) {

@@ -29,7 +29,7 @@ curl -X 'POST' \
 ###
 
 curl -X 'DELETE' \
-  'http://localhost:2020/v1/users/1' \
+  'http://localhost:2020/v1/users/680f2b336f51abcbe716f56b' \
   -H 'accept: application/json'
 
 

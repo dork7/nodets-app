@@ -1,5 +1,5 @@
 import zodSchema from '@zodyac/zod-mongoose';
-import mongoose from 'mongoose';
+import mongoose, { mongo } from 'mongoose';
 
 import { User, UserSchema } from '@/api/user/userModel';
 import { logger } from '@/server';
@@ -48,22 +48,11 @@ export const userRepository = {
   }
  },
 
- deleteUserAsync: async (id: number): Promise<boolean> => {
-  const idx: number = users.findIndex((item: User) => item.id === id);
-  if (idx < 0) {
-   return false;
-  }
-  if (idx > -1) {
-   users.splice(idx, 1);
-  }
-  return true;
+ deleteUserAsync: async (id: string): Promise<any> => {
+  return UserModel.findOneAndDelete(id as unknown as mongoose.FilterQuery<User>);
  },
 
- deleteAllUserAsync: async (): Promise<boolean> => {
-  if (users.length < 1) {
-   return false;
-  }
-  users.length = 0;
-  return true;
+ deleteAllUserAsync: async (): Promise<any> => {
+  return UserModel.deleteMany();
  },
 };
