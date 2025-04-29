@@ -85,7 +85,7 @@ export const userRouter: Router = (() => {
  });
 
  router.delete('/:id', validateRequest(DeleteUserSchema), async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id as string, 10);
+  const id = req.params.id;
   const serviceResponse = await userService.deleteUser(id);
   handleServiceResponse(serviceResponse, res);
  });
