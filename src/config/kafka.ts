@@ -3,7 +3,7 @@ import { Kafka } from 'kafkajs';
 import { TTopicList } from '@/api/kafka/kafkaModel';
 import { TOPIC_LIST } from '@/common/data/kafkaTopics';
 import { env } from '@/common/utils/envConfig';
-import { sendSlackMessage } from '@/common/utils/slack';
+import { sendSlackNotification } from '@/common/utils/slack';
 import { logger } from '@/server';
 import { readKafkaMessage } from '@/services/kafkaService';
 
@@ -31,7 +31,7 @@ export const sendMessage = async (config: any, message: any, correlationId: stri
    acks: 1,
   });
  } catch (error: any) {
-  sendSlackMessage(
+  sendSlackNotification(
    `Error sending message to Kafka: , Topic: ${config.topic}, Message: ${JSON.stringify(error.message)}`
   );
   logger.error(`Error sending message: ${error}`);
@@ -46,15 +46,21 @@ const subscribeTopics = (topicsList: TTopicList[]) => {
 };
 
 const createTopics = async () => {
- await admin.connect();
+ try {
+  await admin.connect();
 
- // Set retention policy to 1 hour (3600000 milliseconds)
- const res = await admin.createTopics({
-  topics: TOPIC_LIST,
- });
- logger.info(`Topics created: ${res}`);
- await admin.disconnect();
- return true;
+  // Set retention policy to 1 hour (3600000 milliseconds)
+  const res = await admin.createTopics({
+   topics: TOPIC_LIST,
+  });
+  logger.info(`Topics created: ${res}`);
+  await admin.disconnect();
+  return true;
+ } catch (error: any) {
+  logger.error(`Error creating topics: ${error}`);
+  sendSlackNotification(`Error creating topics: ${error}`);
+  throw error;
+ }
 };
 
 export const initKafka = async () => {
