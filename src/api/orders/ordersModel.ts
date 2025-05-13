@@ -13,6 +13,7 @@ export const OrdersSchema = z.object({
    priceperItem: z.number(),
    totalPrice: z.number(),
    taxPrice: z.number(),
+   totalPriceWithTax: z.number(),
    discountCoupon: z.string().optional(),
    discountPrice: z.number().optional(),
   })
@@ -35,6 +36,7 @@ export const OrdersSchema = z.object({
  orderChannel: z.enum(['Online', 'InStore']),
  userId: z.string(),
  address: z.string().optional(),
+ totalPrice: z.number(),
  createdAt: z.date(),
  updatedAt: z.date(),
 });
