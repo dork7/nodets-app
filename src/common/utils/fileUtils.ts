@@ -1,7 +1,13 @@
 import fs from 'fs/promises';
+
+import { env } from '@/common/utils/envConfig';
+
+const ENABLE_FILE_LOGGING = env.ENABLE_FILE_LOGGING;
 export const writeDataInFile = async (data: string, fileName: string) => {
  try {
-  await fs.appendFile(fileName, `${data} \n`, 'utf8');
+  if (ENABLE_FILE_LOGGING) {
+   await fs.appendFile(fileName, `${data} \n`, 'utf8');
+  }
  } catch (error) {
   console.log(error);
  }

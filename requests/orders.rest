@@ -1,4 +1,8 @@
 
+
+
+
+
 ###
 
 curl -X 'GET' \
@@ -14,16 +18,26 @@ curl -X 'GET' \
 
 ###
 
-curl -X 'POST' \
-  'http://localhost:2020/v1/orders' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "id": 2,
-  "name": "string",
-  "email": "user2@example.com",
-  "age": 0,
-  "items" : ["test","test2"]
+curl --location 'http://localhost:2020/v1/orders' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: logUuid=tsuqzp2tjx' \
+--data '{
+    "items": [
+        {
+            "itemId": 1,
+            "quantity": 65
+        },
+         {
+            "itemId": 2,
+            "quantity": 55
+        }
+    ],
+    "orderType": "Standard",
+    "orderSource": "Website",
+    "orderChannel": "Online",
+    "paymentStatus": "Pending",
+    "paymentMethod": "CreditCard",
+    "userId": "test"
 }'
 
 ###
