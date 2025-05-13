@@ -1,5 +1,7 @@
 import { catalogueService } from '../catalogue/catalogueService';
 
+const taxRate = 0.05; // 5% tax rate
+
 export const getItemsDetails = async (order: any) => {
  // get the product from catelogue service
  const items = await Promise.all(
@@ -14,10 +16,10 @@ export const getItemsDetails = async (order: any) => {
     responseObject: { price, discountPercentage },
    } = product;
 
-   const totalPrice = item.quantity * price;
-   const taxPrice = totalPrice * 0.1;
-   const totalPriceWithTax = totalPrice + taxPrice;
-   const discountPrice = totalPrice - (discountPercentage / 100) * totalPrice;
+   const totalPrice = parseFloat((item.quantity * price).toFixed(2));
+   const taxPrice = parseFloat((totalPrice * taxRate).toFixed(2));
+   const totalPriceWithTax = parseFloat((totalPrice + taxPrice).toFixed(2));
+   const discountPrice = parseFloat((totalPrice - (discountPercentage / 100) * totalPrice).toFixed(2));
    // Calculate the total price, tax price, and total price with tax
    return {
     ...item,
@@ -31,9 +33,18 @@ export const getItemsDetails = async (order: any) => {
   })
  );
 
+ // Calculate the total price of all items
+ const totalPrice = parseFloat(items.reduce((acc: number, item: any) => acc + item.totalPrice, 0)).toFixed(2);
+ const taxPrice = parseFloat(items.reduce((acc: number, item: any) => acc + item.taxPrice, 0)).toFixed(2);
+ const totalPriceWithTax = parseFloat(
+  items.reduce((acc: number, item: any) => acc + item.totalPriceWithTax, 0)
+ ).toFixed(2);
+
  const orderData = {
   items,
-  totalPrice: 123123,
+  totalPrice,
+  taxPrice,
+  totalPriceWithTax,
   paymentStatus: order.paymentStatus,
   paymentMethod: order.paymentMethod,
   deliveryDate: order.deliveryDate,

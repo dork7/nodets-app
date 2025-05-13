@@ -23,4 +23,5 @@ export const env = cleanEnv(process.env, {
  SLACK_TOKEN: str(),
  SLACK_CHANNEL: str(),
  ENABLE_SLACK_LOGGING: bool({ default: false }),
+ ENABLE_FILE_LOGGING: bool({ default: false }),
 });
