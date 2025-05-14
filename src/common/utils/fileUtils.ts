@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 
 import { env } from '@/common/utils/envConfig';
+import { logger } from '@/server';
 
 const ENABLE_FILE_LOGGING = env.ENABLE_FILE_LOGGING;
 export const writeDataInFile = async (data: string, fileName: string) => {
@@ -9,7 +10,7 @@ export const writeDataInFile = async (data: string, fileName: string) => {
    await fs.appendFile(fileName, `${data} \n`, 'utf8');
   }
  } catch (error) {
-  console.log(error);
+  logger.error(error);
  }
 };
 
@@ -18,7 +19,7 @@ export const readFileData = async (fileName: string): Promise<string> => {
   const data = await fs.readFile(fileName, 'utf8');
   return data;
  } catch (error) {
-  console.log(error);
+  logger.error(error);
   throw error;
  }
 };

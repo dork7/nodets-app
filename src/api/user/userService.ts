@@ -54,6 +54,23 @@ export const userService = {
  },
 
  // Adds a single user
+ update: async (user: User): Promise<ServiceResponse<User | null>> => {
+  try {
+   const userAdded: User | null = await userRepository.updateOrderDetails(user);
+   // TODO: handle the mongoose error codes
+   if (!userAdded) {
+    // FIXME: fix the error handling 
+    return new ServiceResponse(ResponseStatus.Failed, 'Cannot add user', null, StatusCodes.NOT_FOUND);
+   }
+   return new ServiceResponse<User>(ResponseStatus.Success, 'User found', userAdded, StatusCodes.OK);
+  } catch (ex) {
+   const errorMessage = `Cannot add user:, ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
+
+ // Adds a single user
  deleteUser: async (id: string): Promise<ServiceResponse<object | null>> => {
   try {
    const userDeleted: boolean = await userRepository.deleteUserAsync(id);

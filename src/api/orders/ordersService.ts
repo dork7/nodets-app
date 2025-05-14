@@ -2,10 +2,11 @@ import { StatusCodes } from 'http-status-codes';
 
 import Order, { orderRepository } from '@/api/orders/ordersRepository';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
+import { sendSlackNotification } from '@/common/utils/slack';
 import { logger } from '@/server';
+import { sendKafkaMessage } from '@/services/kafkaService';
 
-import { catalogueService } from '../catalogue/catalogueService';
-import { getItemsDetails } from './utils';
+import { getItemsDetails, updateUserOrders } from './utils';
 
 export const ordersService = {
  // Retrieves all orders from the database
@@ -15,7 +16,12 @@ export const ordersService = {
    if (!orders) {
     return new ServiceResponse(ResponseStatus.Failed, 'No orders found', null, StatusCodes.NOT_FOUND);
    }
-   return new ServiceResponse<Order[]>(ResponseStatus.Success, 'orders found', orders, StatusCodes.OK);
+   return new ServiceResponse<Order[]>(
+    ResponseStatus.Success,
+    'orders found',
+    { totalCount: orders.length, orders },
+    StatusCodes.OK
+   );
   } catch (ex) {
    const errorMessage = `Error finding all orders: $${(ex as Error).message}`;
    logger.error(errorMessage);
@@ -48,7 +54,10 @@ export const ordersService = {
     // FIXME: fix the error handling
     return new ServiceResponse(ResponseStatus.Failed, 'Cannot add order', null, StatusCodes.NOT_FOUND);
    }
-   return new ServiceResponse<order>(ResponseStatus.Success, 'order found', orderAdded, StatusCodes.OK);
+
+   updateUserOrders(orderAdded.userId, orderAdded.orderId, orderAdded._id);
+
+   return new ServiceResponse<Order>(ResponseStatus.Success, 'order found', orderAdded, StatusCodes.OK);
   } catch (ex) {
    const errorMessage = `Cannot add order:, ${(ex as Error).message}`;
    logger.error(errorMessage);
