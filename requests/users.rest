@@ -1,3 +1,16 @@
+###
+
+curl --location --request PUT 'http://localhost:2020/v1/users' \
+--header 'accept: application/json' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: logUuid=tsuqzp2tjx' \
+--data '{
+  "userId" : "68242291097853dbc51c7d4e",
+  "orderCount" : 1,
+  "orderId" : "orderId",
+  "orderRef": "orderRef"
+}'
+
 
 ###
 
@@ -8,7 +21,7 @@ curl -X 'GET' \
 ###
 
 curl -X 'GET' \
-  'http://localhost:2020/v1/users/680f32d46f51abcbe716f56d' \
+  'http://localhost:2020/v1/users/68242291097853dbc51c7d4e' \
   -H 'accept: application/json'
 
 
@@ -21,7 +34,7 @@ curl -X 'POST' \
   -d '{
   "id": 2,
   "name": "string",
-  "email": "user2@example.com",
+  "email": "user22@example.com",
   "age": 0,
   "hobbies" : ["test","test2"]
 }'

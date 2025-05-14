@@ -12,6 +12,15 @@ export const UserSchema = z.object({
  hobbies: z.array(z.string()),
  createdAt: z.date(),
  updatedAt: z.date(),
+ orderCount: z.number().optional(),
+ orderHistory: z
+  .array(
+   z.object({
+    orderId: z.string(),
+    orderRef: z.string(),
+   })
+  )
+  .optional(),
 });
 
 export const AddUserSchema = z.object({

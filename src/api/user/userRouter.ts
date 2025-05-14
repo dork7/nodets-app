@@ -65,6 +65,26 @@ export const userRouter: Router = (() => {
  });
 
  userRegistry.registerPath({
+  method: 'put',
+  path: '/users',
+  tags: ['User'],
+  request: {
+   body: {
+    content: { 'application/json': { schema: AddUserSchema.shape.body } },
+    description: 'AddUserSchema',
+    required: true,
+   },
+  },
+  responses: createApiResponse(UserSchema, 'Success'),
+ });
+
+ router.put('/', async (req: Request, res: Response) => {
+  const user = req.body;
+  const serviceResponse = await userService.update(user);
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ userRegistry.registerPath({
   method: 'delete',
   path: '/users/all',
   tags: ['User'],

@@ -30,6 +30,14 @@ curl --location 'http://localhost:2020/v1/orders' \
          {
             "itemId": 2,
             "quantity": 55
+        },
+        {
+            "itemId": 3,
+            "quantity": 65
+        },
+         {
+            "itemId": 4,
+            "quantity": 55
         }
     ],
     "orderType": "Standard",
@@ -37,7 +45,7 @@ curl --location 'http://localhost:2020/v1/orders' \
     "orderChannel": "Online",
     "paymentStatus": "Pending",
     "paymentMethod": "CreditCard",
-    "userId": "test"
+    "userId": "682429439d8ac08b83e8d661"
 }'
 
 ###
