@@ -14,7 +14,7 @@ export const getItemsDetails = async (order: any) => {
  const items = await Promise.all(
   order.items.map(async (item: any) => {
    // calling to API here to get benifit of caching
-   const product = await axios.get(`${baseURL}/${apiVersion}/catalogue/${item.itemId}`);
+   const product = await axios.get(`${baseURL}/${apiVersion}/catalogue?id=${item.itemId}`);
 
    if (!product) {
     throw new Error('Product not found');

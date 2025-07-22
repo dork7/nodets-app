@@ -1,3 +1,4 @@
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
@@ -33,7 +34,7 @@ if (env.ENV === 'local') {
  redisClient.connect();
  initKafka().catch((err) => logger.error(err));
  global.cacheHash = cacheConfig.createHash(cacheRules);
-  mongoDB();
+ mongoDB();
 }
 
 // Middlewares
@@ -87,5 +88,15 @@ app.use(openAPIRouter);
 
 // Error handlers
 app.use(errorHandler());
+
+const server = new McpServer({
+ name: 'Model Context Protocol Server',
+ version: '1.0.0',
+ capabilities: {
+  resources: {},
+  tools: {},
+  prompts: {},
+ },
+});
 
 export { app, logger };

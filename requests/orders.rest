@@ -45,7 +45,7 @@ curl --location 'http://localhost:2020/v1/orders' \
     "orderChannel": "Online",
     "paymentStatus": "Pending",
     "paymentMethod": "CreditCard",
-    "userId": "682429439d8ac08b83e8d661"
+    "userId": "6826dbb04a738181fe6e9f8b"
 }'
 
 ###
