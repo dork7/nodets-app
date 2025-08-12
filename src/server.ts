@@ -89,14 +89,5 @@ app.use(openAPIRouter);
 // Error handlers
 app.use(errorHandler());
 
-const server = new McpServer({
- name: 'Model Context Protocol Server',
- version: '1.0.0',
- capabilities: {
-  resources: {},
-  tools: {},
-  prompts: {},
- },
-});
 
 export { app, logger };
