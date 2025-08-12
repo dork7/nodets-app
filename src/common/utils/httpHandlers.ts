@@ -8,8 +8,10 @@ import { sendSlackNotification } from './slack';
 
 export const handleServiceResponse = (serviceResponse: ServiceResponse<any>, response: Response) => {
  if (!serviceResponse.success) {
-  sendSlackNotification(serviceResponse.stack ?? serviceResponse.message);
- }
+     response.setHeader('noCache', 'true');
+     sendSlackNotification(serviceResponse.stack ?? serviceResponse.message);
+     
+    }
  return response.status(serviceResponse.statusCode).send(serviceResponse);
 };
 
