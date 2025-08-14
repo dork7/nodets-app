@@ -8,13 +8,20 @@ import { logger } from '@/server';
 
 import { Catalogue, CatelogueAPIRespSchema } from './catalogueModel';
 import { catalogueRepository } from './catalogueRepository';
+import { CustomError } from '@/common/utils/CustomError';
 
 export const catalogueService = {
  // Retrieves all catalogue from the database
  findAll: async (): Promise<ServiceResponse<Catalogue[] | null>> => {
   try {
    const url = `${env.PRODUCTS_API}`;
-   const catalogue = await customAxios.get(url);
+   const catalogue: any = await customAxios.get(url);
+   if (catalogue.code === 'ENOTFOUND') {
+    throw new CustomError({
+        message: "Connection error",
+        stack : catalogue.stack
+    });
+   }
    if (catalogue.status === StatusCodes.NOT_FOUND) {
     return new ServiceResponse<null>(ResponseStatus.Failed, 'catalogue not found', null, catalogue.status);
    }
