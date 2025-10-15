@@ -10,12 +10,14 @@ export class ServiceResponse<T = null> {
  message: string;
  responseObject: T;
  statusCode: number;
+ stack?: any;
 
- constructor(status: ResponseStatus, message: string, responseObject: T, statusCode: number) {
+ constructor(status: ResponseStatus, message: string, responseObject: T, statusCode: number, err?: any) {
   this.success = status === ResponseStatus.Success;
   this.message = message;
   this.responseObject = responseObject;
   this.statusCode = statusCode;
+  this.stack = err?.stack;
  }
 }
 

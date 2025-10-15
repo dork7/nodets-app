@@ -5,7 +5,6 @@ import { z } from 'zod';
 import { GetUserSchema } from '@/api/user/userModel';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
 import { handleServiceResponse, validateRequest } from '@/common/utils/httpHandlers';
-import { sendSlackMessage } from '@/common/utils/slack';
 
 import { AddCatalogueSchema, CatalogueSchema, DeleteCatalogueSchema, GetCatalogueSchema } from './catalogueModel';
 import { catalogueService } from './catalogueService';

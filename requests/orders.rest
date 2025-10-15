@@ -1,0 +1,69 @@
+
+
+
+
+
+###
+
+curl -X 'GET' \
+  'http://localhost:2020/v1/orders' \
+  -H 'accept: application/json'
+
+###
+
+curl -X 'GET' \
+  'http://localhost:2020/v1/orders/682429529d8ac08b83e8d663' \
+  -H 'accept: application/json'
+
+
+###
+
+curl --location 'http://localhost:2020/v1/orders' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: logUuid=tsuqzp2tjx' \
+--data '{
+    "items": [
+        {
+            "itemId": 1,
+            "quantity": 65
+        },
+         {
+            "itemId": 2,
+            "quantity": 55
+        },
+        {
+            "itemId": 3,
+            "quantity": 65
+        },
+         {
+            "itemId": 4,
+            "quantity": 55
+        }
+    ],
+    "orderType": "Standard",
+    "orderSource": "Website",
+    "orderChannel": "Online",
+    "paymentStatus": "Pending",
+    "paymentMethod": "CreditCard",
+    "userId": "6826dbb04a738181fe6e9f8b"
+}'
+
+###
+
+curl -X 'DELETE' \
+  'http://localhost:2020/v1/orders/680f2b336f51abcbe716f56b' \
+  -H 'accept: application/json'
+
+
+###
+
+curl -X 'DELETE' \
+  'http://localhost:2020/v1/orders/all' \
+  -H 'accept: application/json'
+
+
+###
+
+curl -X 'POST' \
+  'http://localhost:2020/v1/orders/redis' \
+  -H 'accept: application/json'

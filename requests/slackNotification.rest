@@ -1,0 +1,6 @@
+###
+
+curl -X 'GET' \
+  'http://localhost:2020/v1/catalogue'
+
+  

@@ -1,3 +1,4 @@
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
@@ -18,7 +19,6 @@ import { schema } from './api/graphql/schema';
 import { cacheHandler } from './common/middleware/cacheHandler';
 import { proxyHandler } from './common/middleware/proxy';
 import { reqLoggerKafka } from './common/middleware/reqLoggerKafka';
-import { slackHandler } from './common/middleware/slackHandler';
 import { readFileData } from './common/utils/fileUtils';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
 import { initKafka } from './config/kafka';
@@ -34,7 +34,7 @@ if (env.ENV === 'local') {
  redisClient.connect();
  initKafka().catch((err) => logger.error(err));
  global.cacheHash = cacheConfig.createHash(cacheRules);
- //  mongoDB();
+ mongoDB();
 }
 
 // Middlewares
@@ -88,5 +88,6 @@ app.use(openAPIRouter);
 
 // Error handlers
 app.use(errorHandler());
+
 
 export { app, logger };

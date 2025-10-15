@@ -15,6 +15,6 @@ export const readKafkaMessage = async (kafkaData: any) => {
  }
 };
 
-export const sendKafkaMessage = async (kafkaBody: TKafka, correlationID: string) => {
+export const sendKafkaMessage = async (kafkaBody: TKafka, correlationID?: string) => {
  return sendMessage(kafkaBody.config, kafkaBody.data, correlationID ?? randomUUID());
 };

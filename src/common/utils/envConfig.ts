@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { cleanEnv, host, num, port, str, testOnly, url } from 'envalid';
+import { bool, cleanEnv, host, num, port, str, testOnly, url } from 'envalid';
 
 dotenv.config();
 
@@ -21,5 +21,9 @@ export const env = cleanEnv(process.env, {
  MONGO_URI: str(),
  MONGO_URI_TESTS: str(),
  SLACK_TOKEN: str(),
+ ENABLE_SLACK_LOGGING: bool({ default: false }),
  SLACK_CHANNEL: str(),
+ BASE_URL: str({ devDefault: testOnly('http://localhost:2020') }),
+ API_VERSION: str(),
+ ENABLE_FILE_LOGGING: bool({ default: false }),
 });
