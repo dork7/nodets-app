@@ -8,13 +8,20 @@ import { logger } from '@/server';
 
 import { Catalogue, CatelogueAPIRespSchema } from './catalogueModel';
 import { catalogueRepository } from './catalogueRepository';
+import { CustomError } from '@/common/utils/CustomError';
 
 export const catalogueService = {
  // Retrieves all catalogue from the database
  findAll: async (): Promise<ServiceResponse<Catalogue[] | null>> => {
   try {
    const url = `${env.PRODUCTS_API}`;
-   const catalogue = await customAxios.get(url);
+   const catalogue: any = await customAxios.get(url);
+   if (catalogue.code === 'ENOTFOUND') {
+    throw new CustomError({
+        message: "Connection error",
+        stack : catalogue.stack
+    });
+   }
    if (catalogue.status === StatusCodes.NOT_FOUND) {
     return new ServiceResponse<null>(ResponseStatus.Failed, 'catalogue not found', null, catalogue.status);
    }
@@ -24,7 +31,7 @@ export const catalogueService = {
   } catch (ex) {
    const errorMessage = `Error finding all catalogue: $${(ex as Error).message}`;
    logger.error(errorMessage);
-   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
  },
 
@@ -41,7 +48,7 @@ export const catalogueService = {
    return new ServiceResponse<Catalogue>(ResponseStatus.Success, 'catalogue found', catalogue.data, catalogue.status);
   } catch (ex) {
    const errorMessage = `Error finding catalogue with id ${id}:, ${(ex as Error).message}`;
-   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
  },
 
@@ -61,7 +68,7 @@ export const catalogueService = {
   } catch (ex) {
    const errorMessage = `Cannot add catalogue:, ${(ex as Error).message}`;
    logger.error(errorMessage);
-   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
  },
 
@@ -81,7 +88,7 @@ export const catalogueService = {
   } catch (ex) {
    const errorMessage = `Cannot delete catalogue:, ${(ex as Error).message}`;
    logger.error(errorMessage);
-   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
  },
 
@@ -100,7 +107,7 @@ export const catalogueService = {
   } catch (ex) {
    const errorMessage = `Cannot delete catalogue:, ${(ex as Error).message}`;
    logger.error(errorMessage);
-   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
  },
 };

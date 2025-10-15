@@ -2,6 +2,7 @@ import { NextFunction, Response } from 'express';
 
 import { redis } from '../../services/redisStore';
 import { RequestProps } from '../interfaces/common';
+import { ResponseStatus } from '../models/serviceResponse';
 
 const revalidateCache = (key: string) => {
  redis.deleteValue(key);
@@ -24,13 +25,14 @@ export const cacheHandler = async (req: RequestProps, res: Response, next: NextF
   const key = req.hashKey as string;
 
   res.setHeader('x-cached', 'HIT');
+
   if (!redis.isRedisWorking()) {
    res.setHeader('x-cached', 'MISS');
    res.setHeader('x-cached-get', 'MISS');
    next();
   }
 
-  if (req.headers['cache-control'] === 'max-age=1') {
+  if (req.headers['cache-control'] === 'max-age=0') {
    revalidateCache(key);
   }
 
@@ -40,8 +42,13 @@ export const cacheHandler = async (req: RequestProps, res: Response, next: NextF
    // redis.setValue(key, res)
    const originalSend = res.send;
    res.send = function (body: any): Response<any, Record<string, any>> {
-    redis.setValue(key, body, req.cacheTTL);
-    res.setHeader('x-cached-get', 'MISS');
+    if (!body.success) {
+     res.setHeader('x-cached', 'MISS-failedResponse');
+     res.setHeader('x-cached-get', 'MISS-failedResponse');
+    } else {
+     redis.setValue(key, body, req.cacheTTL);
+     res.setHeader('x-cached-get', 'MISS');
+    }
     return originalSend.call(this, body);
    };
    next();

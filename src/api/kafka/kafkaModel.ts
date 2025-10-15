@@ -14,6 +14,7 @@ export const TopicList = z.object({
  readConfig: z.function().optional(),
  numPartitions: z.number().optional(),
  replicationFactor: z.number().optional(),
+    acks: z.number().optional(),
 });
 export const KafkaSchema = z.object({
  config: z.object({}),

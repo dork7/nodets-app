@@ -4,10 +4,14 @@ import { ZodError, ZodSchema } from 'zod';
 
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 
-import { sendSlackMessage } from './slack';
+import { sendSlackNotification } from './slack';
 
 export const handleServiceResponse = (serviceResponse: ServiceResponse<any>, response: Response) => {
- sendSlackMessage(serviceResponse.message);
+ if (!serviceResponse.success) {
+     response.setHeader('noCache', 'true');
+     sendSlackNotification(serviceResponse.stack ?? serviceResponse.message);
+     
+    }
  return response.status(serviceResponse.statusCode).send(serviceResponse);
 };
 
