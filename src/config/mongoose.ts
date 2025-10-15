@@ -28,8 +28,8 @@ const connectDB = async () => {
  try {
   await mongoose.connect(mongoURL, {});
  } catch (err: any) {
-//   sendSlackNotification(`MongoDB connection error: ${err.message}`, 'ERROR');
-  process.exit(1); // Exit process on failure
+  sendSlackNotification(`MongoDB connection error: ${err.message}`, 'ERROR');
+  process. exit(1); // Exit process on failure
  }
 };
 
