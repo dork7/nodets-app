@@ -1,4 +1,3 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
@@ -20,11 +19,37 @@ import { cacheHandler } from './common/middleware/cacheHandler';
 import { proxyHandler } from './common/middleware/proxy';
 import { reqLoggerKafka } from './common/middleware/reqLoggerKafka';
 import { readFileData } from './common/utils/fileUtils';
+import { sendSlackNotification } from './common/utils/slack';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
 import { initKafka } from './config/kafka';
 import mongoDB from './config/mongoose';
 import { redisClient } from './config/redisStore';
-const logger = pino({ name: 'server start' });
+const loggerOriginal = pino({ name: 'server start' });
+
+const logger = new Proxy(loggerOriginal, {
+ get: (target, prop, receiver) => {
+  const originalValue = Reflect.get(target, prop, receiver);
+
+  // Only wrap functions (logging methods)
+  if (typeof originalValue === 'function') {
+   return function (...args) {
+    // --- Wrapper Logic for Logging Methods ---
+
+    if (prop === 'error' || prop === 'fatal') {
+     console.warn(`[Proxy-Alert] A critical ${prop} event is being logged.`);
+     sendSlackNotification(`${args[1]} || ${args[0].stack}`, 'ERROR');
+    }
+
+    // Call the original function on the target object
+    return originalValue.apply(target, args);
+   };
+  }
+
+  // Return all other properties (e.g., logger.level, logger.child, etc.) as they are
+  return originalValue;
+ },
+});
+
 const app: Express = express();
 
 // Set the application to trust the reverse proxy
@@ -88,6 +113,5 @@ app.use(openAPIRouter);
 
 // Error handlers
 app.use(errorHandler());
-
 
 export { app, logger };

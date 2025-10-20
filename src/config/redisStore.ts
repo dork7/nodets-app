@@ -13,7 +13,7 @@ const CONF: any = {
 export const redisClient = createClient(CONF);
 
 redisClient.on('error', (err) => {
- logger.error(err, 'Refis error');
+ logger.error(err, 'Redis error');
 });
 
 redisClient.on('connect', () => {
