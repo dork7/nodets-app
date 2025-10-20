@@ -26,11 +26,11 @@ export const sendSlackNotification = async (
   try {
    switch (context) {
     case 'ERROR':
-     logger.error(message);
+    //  logger.error(message);
      body = slackBlocks.errorBlock(message);
      break;
     case 'INFO':
-     logger.info(message);
+    //  logger.info(message);
      body = slackBlocks.infoBlock(message);
      break;
     default:
@@ -43,7 +43,7 @@ export const sendSlackNotification = async (
    });
    return resolve(true);
   } catch (error) {
-   logger.error(error);
+  //  logger.error(error);
    return resolve(true);
   }
  });

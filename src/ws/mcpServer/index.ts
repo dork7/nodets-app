@@ -18,7 +18,7 @@ export const startWebSocketServer = async (httpServer: any) => {
   const params: any = urlParts.query;
 
   ws.on('message', async (message: any) => {
-   logger.info('Received WebSocket message:', message.toString());
+   logger.info( `Received WebSocket message:   ${message.toString()}`);
 
    let parsedMessage;
    try {
