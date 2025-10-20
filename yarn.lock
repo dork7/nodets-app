@@ -1263,6 +1263,11 @@
     p-retry "^4"
     retry "^0.13.1"
 
+"@stomp/stompjs@^7.2.1":
+  version "7.2.1"
+  resolved "https://registry.yarnpkg.com/@stomp/stompjs/-/stompjs-7.2.1.tgz#ca29522e1da78539e468bf99dc54b4bdb7fea858"
+  integrity sha512-DLd/WeicnHS5SsWWSk3x6/pcivqchNaEvg9UEGVqAcfYEBVmS9D6980ckXjTtfpXLjdLDsd96M7IuX4w7nzq5g==
+
 "@tufjs/canonical-json@2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@tufjs/canonical-json/-/canonical-json-2.0.0.tgz#a52f61a3d7374833fca945b2549bc30a2dd40d0a"

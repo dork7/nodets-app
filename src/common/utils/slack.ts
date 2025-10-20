@@ -16,8 +16,8 @@ export const sendSlackNotification = async (
  return new Promise(async (resolve, reject) => {
   if (!env.ENABLE_SLACK_LOGGING) {
    // If slack logging is disabled, do not send any messages
-   logger.info('Slack loggin is disabled');
-   reject('Slack loggin is disabled');
+  //  logger.info('Slack loggin is disabled');
+  //  reject('Slack loggin is disabled');
    return;
   }
 
