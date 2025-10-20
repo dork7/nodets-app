@@ -12,7 +12,7 @@ const { HOST } = env;
 export const startWebSocketServer = async (httpServer: any) => {
  const wss = new WebSocketServer({ server: httpServer, path: '/ws/mcp' });
 
- wss.on('connection',  (ws: any, request: any) => {
+ wss.on('connection', (ws: any, request: any) => {
   logger.info('WebSocket client connected - localhost:2020/ws/mcp?type=mcp');
   const urlParts = parse(request.url, true); // true = parse query string
   const params: any = urlParts.query;
@@ -38,24 +38,23 @@ export const startWebSocketServer = async (httpServer: any) => {
      })
     );
    }
+   const result = await handler(message.params);
+   const messageToSend = JSON.stringify({
+    type: 'response',
+    id: genCorrelationId(),
+    result,
+   });
 
    if (params.type === 'broadcast') {
     // Broadcast message to all connected clients
 
     wss.clients.forEach((client: any) => {
      if (client.readyState === ws.OPEN && client !== ws) {
-      client.send(message.toString());
+      client.send(messageToSend);
      }
     });
    } else {
-    const result = await handler(message.params);
-    ws.send(
-     JSON.stringify({
-      type: 'response',
-      id: genCorrelationId(),
-      result,
-     })
-    );
+    ws.send(messageToSend);
    }
   });
 
@@ -65,5 +64,4 @@ export const startWebSocketServer = async (httpServer: any) => {
  });
 
  logger.info(`WebSocket server running on the same HTTP server ws://${HOST}:2020`);
-
 };
