@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
 
 import { env } from '@/common/utils/envConfig';
-import { sendSlackNotification } from '@/common/utils/slack';
+import { logger } from '@/server';
 
 // Exit application on error
 mongoose.connection.on('error', (err) => {
- sendSlackNotification(`MongoDB connection error: ${err}`, 'ERROR');
+ logger.info(`MongoDB connection error: ${err}`, 'ERROR');
  process.exit(-1);
 });
 
@@ -28,18 +28,18 @@ const connectDB = async () => {
  try {
   await mongoose.connect(mongoURL, {});
  } catch (err: any) {
-  sendSlackNotification(`MongoDB connection error: ${err.message}`, 'ERROR');
-  process. exit(1); // Exit process on failure
+  logger.info(`MongoDB connection error: ${err.message}`, 'ERROR');
+  process.exit(1); // Exit process on failure
  }
 };
 
 mongoose.connection.on('disconnected', () => {
- sendSlackNotification('MongoDB disconnected! Trying to reconnect...', 'ERROR');
+ logger.info('MongoDB disconnected! Trying to reconnect...', 'ERROR');
  connectDB();
 });
 
 mongoose.connection.on('connected', () => {
- sendSlackNotification('MongoDB connected!', 'INFO');
+ logger.info('MongoDB connected!', 'INFO');
 });
 
 export default connectDB;
