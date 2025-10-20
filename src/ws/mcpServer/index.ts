@@ -2,21 +2,22 @@ import { parse } from 'url';
 import { WebSocketServer } from 'ws';
 
 import { env } from '@/common/utils/envConfig';
-import { sendSlackNotification } from '@/common/utils/slack';
+import { genCorrelationId } from '@/common/utils/helpers';
 import { logger } from '@/server';
 
-// import { handleMCPMessage } from './mcpHandler.js';
+import { getMethod, loadHandlers } from './methods';
+
 const { HOST } = env;
 
-export function startWebSocketServer(httpServer: any) {
+export const startWebSocketServer = async (httpServer: any) => {
  const wss = new WebSocketServer({ server: httpServer, path: '/ws/mcp' });
 
- wss.on('connection', (ws: any, request: any) => {
+ wss.on('connection',  (ws: any, request: any) => {
   logger.info('WebSocket client connected - localhost:2020/ws/mcp?type=mcp');
   const urlParts = parse(request.url, true); // true = parse query string
   const params: any = urlParts.query;
 
-  ws.on('message', (message: any) => {
+  ws.on('message', async (message: any) => {
    logger.info('Received WebSocket message:', message.toString());
 
    let parsedMessage;
@@ -24,6 +25,18 @@ export function startWebSocketServer(httpServer: any) {
     parsedMessage = JSON.parse(message.toString());
    } catch {
     parsedMessage = { content: message.toString() };
+   }
+
+   const handler = getMethod(parsedMessage.method);
+
+   if (!handler) {
+    return ws.send(
+     JSON.stringify({
+      type: 'error',
+      id: message.id,
+      error: `Unknown method: ${message.method}`,
+     })
+    );
    }
 
    if (params.type === 'broadcast') {
@@ -35,9 +48,14 @@ export function startWebSocketServer(httpServer: any) {
      }
     });
    } else {
-    const response = handleMCPMessage(parsedMessage);
-
-    ws.send(JSON.stringify(response));
+    const result = await handler(message.params);
+    ws.send(
+     JSON.stringify({
+      type: 'response',
+      id: genCorrelationId(),
+      result,
+     })
+    );
    }
   });
 
@@ -47,15 +65,5 @@ export function startWebSocketServer(httpServer: any) {
  });
 
  logger.info(`WebSocket server running on the same HTTP server ws://${HOST}:2020`);
-}
 
-export function handleMCPMessage(message: any) {
- logger.info('Processing MCP message:', message);
-
- sendSlackNotification(`WS message: ${message}`, 'INFO');
-
- return {
-  type: 'mcp_response',
-  data: message
- };
-}
+};

@@ -2,8 +2,9 @@ import { env } from '@/common/utils/envConfig';
 import { app, logger } from '@/server';
 
 import { startWebSocketServer } from './ws/mcpServer';
+import { loadHandlers } from './ws/mcpServer/methods';
 
-const server = app.listen(env.PORT, () => {
+const server = app.listen(env.PORT, async () => {
  const { NODE_ENV, HOST, PORT } = env;
  logger.info(`Server (${NODE_ENV}) running on port http://${HOST}:${PORT}`);
  logger.info(`Logger (${NODE_ENV}) running on port http://${HOST}:${PORT}/dashboard`);
@@ -11,9 +12,9 @@ const server = app.listen(env.PORT, () => {
  logger.info(`KAFKA UI http://${HOST}:8083/ui/clusters/kafka/all-topics`);
  logger.info(`Redis http://${HOST}:8001`);
  logger.info(`MONGODB UI http://${HOST}:8081`);
+ await loadHandlers();
+ startWebSocketServer(server);
 });
-
-startWebSocketServer(server);
 
 const onCloseSignal = () => {
  logger.info('sigint received, shutting down');
