@@ -1,0 +1,15 @@
+###
+
+curl -X 'POST' \
+  'https://dcc025b77a0c.ngrok-free.app/v1/kafka/postMessage' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "config" : {
+    "topic" : "test",
+    "key" : "key1"
+  },
+  "data" : {"test" : "12312313"}
+}'
+###
+ 
