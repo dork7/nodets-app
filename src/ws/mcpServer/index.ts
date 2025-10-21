@@ -42,7 +42,7 @@ export const startWebSocketServer = async (httpServer: any) => {
       })
      );
     }
-    const result = await handler(message.params);
+    const result = await handler(parsedMessage);
     const messageToSend = JSON.stringify({
      type: 'response',
      id: genCorrelationId(),
