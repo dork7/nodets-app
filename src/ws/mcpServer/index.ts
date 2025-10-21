@@ -24,6 +24,13 @@ export const startWebSocketServer = async (httpServer: any) => {
    ws.on('message', async (message: any) => {
     logger.info(`Received WebSocket message:   ${message.toString()}`);
 
+    ws.send(
+     JSON.stringify({
+      type: 'capabilities',
+      tools: ['ping', 'countTo', 'getTime'],
+     })
+    );
+
     let parsedMessage;
     try {
      parsedMessage = JSON.parse(message.toString());
@@ -86,6 +93,14 @@ export const startWebSocketServer = async (httpServer: any) => {
     logger.info(`Received message on /ws/stream: ${message.toString()}`);
     // Process the message as needed
    });
+  } else {
+   return ws.send(
+    JSON.stringify({
+     type: 'error',
+
+     error: `Unknown URL: ${urlParts} `,
+    })
+   );
   }
 
   ws.on('close', () => {
