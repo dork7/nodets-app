@@ -15,7 +15,7 @@ export const handler = async (ws: any, message: any) => {
 
  for await (const chunk of aiResponse) {
   if (chunk.choices && chunk.choices[0]?.delta?.content) {
-   logger.info('AI Response Chunk:', chunk.choices[0].delta.content);
+   logger.info(`AI Response Chunk: , ${chunk.choices[0].delta.content}`);
    ws.send(JSON.stringify({ sender: 'AI', type: 'stream_continue', aiResponse: chunk.choices[0].delta }));
   }
  }

@@ -14,6 +14,17 @@
         #input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         #send { padding: 8px 16px; border: none; background: #007bff; color: #fff; border-radius: 4px; cursor: pointer; }
         #send:hover { background: #0056b3; }
+        body { background: #181a20; color: #e0e0e0; }
+        #chat-container { background: #23272f; box-shadow: 0 2px 8px #111; }
+        #messages { background: #1a1d23; border: 1px solid #333; color: #e0e0e0; }
+        .message { }
+        .user { color: #4ea1ff; }
+        .ai { color: #4fd18b; }
+        .system { color: #b0b0b0; }
+        #input-form { }
+        #input { background: #23272f; color: #e0e0e0; border: 1px solid #333; }
+        #send { background: #4ea1ff; color: #fff; }
+        #send:hover { background: #357ab8; }
     </style>
 </head>
 <body>
@@ -27,6 +38,7 @@
     <script nonce="abc123">
         // Replace with your server's WebSocket endpoint
         const socket = new WebSocket('ws://localhost:2020/ws/chatAI');
+        let loadingDotCount = 0;
 
         // Generate a random session ID
         const sessionId = 'sess-' + Math.random().toString(36).substr(2, 9);
@@ -51,7 +63,8 @@
 
         const lastMsg = messages.lastElementChild;
         if (lastMsg && lastMsg.classList.contains(data.sender === 'AI' ? 'ai' : 'user')) {
-            lastMsg.innerHTML = `<strong>${data.sender}:</strong> ${displayValue}`;
+            lastMsg.innerHTML = `<strong>${data.sender}:</strong> ${parseMarkdown(displayValue)}`;
+            messages.scrollTop = messages.scrollHeight;
         } else {
             appendMessage(data.sender, displayValue, data.sender === 'AI' ? 'ai' : 'user');
         }
@@ -94,18 +107,22 @@
         }
 
         function processStream(jsonLines) {
-console.log('Processing stream data:', jsonLines);
+
             const obj = jsonLines
             if (obj.type === 'stream_start') {
                 isStreaming = true;
                 combinedContent = '';
+                loadingDotCount = 0
                 console.log('Loading...');
                 return 'Loading...'
             } else if (obj.type === 'stream_continue' && isStreaming) {
                 combinedContent += obj.aiResponse.content;
-                return 'Loading........'
+                return combinedContent;
+                //  loadingDotCount++
+                // return `Loading ${loadingDotCount % 10 === 0 ? '' : '.'.repeat(loadingDotCount % 10)}`;
             } else if (obj.type === 'stream_end' && isStreaming) {
                 isStreaming = false;
+                loadingDotCount = 0
                 return combinedContent;
             }
         }
