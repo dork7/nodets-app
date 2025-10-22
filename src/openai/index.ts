@@ -1,8 +1,10 @@
 import OpenAI from 'openai';
 
+import { env } from '@/common/utils/envConfig';
+
 const openai = new OpenAI({
  baseURL: 'https://openrouter.ai/api/v1',
- apiKey: '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',
+ apiKey: env.OPENAI_API_KEY || '',
 });
 
 export async function callAI(params: string) {

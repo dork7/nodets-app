@@ -28,6 +28,12 @@
         // Replace with your server's WebSocket endpoint
         const socket = new WebSocket('ws://localhost:2020/ws/chatAI');
 
+        // Generate a random session ID
+        const sessionId = 'sess-' + Math.random().toString(36).substr(2, 9);
+
+        // Display session ID in the title
+        document.title = `ChatAI Window - Session: ${sessionId}`;
+
         const messages = document.getElementById('messages');
         const form = document.getElementById('input-form');
         const input = document.getElementById('input');
@@ -51,7 +57,7 @@
             const msg = input.value.trim();
             if (msg) {
                 socket.send(JSON.stringify({ sender: 'User',   "type": "request",
-                    "id": "1234",
+                    "id": sessionId,
                     "method": "chatAI",
                     "params": { "prompt": msg }}));
                 appendMessage('You', msg, 'user');

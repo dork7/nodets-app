@@ -25,5 +25,6 @@ export const env = cleanEnv(process.env, {
  SLACK_CHANNEL: str(),
  BASE_URL: str({ devDefault: testOnly('http://localhost:2020') }),
  API_VERSION: str(),
+ OPENAI_API_KEY: str(),
  ENABLE_FILE_LOGGING: bool({ default: false }),
 });
