@@ -3,7 +3,6 @@ import { app, logger } from '@/server';
 
 import { startWebSocketServer } from './ws/mcpServer';
 import { loadHandlers } from './ws/mcpServer/methods';
-import { callAI } from './openai';
 
 const server = app.listen(env.PORT, async () => {
  const { NODE_ENV, HOST, PORT } = env;
@@ -36,5 +35,5 @@ process.on('uncaughtException', (err) => {
 });
 
 process.on('unhandledRejection', (reason, promise) => {
- logger.error(reason , 'Unhandled Rejection:' );
+ logger.error(reason, 'Unhandled Rejection:');
 });

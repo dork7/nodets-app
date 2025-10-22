@@ -8,7 +8,8 @@ const openai = new OpenAI({
 });
 
 export async function callAI(params: string) {
- const completion = await openai.chat.completions.create({
+
+    const completion = await openai.chat.completions.create({
   model: 'openai/gpt-4o', // or any model listed on OpenRouter
   messages: [{ role: 'user', content: params }],
  });
