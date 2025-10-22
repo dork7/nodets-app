@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
 
-export const genCorrelationId = (_options?: any): string => {
+export const genCorrelationId = (): string => {
  return randomUUID();
 };
