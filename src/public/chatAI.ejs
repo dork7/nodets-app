@@ -32,7 +32,7 @@
         const sessionId = 'sess-' + Math.random().toString(36).substr(2, 9);
 
         // Display session ID in the title
-        document.title = `ChatAI Window - Session: ${sessionId}`;
+        document.title = `ChatAI Session| ${sessionId}`;
 
         const messages = document.getElementById('messages');
         const form = document.getElementById('input-form');
@@ -43,9 +43,20 @@
         });
 
         socket.addEventListener('message', function (event) {
-            console.log('Message from server ', event.data);
             const data = JSON.parse(event.data);
-            appendMessage(data.sender, data.content, data.sender === 'AI' ? 'ai' : 'user');
+            // event.data = parseMarkdown(event.data);
+            console.log('Message from server ', event.data);
+            
+        const displayValue = processStream(data)
+
+        const lastMsg = messages.lastElementChild;
+        if (lastMsg && lastMsg.classList.contains(data.sender === 'AI' ? 'ai' : 'user')) {
+            lastMsg.innerHTML = `<strong>${data.sender}:</strong> ${displayValue}`;
+        } else {
+            appendMessage(data.sender, displayValue, data.sender === 'AI' ? 'ai' : 'user');
+        }
+  
+       
         });
 
         socket.addEventListener('close', function () {
@@ -71,6 +82,32 @@
             div.innerHTML = `<strong>${sender}:</strong> ${message}`;
             messages.appendChild(div);
             messages.scrollTop = messages.scrollHeight;
+        }
+        function parseMarkdown(text) {
+        // Basic Markdown parsing: bold, italics, code, links, line breaks
+        return text
+            .replace(/(?:__|\*\*)(.*?)\1/g, '<strong>$1</strong>') // bold
+            .replace(/(?:_|\*)(.*?)\1/g, '<em>$1</em>') // italics
+            .replace(/`([^`]+)`/g, '<code>$1</code>') // inline code
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>') // links
+            .replace(/\n/g, '<br>'); // line breaks
+        }
+
+        function processStream(jsonLines) {
+console.log('Processing stream data:', jsonLines);
+            const obj = jsonLines
+            if (obj.type === 'stream_start') {
+                isStreaming = true;
+                combinedContent = '';
+                console.log('Loading...');
+                return 'Loading...'
+            } else if (obj.type === 'stream_continue' && isStreaming) {
+                combinedContent += obj.aiResponse.content;
+                return 'Loading........'
+            } else if (obj.type === 'stream_end' && isStreaming) {
+                isStreaming = false;
+                return combinedContent;
+            }
         }
     </script>
 </body>
