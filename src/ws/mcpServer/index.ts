@@ -93,6 +93,31 @@ export const startWebSocketServer = async (httpServer: any) => {
     logger.info(`Received message on /ws/stream: ${message.toString()}`);
     // Process the message as needed
    });
+  } else if (url.includes('/ws/chatAI')) {
+   // Handle other WebSocket paths here
+   ws.on('message', (message: any) => {
+    let parsedMessage;
+    try {
+     parsedMessage = JSON.parse(message.toString());
+    } catch {
+     parsedMessage = { content: message.toString() };
+    }
+    const handler = getMethod(parsedMessage.method);
+
+    if (!handler) {
+     return ws.send(
+      JSON.stringify({
+       type: 'error',
+       id: message.id,
+       error: `Unknown method: ${message.method}`,
+      })
+     );
+    }
+    handler(ws, parsedMessage);
+
+    logger.info(`Received message on /ws/chatAI: ${message.toString()}`);
+    // Process the message as needed
+   });
   } else {
    return ws.send(
     JSON.stringify({
