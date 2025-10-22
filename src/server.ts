@@ -100,6 +100,11 @@ app.get('/dashboard', async function (req, res) {
  });
 });
 
+app.get('/chatAI', async function (req, res) {
+ res.setHeader('Content-Security-Policy', "script-src 'self' 'nonce-abc123'");
+ res.render(path.join(__dirname, 'public', 'chatAI.ejs'));
+});
+
 app.use(
  '/graphql',
  graphqlHTTP({
