@@ -53,11 +53,45 @@
             text-align: right;
         }
         .message.ai {
-            background: #144ac9;
+            /* background: #144ac9;
             color: #ffffff;
             align-self: flex-start;
             border-bottom-left-radius: 4px;
-            text-align: left;
+            text-align: left; */
+            
+        }
+        .message.ai pre, .message.ai pre code {
+            background: #181a20;
+            color: #80cbc4;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.98em;
+            border-radius: 8px;
+            padding: 8px 12px;
+            overflow-x: auto;
+            margin: 8px 0;
+            display: block;
+        }
+        .message.ai code {
+            background: #181a20;
+            color: #80cbc4;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.98em;
+            border-radius: 8px;
+            padding: 8px 12px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+        .message.ai strong {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .message.ai em {
+            color: #80cbc4;
+            font-style: italic;
+        }
+        .message.ai a {
+            color: #4fc3f7;
+            text-decoration: underline;
         }
         .message.system {
             background: #444;
@@ -107,17 +141,70 @@
         }
     </style>
 
-  
+
+ 
 </head>
 <body>
     <div id="chat-container">
         <div id="messages"></div>
         <form id="input-form">
+            <!-- Streaming Toggle Button -->
             <input id="input" autocomplete="off" placeholder="Type your message..." />
+            <div style="display: flex; align-items: center;">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 1em; color: #ffd700; cursor: pointer;">
+                    <span style="margin-right: 4px;">Streaming</span>
+                    <span style="position: relative; display: inline-block; width: 40px; height: 22px;">
+                        <input type="checkbox" id="stream-toggle" checked style="opacity:0; width:0; height:0;">
+                        <span style="
+                            position: absolute;
+                            cursor: pointer;
+                            top: 0; left: 0; right: 0; bottom: 0;
+                            background-color: #44444E;
+                            border-radius: 22px;
+                            transition: background 0.2s;
+                            border: 1.5px solid #144ac9;
+                        "></span>
+                        <span style="
+                            position: absolute;
+                            left: 2px; top: 2px;
+                            width: 18px; height: 18px;
+                            background: #ffd700;
+                            border-radius: 50%;
+                            transition: transform 0.2s;
+                            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+                        "></span>
+                    </span>
+                </label>
+                <style>
+                    #stream-toggle + span {
+                        background-color: #44444E;
+                    }
+                    #stream-toggle:checked + span {
+                        background-color: #144ac9;
+                    }
+                    #stream-toggle + span + span {
+                        transform: translateX(0);
+                    }
+                    #stream-toggle:checked + span + span {
+                        transform: translateX(18px);
+                    }
+                </style>
+            </div>
             <button id="send" type="submit">Send</button>
         </form>
     </div>
     <script nonce="abc123">
+
+        let streamingEnabled = true;
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('stream-toggle');
+            toggle.checked = true;
+            toggle.addEventListener('change', function() {
+                streamingEnabled = toggle.checked;
+            });
+        
+        });
+
         // Replace with your server's WebSocket endpoint
         let socket = null;
         let isConnected = false;
@@ -140,6 +227,7 @@
                 const data = JSON.parse(event.data);
                 console.log('Message from server ', event.data);
                 const displayValue = processStream(data);
+                console.log('Display Value: ', displayValue);
                 const lastMsg = messages.lastElementChild;
                 if (lastMsg && lastMsg.classList.contains(data.sender === 'AI' ? 'ai' : 'user')) {
                     lastMsg.innerHTML = `<strong>${data.sender}:</strong> ${parseMarkdown(displayValue)}`;
@@ -164,7 +252,7 @@
             e.preventDefault();
             const msg = input.value.trim();
             if (msg) {
-                socket.send(JSON.stringify({ sender: 'User', type: 'request', id: sessionId, method: 'chatAI', params: { prompt: msg } }));
+                socket.send(JSON.stringify({ sender: 'User', type: 'request', id: sessionId, method: 'chatAI',stream:streamingEnabled, params: { prompt: msg } }));
                 appendMessage('You', msg, 'user');
                 input.value = '';
             }
@@ -181,13 +269,14 @@
             return text
                 .replace(/(?:__|\*\*)(.*?)\1/g, '<strong>$1</strong>') // bold
                 .replace(/(?:_|\*)(.*?)\1/g, '<em>$1</em>') // italics
+                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>') // code blocks
                 .replace(/`([^`]+)`/g, '<code>$1</code>') // inline code
                 .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>') // links
                 .replace(/\n/g, '<br>') // line breaks
-                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>') // code blocks
         }
         function processStream(jsonLines) {
             const obj = jsonLines;
+            console.log('Processing stream: ', obj);
             if (obj.type === 'stream_start') {
                 isStreaming = true;
                 combinedContent = '';
