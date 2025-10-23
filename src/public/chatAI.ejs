@@ -140,6 +140,7 @@
                 const data = JSON.parse(event.data);
                 console.log('Message from server ', event.data);
                 const displayValue = processStream(data);
+                console.log('Display Value: ', displayValue);
                 const lastMsg = messages.lastElementChild;
                 if (lastMsg && lastMsg.classList.contains(data.sender === 'AI' ? 'ai' : 'user')) {
                     lastMsg.innerHTML = `<strong>${data.sender}:</strong> ${parseMarkdown(displayValue)}`;
@@ -164,7 +165,7 @@
             e.preventDefault();
             const msg = input.value.trim();
             if (msg) {
-                socket.send(JSON.stringify({ sender: 'User', type: 'request', id: sessionId, method: 'chatAI', params: { prompt: msg } }));
+                socket.send(JSON.stringify({ sender: 'User', type: 'request', id: sessionId, method: 'chatAI',stream:false, params: { prompt: msg } }));
                 appendMessage('You', msg, 'user');
                 input.value = '';
             }
@@ -188,6 +189,7 @@
         }
         function processStream(jsonLines) {
             const obj = jsonLines;
+            console.log('Processing stream: ', obj);
             if (obj.type === 'stream_start') {
                 isStreaming = true;
                 combinedContent = '';

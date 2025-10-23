@@ -8,11 +8,11 @@ const openai = new OpenAI({
  apiKey: env.OPENAI_API_KEY || '',
 });
 
-export async function callAI(params: string) {
+export async function callAI(params: string, streamMode = true) {
  const completion = await openai.chat.completions.create({
   model: 'deepseek/deepseek-chat-v3.1', // or any model listed on OpenRouter
   messages: [{ role: 'user', content: params }],
-  stream: true, // Enable streaming
+  stream: streamMode, // Enable streaming
  });
  return completion;
 }
