@@ -9,7 +9,7 @@ export const handler = async (ws: any, message: any) => {
  const streamParam = message?.stream;
  const stream = streamParam === 'false' || streamParam === false ? false : Boolean(streamParam);
 
- const hs = await historyObject(message.id);
+ const hs: any = await historyObject(message.id);
  const newHistory = [...hs, { role: 'user', content: aiInput }];
  await saveHistory(message.id, newHistory);
 

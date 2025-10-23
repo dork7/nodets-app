@@ -53,11 +53,45 @@
             text-align: right;
         }
         .message.ai {
-            background: #144ac9;
+            /* background: #144ac9;
             color: #ffffff;
             align-self: flex-start;
             border-bottom-left-radius: 4px;
-            text-align: left;
+            text-align: left; */
+            
+        }
+        .message.ai pre, .message.ai pre code {
+            background: #181a20;
+            color: #80cbc4;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.98em;
+            border-radius: 8px;
+            padding: 8px 12px;
+            overflow-x: auto;
+            margin: 8px 0;
+            display: block;
+        }
+        .message.ai code {
+            background: #181a20;
+            color: #80cbc4;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.98em;
+            border-radius: 8px;
+            padding: 8px 12px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+        .message.ai strong {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .message.ai em {
+            color: #80cbc4;
+            font-style: italic;
+        }
+        .message.ai a {
+            color: #4fc3f7;
+            text-decoration: underline;
         }
         .message.system {
             background: #444;
@@ -235,10 +269,10 @@
             return text
                 .replace(/(?:__|\*\*)(.*?)\1/g, '<strong>$1</strong>') // bold
                 .replace(/(?:_|\*)(.*?)\1/g, '<em>$1</em>') // italics
+                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>') // code blocks
                 .replace(/`([^`]+)`/g, '<code>$1</code>') // inline code
                 .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>') // links
                 .replace(/\n/g, '<br>') // line breaks
-                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>') // code blocks
         }
         function processStream(jsonLines) {
             const obj = jsonLines;
