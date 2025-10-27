@@ -24,9 +24,33 @@ const openai = new OpenAI({
 
 export async function callAI(params: string, streamMode = true) {
  const completion = await openai.chat.completions.create({
-  model: 'ai/mistral', // or any model listed on OpenRouter
+  model: env.AI_MODEL, // or any model listed on OpenRouter
   messages: [{ role: 'user', content: params }],
   stream: streamMode, // Enable streaming
  });
  return completion;
 }
+
+export async function isRelatedConversation(previousMessage: string, currentMessage: string) {
+ const checkPrompt = `
+Conversation so far: "${previousMessage}"
+User's new message: "${currentMessage}"
+
+Does the new message continue the same topic, or start a new one?
+Respond with only "related" or "unrelated".
+`;
+
+ const completion = await openai.chat.completions.create({
+  model: env.AI_MODEL, // or any model listed on OpenRouter
+  messages: [{ role: 'user', content: checkPrompt }],
+ });
+ return completion.choices[0].message.content === 'related';
+}
+
+// Function to fetch data from the web
+export const webSearch = async (query: any) => {
+ const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`;
+ const response = await fetch(url);
+ const data = await response.json();
+ return data.AbstractText || 'No info found';
+};
