@@ -139,6 +139,37 @@
             color: #80cbc4;
             text-decoration: underline;
         }
+
+        #model-selector-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 12px;
+        }
+        #model-selector {
+            display: flex;
+            gap: 6px;
+        }
+        .model-btn {
+            background: #23272f;
+            color: #ffd700;
+            border: 1.5px solid #144ac9;
+            border-radius: 8px;
+            padding: 7px 14px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, border 0.2s;
+            outline: none;
+        }
+        .model-btn[aria-pressed="true"] {
+            background: #144ac9;
+            color: #fff;
+            border-color: #ffd700;
+            font-weight: bold;
+        }
+        .model-btn:focus {
+            box-shadow: 0 0 0 2px #ffd70055;
+        }
     </style>
 
 
@@ -192,16 +223,66 @@
                 </style>
             </div>
             <button id="send" type="submit">Send</button>
+            <div id="model-selector-container">
+                <label for="model-selector" style="color: #ffd700; font-size: 1em; margin-right: 8px;">AI Model:</label>
+                <div id="model-selector"></div>
+            </div>
+            <style>
+            
+            </style>
+       
         </form>
     </div>
     <script nonce="abc123">
+
+
+    
+
+
+ 
+                let selectedModel = ''
+
+                document.addEventListener('DOMContentLoaded',async  function() {
+
+                let aiModels = [];
+
+                try {
+                const res = await fetch('http://localhost:2020/chatModels');
+                const {models} = await res.json();
+                if (Array.isArray(models) && models.length > 0) {
+                    console.log('Fetched models: ', models);
+                    aiModels = models
+                  
+                    selectedModel = aiModels[0].value;
+                }
+                } catch (e) {
+                // fallback to default models if fetch fails
+                console.error('Error fetching models, using defaults.', e);
+                }
+
+                const modelSelector = document.getElementById('model-selector');
+                modelSelector.innerHTML = aiModels.map((m, i) =>
+                    `<button type="button" class="model-btn" data-model="${m.value}" aria-pressed="${i === 0 ? 'true' : 'false'}">${m.label}</button>`
+                ).join('');
+                const modelBtns = modelSelector.querySelectorAll('.model-btn');
+                modelBtns.forEach(btn => {
+                    console.log('Attaching event to button: ', btn);    
+                    btn.addEventListener('click', function() {
+                        modelBtns.forEach(b => b.setAttribute('aria-pressed', 'false'));
+                        btn.setAttribute('aria-pressed', 'true');
+                        selectedModel = btn.getAttribute('data-model');
+                    });
+                });
+                });
+          
+
             const toggle = document.getElementById('stream-toggle');
-                            const label = document.getElementById('streaming-label');
-                            function updateLabel() {
-                                label.textContent = toggle.checked ? 'Streaming' : 'No Streaming';
-                            }
-                            toggle.addEventListener('change', updateLabel);
-                            updateLabel();
+            const label = document.getElementById('streaming-label');
+            function updateLabel() {
+                label.textContent = toggle.checked ? 'Streaming' : 'No Streaming';
+            }
+            toggle.addEventListener('change', updateLabel);
+            updateLabel();
 
         let streamingEnabled = true;
         document.addEventListener('DOMContentLoaded', function() {
@@ -260,7 +341,15 @@
             e.preventDefault();
             const msg = input.value.trim();
             if (msg) {
-                socket.send(JSON.stringify({ sender: 'User', type: 'request', id: sessionId, method: 'chatAI',stream:streamingEnabled, params: { prompt: msg } }));
+                socket.send(JSON.stringify({ 
+                    sender: 'User', 
+                    type: 'request', 
+                    id: sessionId, 
+                    method: 'chatAI',
+                    stream:streamingEnabled, 
+                    model : selectedModel,
+                    params: { prompt: msg } 
+                }));
                 appendMessage('You', msg, 'user');
                 input.value = '';
             }

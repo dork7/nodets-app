@@ -27,5 +27,5 @@ export const env = cleanEnv(process.env, {
  API_VERSION: str(),
  OPENAI_API_KEY: str(),
  ENABLE_FILE_LOGGING: bool({ default: false }),
- AI_MODEL: str({ default: 'ai/gemma3' }),
+AI_MODELS: str({ default: 'ai/gemma3', desc: 'Comma-separated list of AI models' }),
 });

@@ -105,6 +105,15 @@ app.get('/chatAI', async function (req, res) {
  res.render(path.join(__dirname, 'public', 'chatAI.ejs'));
 });
 
+app.get('/chatModels', async function (req, res) {
+ const configModels = env.AI_MODELS;
+ const models = configModels.split(',').map((m) => {
+  const label = m.split('/')[1].charAt(0).toUpperCase() + m.split('/')[1].slice(1);
+  return { value: m, label: label };
+ });
+ res.json({ models });
+});
+
 app.use(
  '/graphql',
  graphqlHTTP({
