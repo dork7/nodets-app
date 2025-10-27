@@ -77,9 +77,9 @@
             font-family: 'Fira Mono', 'Consolas', monospace;
             font-size: 0.98em;
             border-radius: 8px;
-            padding: 8px 12px;
+            padding: 4px 6px;
             overflow-x: auto;
-            margin: 8px 0;
+            margin: 4px 0;
         }
         .message.ai strong {
             color: #ffd700;
@@ -152,7 +152,8 @@
             <input id="input" autocomplete="off" placeholder="Type your message..." />
             <div style="display: flex; align-items: center;">
                 <label style="display: flex; align-items: center; gap: 8px; font-size: 1em; color: #ffd700; cursor: pointer;">
-                    <span style="margin-right: 4px;">Streaming</span>
+                    <span style="margin-right: 4px;" id="streaming-label">Streaming</span>
+                   
                     <span style="position: relative; display: inline-block; width: 40px; height: 22px;">
                         <input type="checkbox" id="stream-toggle" checked style="opacity:0; width:0; height:0;">
                         <span style="
@@ -194,6 +195,13 @@
         </form>
     </div>
     <script nonce="abc123">
+            const toggle = document.getElementById('stream-toggle');
+                            const label = document.getElementById('streaming-label');
+                            function updateLabel() {
+                                label.textContent = toggle.checked ? 'Streaming' : 'No Streaming';
+                            }
+                            toggle.addEventListener('change', updateLabel);
+                            updateLabel();
 
         let streamingEnabled = true;
         document.addEventListener('DOMContentLoaded', function() {

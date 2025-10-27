@@ -10,7 +10,7 @@ const server = app.listen(env.PORT, async () => {
  logger.info(`Logger (${NODE_ENV}) running on port http://${HOST}:${PORT}/dashboard`);
  logger.info(`Swaagger http://${HOST}:${PORT}`);
  logger.info(`KAFKA UI http://${HOST}:8083/ui/clusters/kafka/all-topics`);
- logger.info(`Redis http://${HOST}:8001`);
+ logger.info(`Redis http://${HOST}:5540`);
  logger.info(`MONGODB UI http://${HOST}:8081`);
  await loadHandlers();
  startWebSocketServer(server);
