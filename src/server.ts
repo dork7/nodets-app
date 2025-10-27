@@ -19,6 +19,7 @@ import { cacheHandler } from './common/middleware/cacheHandler';
 import { proxyHandler } from './common/middleware/proxy';
 import { reqLoggerKafka } from './common/middleware/reqLoggerKafka';
 import { readFileData } from './common/utils/fileUtils';
+import { getLLMModels } from './common/utils/getDockerLLMS';
 import { sendSlackNotification } from './common/utils/slack';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
 import { initKafka } from './config/kafka';
@@ -106,7 +107,9 @@ app.get('/chatAI', async function (req, res) {
 });
 
 app.get('/chatModels', async function (req, res) {
- const configModels = env.AI_MODELS;
+ const dockerLLMS =await getLLMModels();
+
+ const configModels = dockerLLMS ?? env.AI_MODELS;
  const models = configModels.split(',').map((m) => {
   const label = m.split('/')[1].charAt(0).toUpperCase() + m.split('/')[1].slice(1);
   return { value: m, label: label };
