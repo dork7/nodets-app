@@ -25,7 +25,7 @@ export const handler = async (ws: any, message: any) => {
   }
  } else {
   const fullResponse = await aiResponse.choices[0].message;
-  logger.info(`AI Full Response: , ${fullResponse}`);
+  logger.info(`AI Full Response: , ${fullResponse.content}`);
   ws.send(JSON.stringify({ sender: 'AI', type: 'stream_continue', aiResponse: fullResponse, id: message.id }));
  }
  ws.send(JSON.stringify({ sender: 'AI', type: 'stream_end', id: message.id }));
