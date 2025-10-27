@@ -5,17 +5,18 @@ import { redis } from '@/services/redisStore';
 export const name = 'chatAI';
 export const handler = async (ws: any, message: any) => {
  const aiInput = message.params?.prompt || 'Hello, AI!';
+ const aiModel = message?.model || global.aiModels[0];
 
  const streamParam = message?.stream;
  const stream = streamParam === 'false' || streamParam === false ? false : Boolean(streamParam);
 
  const hs: any = await historyObject(message.id);
 
- const isRelated = await isRelatedConversation(hs.length > 0 ? hs[hs.length - 1].content : '', aiInput);
+ const isRelated = await isRelatedConversation(hs.length > 0 ? hs[hs.length - 1].content : '', aiInput, aiModel);
 
  const newHistory = [{ role: 'user', content: aiInput }];
  if (!isRelated) {
-//   newHistory.push({ role: 'system', content: 'The previous conversation is unrelated. Start a new topic.' });
+  //   newHistory.push({ role: 'system', content: 'The previous conversation is unrelated. Start a new topic.' });
  } else {
   newHistory.unshift(...hs);
  }
@@ -23,7 +24,7 @@ export const handler = async (ws: any, message: any) => {
  await saveHistory(message.id, newHistory);
 
  ws.send(JSON.stringify({ sender: 'AI', type: 'stream_start', id: message.id }));
- const aiResponse: any = await callAI(JSON.stringify(newHistory), stream);
+ const aiResponse: any = await callAI(JSON.stringify(newHistory), stream, aiModel);
 
  if (stream) {
   for await (const chunk of aiResponse) {

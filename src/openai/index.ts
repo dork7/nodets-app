@@ -22,16 +22,16 @@ const openai = new OpenAI({
  apiKey: env.OPENAI_API_KEY || '',
 });
 
-export async function callAI(params: string, streamMode = true) {
+export async function callAI(params: string, streamMode = true, aiModel: string) {
  const completion = await openai.chat.completions.create({
-  model: env.AI_MODEL, // or any model listed on OpenRouter
+  model: aiModel, // or any model listed on OpenRouter
   messages: [{ role: 'user', content: params }],
   stream: streamMode, // Enable streaming
  });
  return completion;
 }
 
-export async function isRelatedConversation(previousMessage: string, currentMessage: string) {
+export async function isRelatedConversation(previousMessage: string, currentMessage: string, aiModel: string) {
  const checkPrompt = `
 Conversation so far: "${previousMessage}"
 User's new message: "${currentMessage}"
@@ -41,7 +41,7 @@ Respond with only "related" or "unrelated".
 `;
 
  const completion = await openai.chat.completions.create({
-  model: env.AI_MODEL, // or any model listed on OpenRouter
+  model: aiModel, // or any model listed on OpenRouter
   messages: [{ role: 'user', content: checkPrompt }],
  });
  return completion.choices[0].message.content === 'related';
