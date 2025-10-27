@@ -1,4 +1,4 @@
-import { callAI } from '@/openai';
+import { callAI, isRelatedConversation } from '@/openai';
 import { logger } from '@/server';
 import { redis } from '@/services/redisStore';
 
@@ -10,7 +10,16 @@ export const handler = async (ws: any, message: any) => {
  const stream = streamParam === 'false' || streamParam === false ? false : Boolean(streamParam);
 
  const hs: any = await historyObject(message.id);
- const newHistory = [...hs, { role: 'user', content: aiInput }];
+
+ const isRelated = await isRelatedConversation(hs.length > 0 ? hs[hs.length - 1].content : '', aiInput);
+
+ const newHistory = [{ role: 'user', content: aiInput }];
+ if (!isRelated) {
+//   newHistory.push({ role: 'system', content: 'The previous conversation is unrelated. Start a new topic.' });
+ } else {
+  newHistory.unshift(...hs);
+ }
+
  await saveHistory(message.id, newHistory);
 
  ws.send(JSON.stringify({ sender: 'AI', type: 'stream_start', id: message.id }));
