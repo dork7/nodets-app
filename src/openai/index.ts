@@ -22,10 +22,10 @@ const openai = new OpenAI({
  apiKey: env.OPENAI_API_KEY || '',
 });
 
-export async function callAI(params: string, streamMode = true, aiModel: string) {
+export async function callAI(params: [], streamMode = true, aiModel: string) {
  const completion = await openai.chat.completions.create({
   model: aiModel, // or any model listed on OpenRouter
-  messages: [{ role: 'user', content: params }],
+  messages: params,
   stream: streamMode, // Enable streaming
  });
  return completion;

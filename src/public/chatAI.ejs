@@ -253,7 +253,7 @@
                     console.log('Fetched models: ', models);
                     aiModels = models
                   
-                    selectedModel = aiModels[0].value;
+                    selectedModel = aiModels[2].value;
                 }
                 } catch (e) {
                 // fallback to default models if fetch fails
@@ -284,10 +284,10 @@
             toggle.addEventListener('change', updateLabel);
             updateLabel();
 
-        let streamingEnabled = true;
+        let streamingEnabled = false;
         document.addEventListener('DOMContentLoaded', function() {
             const toggle = document.getElementById('stream-toggle');
-            toggle.checked = true;
+            toggle.checked = streamingEnabled;
             toggle.addEventListener('change', function() {
                 streamingEnabled = toggle.checked;
             });
