@@ -14,17 +14,17 @@ export const handler = async (ws: any, message: any) => {
 
  const isRelated = await isRelatedConversation(hs.length > 0 ? hs[hs.length - 1].content : '', aiInput, aiModel);
 
- const newHistory = [{ role: 'user', content: aiInput }];
+ const newHistory: any = [{ role: 'user', content: aiInput }];
  if (!isRelated) {
   //   newHistory.push({ role: 'system', content: 'The previous conversation is unrelated. Start a new topic.' });
  } else {
   newHistory.unshift(...hs);
  }
 
- await saveHistory(message.id, newHistory);
+ saveHistory(message.id, newHistory);
 
  ws.send(JSON.stringify({ sender: 'AI', type: 'stream_start', id: message.id }));
- const aiResponse: any = await callAI(JSON.stringify(newHistory), stream, aiModel);
+ const aiResponse: any = await callAI(newHistory, stream, aiModel);
 
  if (stream) {
   for await (const chunk of aiResponse) {
@@ -36,9 +36,20 @@ export const handler = async (ws: any, message: any) => {
  } else {
   const fullResponse = await aiResponse.choices[0].message;
   logger.info(`AI Full Response: , ${fullResponse.content}`);
-  ws.send(JSON.stringify({ sender: 'AI', type: 'stream_continue', aiResponse: fullResponse, id: message.id }));
+  newHistory.push(fullResponse);
+
+  ws.send(
+   JSON.stringify({
+    sender: 'AI',
+    type: 'stream_continue',
+    aiResponse: { ...fullResponse, content: `Related|| ${isRelated} || ${fullResponse.content}` },
+    id: message.id,
+   })
+  );
  }
  ws.send(JSON.stringify({ sender: 'AI', type: 'stream_end', id: message.id }));
+
+ saveHistory(message.id, newHistory);
 };
 
 const historyObject = async (userId: string) => {
