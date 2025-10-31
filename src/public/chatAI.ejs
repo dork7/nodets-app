@@ -253,7 +253,7 @@
                     console.log('Fetched models: ', models);
                     aiModels = models
                   
-                    selectedModel = aiModels[2].value;
+                    selectedModel = aiModels[1].value;
                 }
                 } catch (e) {
                 // fallback to default models if fetch fails
@@ -262,11 +262,10 @@
 
                 const modelSelector = document.getElementById('model-selector');
                 modelSelector.innerHTML = aiModels.map((m, i) =>
-                    `<button type="button" class="model-btn" data-model="${m.value}" aria-pressed="${i === 0 ? 'true' : 'false'}">${m.label}</button>`
+                    `<button type="button" class="model-btn" data-model="${m.value}" aria-pressed="${i === 1 ? 'true' : 'false'}">${m.label}</button>`
                 ).join('');
                 const modelBtns = modelSelector.querySelectorAll('.model-btn');
                 modelBtns.forEach(btn => {
-                    console.log('Attaching event to button: ', btn);    
                     btn.addEventListener('click', function() {
                         modelBtns.forEach(b => b.setAttribute('aria-pressed', 'false'));
                         btn.setAttribute('aria-pressed', 'true');
