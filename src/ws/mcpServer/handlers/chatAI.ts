@@ -27,12 +27,16 @@ export const handler = async (ws: any, message: any) => {
  const aiResponse: any = await callAI(newHistory, stream, aiModel);
 
  if (stream) {
+  let responseText = '';
   for await (const chunk of aiResponse) {
    if (chunk.choices && chunk.choices[0]?.delta?.content) {
     logger.info(`AI Response Chunk: , ${chunk.choices[0].delta.content}`);
     ws.send(JSON.stringify({ sender: 'AI', type: 'stream_continue', aiResponse: chunk.choices[0].delta }));
+    responseText += chunk.choices[0].delta.content;
    }
   }
+  const fullResponse = { role: 'assistant', content: responseText };
+  newHistory.push(fullResponse);
  } else {
   const fullResponse = await aiResponse.choices[0].message;
   logger.info(`AI Full Response: , ${fullResponse.content}`);
@@ -42,7 +46,7 @@ export const handler = async (ws: any, message: any) => {
    JSON.stringify({
     sender: 'AI',
     type: 'stream_continue',
-    aiResponse: { ...fullResponse, content: `Related|| ${isRelated} || ${fullResponse.content}` },
+    aiResponse: { ...fullResponse, content: `Related || ${isRelated} || ${fullResponse.content}` },
     id: message.id,
    })
   );

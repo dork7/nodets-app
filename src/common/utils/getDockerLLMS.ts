@@ -10,8 +10,6 @@ export async function getLLMModels() {
   const parsedData = JSON.parse(stdout);
   const llmImages = parsedData.data.map((model: any) => model.id.split(':')[0]);
 
- 
-
   console.log('🧠 LLM-related Docker images found:');
   console.log(llmImages.length ? llmImages : 'No LLM models found.');
   return llmImages.join(',');
