@@ -1,0 +1,52 @@
+backend: llama-cpp
+context_size: 8192
+function:
+  disable_no_action: true
+  grammar:
+    disable: true
+    disable_parallel_new_lines: true
+    parallel_calls: true
+  json_regex_match:
+  - (?s)\[TOOL\_CALLS\](.*)
+  replace_function_results:
+  - key: (?s)^[^{\[]*
+    value: ""
+  - key: (?s)[^}\]]*$
+    value: ""
+  - key: (?s)\[TOOL\_CALLS\]
+    value: ""
+  - key: (?s)\[\/TOOL\_CALLS\]
+    value: ""
+  return_name_in_function_response: true
+mmap: true
+name: mathstral-7b-v0.1-imat
+parameters:
+  model: mathstral-7B-v0.1-iMat-Q4_K_M.gguf
+stopwords:
+- <|im_end|>
+- <dummy32000>
+- </tool_call>
+- <|eot_id|>
+- <|end_of_text|>
+- </s>
+- '[/TOOL_CALLS]'
+- '[/ACTIONS]'
+- '[/INST]'
+- '[INST]'
+template:
+  chat: |
+    {{.Input -}}
+  chat_message: |-
+    {{- if .FunctionCall -}}
+    [TOOL_CALLS] {{toJson .FunctionCall}} [/TOOL_CALLS]
+    {{- else if eq .RoleName "tool" -}}
+    [TOOL_RESULTS] {{.Content}} [/TOOL_RESULTS]
+    {{- else -}}
+    [INST] {{.Content }} [/INST]
+    {{ end -}}
+  completion: |
+    {{.Input}}
+  function: '[AVAILABLE_TOOLS] [{{range .Functions}}{"type": "function", "function":
+    {"name": "{{.Name}}", "description": "{{.Description}}", "parameters": {{toJson
+    .Parameters}} }}{{end}} ] [/AVAILABLE_TOOLS]{{.Input }}'
+  join_chat_messages_by_character: ""
