@@ -28,4 +28,4 @@ dist-ssr
 *.sw?
 
 file.txt
-models
+/models
