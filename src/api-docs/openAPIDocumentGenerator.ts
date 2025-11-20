@@ -3,10 +3,17 @@ import { OpenApiGeneratorV3, OpenAPIRegistry } from '@asteasolutions/zod-to-open
 import { healthCheckRegistry } from '@/api/healthCheck/healthCheckRouter';
 import { kafkaRegistry } from '@/api/kafka/kafkaRouter';
 import { redisRegistry } from '@/api/redis/redisRouter';
+import { visionRegistry } from '@/api/vision/visionRouter';
 import { userRegistry } from '@/api/user/userRouter';
 
 export function generateOpenAPIDocument() {
- const registry = new OpenAPIRegistry([healthCheckRegistry, userRegistry, redisRegistry, kafkaRegistry]);
+ const registry = new OpenAPIRegistry([
+  healthCheckRegistry,
+  userRegistry,
+  redisRegistry,
+  kafkaRegistry,
+  visionRegistry,
+ ]);
  const generator = new OpenApiGeneratorV3(registry.definitions);
 
  return generator.generateDocument({
