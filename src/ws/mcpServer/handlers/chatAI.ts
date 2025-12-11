@@ -23,7 +23,7 @@ export const handler = async (ws: any, message: any) => {
 
  saveHistory(message.id, newHistory);
 
- ws.send(JSON.stringify({ sender: 'AI', type: 'stream_start', id: message.id }));
+ ws.send(JSON.stringify({ sender: 'AI', type: 'stream_start', id: message.id, isRelated }));
  const aiResponse: any = await callAI(newHistory, stream, aiModel);
 
  if (stream) {
@@ -31,7 +31,7 @@ export const handler = async (ws: any, message: any) => {
   for await (const chunk of aiResponse) {
    if (chunk.choices && chunk.choices[0]?.delta?.content) {
     logger.info(`AI Response Chunk: , ${chunk.choices[0].delta.content}`);
-    ws.send(JSON.stringify({ sender: 'AI', type: 'stream_continue', aiResponse: chunk.choices[0].delta }));
+    ws.send(JSON.stringify({ sender: 'AI', type: 'stream_continue', aiResponse: chunk.choices[0].delta, isRelated }));
     responseText += chunk.choices[0].delta.content;
    }
   }
@@ -46,12 +46,13 @@ export const handler = async (ws: any, message: any) => {
    JSON.stringify({
     sender: 'AI',
     type: 'stream_continue',
-    aiResponse: { ...fullResponse, content: `Related || ${isRelated} || ${fullResponse.content}` },
+    aiResponse: fullResponse,
     id: message.id,
+    isRelated,
    })
   );
  }
- ws.send(JSON.stringify({ sender: 'AI', type: 'stream_end', id: message.id }));
+ ws.send(JSON.stringify({ sender: 'AI', type: 'stream_end', id: message.id, isRelated }));
 
  saveHistory(message.id, newHistory);
 };

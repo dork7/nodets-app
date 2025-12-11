@@ -58,7 +58,41 @@
             align-self: flex-start;
             border-bottom-left-radius: 4px;
             text-align: left; */
-            
+            position: relative;
+        }
+        .related-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.75em;
+            font-weight: 500;
+            transition: color 0.3s, text-shadow 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .related-indicator::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        .related-indicator.related {
+            color: #4caf50;
+            text-shadow: 0 0 4px rgba(76, 175, 80, 0.6);
+        }
+        .related-indicator.related::after {
+            background-color: #4caf50;
+            box-shadow: 0 0 6px rgba(76, 175, 80, 0.8);
+        }
+        .related-indicator.unrelated {
+            color: #f44336;
+            text-shadow: 0 0 4px rgba(244, 67, 54, 0.6);
+        }
+        .related-indicator.unrelated::after {
+            background-color: #f44336;
+            box-shadow: 0 0 6px rgba(244, 67, 54, 0.8);
         }
         .message.ai pre, .message.ai pre code {
             background: #181a20;
@@ -305,6 +339,7 @@
         const input = document.getElementById('input');
         let isStreaming = false;
         let combinedContent = '';
+        let currentIsRelated = false;
         function connectWebSocket() {
             socket = new WebSocket('ws://localhost:2020/ws/chatAI');
             socket.addEventListener('open', function () {
@@ -314,14 +349,30 @@
             socket.addEventListener('message', function (event) {
                 const data = JSON.parse(event.data);
                 console.log('Message from server ', event.data);
+                // Store isRelated flag if present
+                if (data.isRelated !== undefined) {
+                    currentIsRelated = data.isRelated;
+                }
                 const displayValue = processStream(data);
                 console.log('Display Value: ', displayValue);
                 const lastMsg = messages.lastElementChild;
                 if (lastMsg && lastMsg.classList.contains(data.sender === 'AI' ? 'ai' : 'user')) {
                     lastMsg.innerHTML = `<strong>${data.sender}:</strong> ${parseMarkdown(displayValue)}`;
+                    // Update indicator if it's an AI message
+                    if (data.sender === 'AI') {
+                        if (lastMsg.querySelector('.related-indicator')) {
+                            updateRelatedIndicator(lastMsg, currentIsRelated);
+                        } else {
+                            addRelatedIndicator(lastMsg, currentIsRelated);
+                        }
+                    }
                     messages.scrollTop = messages.scrollHeight;
                 } else {
-                    appendMessage(data.sender, displayValue, data.sender === 'AI' ? 'ai' : 'user');
+                    const msgElement = appendMessage(data.sender, displayValue, data.sender === 'AI' ? 'ai' : 'user');
+                    // Add indicator if it's an AI message
+                    if (data.sender === 'AI') {
+                        addRelatedIndicator(msgElement, currentIsRelated);
+                    }
                 }
             });
             socket.addEventListener('close', function () {
@@ -359,6 +410,32 @@
             div.innerHTML = `<strong>${sender}:</strong> ${message}`;
             messages.appendChild(div);
             messages.scrollTop = messages.scrollHeight;
+            return div;
+        }
+        function addRelatedIndicator(messageElement, isRelated) {
+            if (!messageElement) return;
+            let indicator = messageElement.querySelector('.related-indicator');
+            if (!indicator) {
+                indicator = document.createElement('span');
+                indicator.className = 'related-indicator';
+                messageElement.appendChild(indicator);
+            }
+            updateRelatedIndicator(messageElement, isRelated);
+        }
+        function updateRelatedIndicator(messageElement, isRelated) {
+            const indicator = messageElement?.querySelector('.related-indicator');
+            if (indicator) {
+                // Remove both classes first
+                indicator.classList.remove('related', 'unrelated');
+                if (isRelated === true) {
+                    indicator.classList.add('related');
+                    indicator.textContent = 'Related';
+                } else {
+                    // Default to unrelated if false or undefined
+                    indicator.classList.add('unrelated');
+                    indicator.textContent = 'Unrelated';
+                }
+            }
         }
         function parseMarkdown(text) {
             // Basic Markdown parsing: bold, italics, code, links, line breaks
@@ -380,13 +457,16 @@
                 console.log('Loading...');
                 return 'Loading...';
             } else if (obj.type === 'stream_continue' && isStreaming) {
-                combinedContent += obj.aiResponse.content;
+                if (obj.aiResponse && obj.aiResponse.content) {
+                    combinedContent += obj.aiResponse.content;
+                }
                 return combinedContent;
             } else if (obj.type === 'stream_end' && isStreaming) {
                 isStreaming = false;
                 loadingDotCount = 0;
                 return combinedContent;
             }
+            return '';
         }
     </script>
 </body>
