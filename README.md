@@ -58,6 +58,21 @@ Developed to streamline backend development, this boilerplate is your solution f
 ## 📁 Project Structure
 
 ```
+
+## 🖼️ Image Insight Endpoint
+
+- **Route:** `POST /v1/vision/analyze`
+- **Body:** `multipart/form-data` with an `image` file field and optional `prompt` text field to guide extraction.
+- **Response:** JSON payload containing the extracted `details` summary plus the `rawText` captured from the image, powered by on-device OCR via `tesseract.js` (no external AI calls required).
+
+Example request:
+
+```bash
+curl -X POST http://localhost:3000/v1/vision/analyze \
+  -H "Authorization: Bearer <token>" \
+  -F "prompt=List every item, price, and total you can read." \
+  -F "image=@/path/to/receipt.jpg"
+```
 .
 ├── api
 │   ├── healthCheck

@@ -18,13 +18,39 @@ import { schema } from './api/graphql/schema';
 import { cacheHandler } from './common/middleware/cacheHandler';
 import { proxyHandler } from './common/middleware/proxy';
 import { reqLoggerKafka } from './common/middleware/reqLoggerKafka';
-import { slackHandler } from './common/middleware/slackHandler';
 import { readFileData } from './common/utils/fileUtils';
+import { getLLMModels } from './common/utils/getDockerLLMS';
+import { sendSlackNotification } from './common/utils/slack';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
 import { initKafka } from './config/kafka';
 import mongoDB from './config/mongoose';
 import { redisClient } from './config/redisStore';
-const logger = pino({ name: 'server start' });
+const loggerOriginal = pino({ name: 'server start' });
+
+const logger = new Proxy(loggerOriginal, {
+ get: (target, prop, receiver) => {
+  const originalValue = Reflect.get(target, prop, receiver);
+
+  // Only wrap functions (logging methods)
+  if (typeof originalValue === 'function') {
+   return function (...args) {
+    // --- Wrapper Logic for Logging Methods ---
+
+    if (prop === 'error' || prop === 'fatal') {
+     console.warn(`[Proxy-Alert] A critical ${prop} event is being logged.`);
+     sendSlackNotification(`${args[1]} || ${args[0].stack}`, 'ERROR');
+    }
+
+    // Call the original function on the target object
+    return originalValue.apply(target, args);
+   };
+  }
+
+  // Return all other properties (e.g., logger.level, logger.child, etc.) as they are
+  return originalValue;
+ },
+});
+
 const app: Express = express();
 
 // Set the application to trust the reverse proxy
@@ -34,7 +60,7 @@ if (env.ENV === 'local') {
  redisClient.connect();
  initKafka().catch((err) => logger.error(err));
  global.cacheHash = cacheConfig.createHash(cacheRules);
- //  mongoDB();
+ mongoDB();
 }
 
 // Middlewares
@@ -73,6 +99,22 @@ app.get('/dashboard', async function (req, res) {
   fileContent: objects, //&& JSON.parse(fileContent),
   recordCount,
  });
+});
+
+app.get('/chatAI', async function (req, res) {
+ res.setHeader('Content-Security-Policy', "script-src 'self' 'nonce-abc123'");
+ res.render(path.join(__dirname, 'public', 'chatAI.ejs'));
+});
+
+app.get('/chatModels', async function (req, res) {
+ const dockerLLMS =await getLLMModels();
+
+ const configModels = dockerLLMS ?? env.AI_MODELS;
+ const models = configModels.split(',').map((m) => {
+  const label = m.split('/')[1].charAt(0).toUpperCase() + m.split('/')[1].slice(1);
+  return { value: m, label: label };
+ });
+ res.json({ models });
 });
 
 app.use(
