@@ -4,25 +4,63 @@
     <meta charset="UTF-8">
     <title>ChatAI Window</title>
     <style>
+        /* ===== Color Palette ===== */
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1a1a1a;
+            --bg-card: #1f1f1f;
+            --bg-input: #2a2a2a;
+            --bg-hover: #333333;
+            --text-primary: #e5e5e5;
+            --text-secondary: #a0a0a0;
+            --text-accent: #d4d4d4;
+            --accent-primary: #888888;
+            --accent-secondary: #666666;
+            --accent-tertiary: #999999;
+            --user-msg: #2a2a2a;
+            --ai-msg: #1f1f1f;
+            --system-msg: #3a3a3a;
+            --success: #22c55e;
+            --error: #ef4444;
+            --border: #333333;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        /* ===== Base Styles ===== */
         body {
-            background: #37353E;
-            color: #D3DAD9;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
             margin: 0;
             padding: 0;
+            min-height: 100vh;
         }
+
+        a {
+            color: var(--text-primary);
+            text-decoration: underline;
+            transition: opacity 0.2s;
+        }
+
+        a:hover {
+            opacity: 0.7;
+        }
+
+        /* ===== Chat Container ===== */
         #chat-container {
-            background: #44444E;
+            background: var(--bg-card);
             max-width: 70vw;
             margin: 40px auto;
-            background: #23272f;
-            border-radius: 16px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.7);
+            border-radius: 8px;
+            border: 1px solid var(--border);
             padding: 24px 16px 16px 16px;
             display: flex;
             flex-direction: column;
             height: 70vh;
+            backdrop-filter: blur(10px);
         }
+
         #messages {
             flex: 1;
             overflow-y: auto;
@@ -31,443 +69,658 @@
             display: flex;
             flex-direction: column;
         }
+
+        /* Custom Scrollbar */
+        #messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #messages::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        #messages::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* ===== Message Styles ===== */
         .message {
             display: block;
             margin-bottom: 12px;
             padding: 10px 16px;
-            border-radius: 18px;
+            border-radius: 4px;
             max-width: 80%;
             word-break: break-word;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
             position: relative;
             font-size: 1rem;
-            line-height: 1.5;
-            background: #44444E;
-            color: #D3DAD9;
+            line-height: 1.6;
         }
+
         .message.user {
-            background: #2c2f36;
-            color: #e0e0e0;
+            background: var(--user-msg);
+            color: var(--text-primary);
             align-self: flex-end;
             border-bottom-right-radius: 4px;
             text-align: right;
+            border: 1px solid var(--border);
         }
+
         .message.ai {
-            /* background: #144ac9;
-            color: #ffffff;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-            text-align: left; */
             position: relative;
+            background: var(--ai-msg);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
         }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message.system {
+            background: var(--system-msg);
+            color: var(--text-secondary);
+            text-align: left;
+            font-size: 0.95em;
+            border-radius: 8px;
+            margin: 8px 0;
+            max-width: 60%;
+            align-self: flex-start;
+            border: 1px solid var(--border);
+        }
+
+        /* ===== AI Message Content Styles ===== */
+        .message.ai pre,
+        .message.ai pre code {
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-primary);
+            font-family: 'Fira Code', 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.98em;
+            border-radius: 4px;
+            padding: 12px 16px;
+            overflow-x: auto;
+            margin: 8px 0;
+            display: block;
+            border: 1px solid var(--border);
+        }
+
+        .message.ai code {
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-primary);
+            font-family: 'Fira Code', 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.98em;
+            border-radius: 4px;
+            padding: 4px 8px;
+            overflow-x: auto;
+            margin: 4px 0;
+            border: 1px solid var(--border);
+        }
+
+        .message.ai strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .message.ai em {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .message.ai a {
+            color: var(--text-primary);
+            text-decoration: underline;
+            transition: opacity 0.2s;
+        }
+
+        .message.ai a:hover {
+            opacity: 0.7;
+        }
+
+        /* ===== Related Indicator Styles ===== */
+        .related-indicator-section {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+        }
+
         .related-indicator {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             font-size: 0.75em;
             font-weight: 500;
-            transition: color 0.3s, text-shadow 0.3s;
+            transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             gap: 6px;
         }
+
         .related-indicator::after {
             content: '';
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            transition: background-color 0.3s, box-shadow 0.3s;
+            transition: all 0.3s ease;
         }
+
         .related-indicator.related {
-            color: #4caf50;
-            text-shadow: 0 0 4px rgba(76, 175, 80, 0.6);
+            color: var(--success);
         }
+
         .related-indicator.related::after {
-            background-color: #4caf50;
-            box-shadow: 0 0 6px rgba(76, 175, 80, 0.8);
+            background-color: var(--success);
         }
+
         .related-indicator.unrelated {
-            color: #f44336;
-            text-shadow: 0 0 4px rgba(244, 67, 54, 0.6);
+            color: var(--error);
         }
+
         .related-indicator.unrelated::after {
-            background-color: #f44336;
-            box-shadow: 0 0 6px rgba(244, 67, 54, 0.8);
+            background-color: var(--error);
         }
-        .message.ai pre, .message.ai pre code {
-            background: #181a20;
-            color: #80cbc4;
-            font-family: 'Fira Mono', 'Consolas', monospace;
-            font-size: 0.98em;
-            border-radius: 8px;
-            padding: 8px 12px;
-            overflow-x: auto;
-            margin: 8px 0;
-            display: block;
-        }
-        .message.ai code {
-            background: #181a20;
-            color: #80cbc4;
-            font-family: 'Fira Mono', 'Consolas', monospace;
-            font-size: 0.98em;
-            border-radius: 8px;
-            padding: 4px 6px;
-            overflow-x: auto;
-            margin: 4px 0;
-        }
-        .message.ai strong {
-            color: #ffd700;
-            font-weight: bold;
-        }
-        .message.ai em {
-            color: #80cbc4;
-            font-style: italic;
-        }
-        .message.ai a {
-            color: #4fc3f7;
-            text-decoration: underline;
-        }
-        .message.system {
-            background: #444;
-            color: #ffd700;
-            text-align: left;
-            font-size: 0.95em;
-            border-radius: 12px;
-            margin: 8px 0 8px 0;
-            max-width: 60%;
-            align-self: flex-start;
-        }
+
+        /* ===== Input Form Styles ===== */
         #input-form {
             display: flex;
             gap: 8px;
             margin-top: 8px;
         }
+
         #input {
             flex: 1;
             padding: 10px 14px;
-            border-radius: 8px;
-            border: none;
-            background: #222;
-            color: #e0e0e0;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: var(--text-primary);
             font-size: 1em;
             outline: none;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+            transition: border-color 0.2s;
         }
+
         #input:focus {
-            background: #2a2a2a;
+            border-color: var(--text-secondary);
         }
+
+        #input::placeholder {
+            color: var(--text-secondary);
+        }
+
         #send {
-            background: #222;
-            color: #e0e0e0;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 18px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px 20px;
             font-size: 1em;
+            font-weight: 400;
             cursor: pointer;
             transition: background 0.2s;
         }
+
         #send:hover {
-            background: #333;
-        }
-        a {
-            color: #80cbc4;
-            text-decoration: underline;
+            background: var(--bg-hover);
         }
 
+        /* ===== Streaming Toggle Styles ===== */
+        .streaming-toggle-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .streaming-toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1em;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 400;
+        }
+
+        .streaming-toggle-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .streaming-toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .streaming-toggle-track {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-input);
+            border-radius: 24px;
+            transition: all 0.3s ease;
+            border: 2px solid var(--border);
+        }
+
+        .streaming-toggle-thumb {
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            width: 18px;
+            height: 18px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+
+        .streaming-toggle-input:checked + .streaming-toggle-track {
+            background: var(--bg-hover);
+            border-color: var(--text-secondary);
+        }
+
+        .streaming-toggle-input:checked + .streaming-toggle-track + .streaming-toggle-thumb {
+            transform: translateX(20px);
+        }
+
+        /* ===== Model Selector Styles ===== */
         #model-selector-container {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-right: 12px;
         }
+
+        .model-selector-label {
+            color: var(--text-secondary);
+            font-size: 1em;
+            margin-right: 8px;
+            font-weight: 400;
+        }
+
         #model-selector {
             display: flex;
-            gap: 6px;
+            gap: 4px;
         }
+
         .model-btn {
-            background: #23272f;
-            color: #ffd700;
-            border: 1.5px solid #144ac9;
-            border-radius: 8px;
-            padding: 7px 14px;
-            font-size: 1em;
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 0.9em;
             cursor: pointer;
-            transition: background 0.2s, color 0.2s, border 0.2s;
+            transition: all 0.2s;
             outline: none;
+            font-weight: 400;
         }
+
+        .model-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
         .model-btn[aria-pressed="true"] {
-            background: #144ac9;
-            color: #fff;
-            border-color: #ffd700;
-            font-weight: bold;
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--text-secondary);
         }
+
         .model-btn:focus {
-            box-shadow: 0 0 0 2px #ffd70055;
+            outline: 1px solid var(--text-secondary);
+            outline-offset: 2px;
         }
     </style>
-
-
- 
 </head>
 <body>
     <div id="chat-container">
         <div id="messages"></div>
         <form id="input-form">
-            <!-- Streaming Toggle Button -->
             <input id="input" autocomplete="off" placeholder="Type your message..." />
-            <div style="display: flex; align-items: center;">
-                <label style="display: flex; align-items: center; gap: 8px; font-size: 1em; color: #ffd700; cursor: pointer;">
-                    <span style="margin-right: 4px;" id="streaming-label">Streaming</span>
-                   
-                    <span style="position: relative; display: inline-block; width: 40px; height: 22px;">
-                        <input type="checkbox" id="stream-toggle" checked style="opacity:0; width:0; height:0;">
-                        <span style="
-                            position: absolute;
-                            cursor: pointer;
-                            top: 0; left: 0; right: 0; bottom: 0;
-                            background-color: #44444E;
-                            border-radius: 22px;
-                            transition: background 0.2s;
-                            border: 1.5px solid #144ac9;
-                        "></span>
-                        <span style="
-                            position: absolute;
-                            left: 2px; top: 2px;
-                            width: 18px; height: 18px;
-                            background: #ffd700;
-                            border-radius: 50%;
-                            transition: transform 0.2s;
-                            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-                        "></span>
+            
+            <div class="streaming-toggle-container">
+                <label class="streaming-toggle-label">
+                    <span id="streaming-label">Streaming</span>
+                    <span class="streaming-toggle-wrapper">
+                        <input type="checkbox" id="stream-toggle" class="streaming-toggle-input" checked>
+                        <span class="streaming-toggle-track"></span>
+                        <span class="streaming-toggle-thumb"></span>
                     </span>
                 </label>
-                <style>
-                    #stream-toggle + span {
-                        background-color: #44444E;
-                    }
-                    #stream-toggle:checked + span {
-                        background-color: #144ac9;
-                    }
-                    #stream-toggle + span + span {
-                        transform: translateX(0);
-                    }
-                    #stream-toggle:checked + span + span {
-                        transform: translateX(18px);
-                    }
-                </style>
             </div>
+            
             <button id="send" type="submit">Send</button>
+            
             <div id="model-selector-container">
-                <label for="model-selector" style="color: #ffd700; font-size: 1em; margin-right: 8px;">AI Model:</label>
+                <label for="model-selector" class="model-selector-label">AI Model:</label>
                 <div id="model-selector"></div>
             </div>
-            <style>
-            
-            </style>
-       
         </form>
     </div>
+
     <script nonce="abc123">
+        // ===== Configuration =====
+        const CONFIG = {
+            WS_URL: 'ws://localhost:2020/ws/chatAI',
+            MODELS_API_URL: 'http://localhost:2020/chatModels',
+            RECONNECT_DELAY: 5000,
+            DEFAULT_MODEL_INDEX: 1
+        };
 
+        // ===== State Management =====
+        const state = {
+            selectedModel: '',
+            streamingEnabled: false,
+            isStreaming: false,
+            isConnected: false,
+            currentIsRelated: false,
+            combinedContent: '',
+            socket: null,
+            sessionId: `sess-${Math.random().toString(36).substr(2, 9)}`
+        };
 
-    
+        // ===== DOM Elements =====
+        const elements = {
+            messages: document.getElementById('messages'),
+            form: document.getElementById('input-form'),
+            input: document.getElementById('input'),
+            streamToggle: document.getElementById('stream-toggle'),
+            streamingLabel: document.getElementById('streaming-label'),
+            modelSelector: document.getElementById('model-selector')
+        };
 
+        // ===== Utility Functions =====
+        const utils = {
+            parseMarkdown(text) {
+                return text
+                    .replace(/(?:__|\*\*)(.*?)\1/g, '<strong>$1</strong>')
+                    .replace(/(?:_|\*)(.*?)\1/g, '<em>$1</em>')
+                    .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+                    .replace(/`([^`]+)`/g, '<code>$1</code>')
+                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                    .replace(/\n/g, '<br>');
+            },
 
- 
-                let selectedModel = ''
-
-                document.addEventListener('DOMContentLoaded',async  function() {
-
-                let aiModels = [];
-
-                try {
-                const res = await fetch('http://localhost:2020/chatModels');
-                const {models} = await res.json();
-                if (Array.isArray(models) && models.length > 0) {
-                    console.log('Fetched models: ', models);
-                    aiModels = models
-                  
-                    selectedModel = aiModels[1].value;
-                }
-                } catch (e) {
-                // fallback to default models if fetch fails
-                console.error('Error fetching models, using defaults.', e);
-                }
-
-                const modelSelector = document.getElementById('model-selector');
-                modelSelector.innerHTML = aiModels.map((m, i) =>
-                    `<button type="button" class="model-btn" data-model="${m.value}" aria-pressed="${i === 1 ? 'true' : 'false'}">${m.label}</button>`
-                ).join('');
-                const modelBtns = modelSelector.querySelectorAll('.model-btn');
-                modelBtns.forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        modelBtns.forEach(b => b.setAttribute('aria-pressed', 'false'));
-                        btn.setAttribute('aria-pressed', 'true');
-                        selectedModel = btn.getAttribute('data-model');
-                    });
-                });
-                });
-          
-
-            const toggle = document.getElementById('stream-toggle');
-            const label = document.getElementById('streaming-label');
-            function updateLabel() {
-                label.textContent = toggle.checked ? 'Streaming' : 'No Streaming';
+            scrollToBottom() {
+                elements.messages.scrollTop = elements.messages.scrollHeight;
             }
-            toggle.addEventListener('change', updateLabel);
-            updateLabel();
+        };
 
-        let streamingEnabled = false;
-        document.addEventListener('DOMContentLoaded', function() {
-            const toggle = document.getElementById('stream-toggle');
-            toggle.checked = streamingEnabled;
-            toggle.addEventListener('change', function() {
-                streamingEnabled = toggle.checked;
-            });
-        
-        });
-
-        // Replace with your server's WebSocket endpoint
-        let socket = null;
-        let isConnected = false;
-        let timer = null;
-        let loadingDotCount = 0;
-        const sessionId = 'sess-' + Math.random().toString(36).substr(2, 9);
-        document.title = `ChatAI Session| ${sessionId}`;
-        const messages = document.getElementById('messages');
-        const form = document.getElementById('input-form');
-        const input = document.getElementById('input');
-        let isStreaming = false;
-        let combinedContent = '';
-        let currentIsRelated = false;
-        function connectWebSocket() {
-            socket = new WebSocket('ws://localhost:2020/ws/chatAI');
-            socket.addEventListener('open', function () {
-                appendMessage('System', 'Connected to chat server.', 'system');
-                isConnected = true;
-            });
-            socket.addEventListener('message', function (event) {
-                const data = JSON.parse(event.data);
-                console.log('Message from server ', event.data);
-                // Store isRelated flag if present
-                if (data.isRelated !== undefined) {
-                    currentIsRelated = data.isRelated;
-                }
-                const displayValue = processStream(data);
-                console.log('Display Value: ', displayValue);
-                const lastMsg = messages.lastElementChild;
-                if (lastMsg && lastMsg.classList.contains(data.sender === 'AI' ? 'ai' : 'user')) {
-                    lastMsg.innerHTML = `<strong>${data.sender}:</strong> ${parseMarkdown(displayValue)}`;
-                    // Update indicator if it's an AI message
-                    if (data.sender === 'AI') {
-                        if (lastMsg.querySelector('.related-indicator')) {
-                            updateRelatedIndicator(lastMsg, currentIsRelated);
-                        } else {
-                            addRelatedIndicator(lastMsg, currentIsRelated);
-                        }
-                    }
-                    messages.scrollTop = messages.scrollHeight;
+        // ===== Message Management =====
+        const messageManager = {
+            append(sender, message, type) {
+                const div = document.createElement('div');
+                div.className = `message ${type}`;
+                
+                if (type === 'ai') {
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'message-content';
+                    contentDiv.innerHTML = `<strong>${sender}:</strong> ${utils.parseMarkdown(message)}`;
+                    div.appendChild(contentDiv);
                 } else {
-                    const msgElement = appendMessage(data.sender, displayValue, data.sender === 'AI' ? 'ai' : 'user');
-                    // Add indicator if it's an AI message
-                    if (data.sender === 'AI') {
-                        addRelatedIndicator(msgElement, currentIsRelated);
-                    }
+                    div.innerHTML = `<strong>${sender}:</strong> ${utils.parseMarkdown(message)}`;
                 }
-            });
-            socket.addEventListener('close', function () {
-                appendMessage('System', 'Disconnected from chat server.', 'system');
-                isConnected = false;
-                setTimeout(() => {
-                    appendMessage('System', 'Reconnecting...', 'system');
-                    if (!isConnected) {
-                        connectWebSocket();
+                
+                elements.messages.appendChild(div);
+                utils.scrollToBottom();
+                return div;
+            },
+
+            updateLast(sender, message, type) {
+                const lastMsg = elements.messages.lastElementChild;
+                if (lastMsg && lastMsg.classList.contains(type)) {
+                    if (type === 'ai') {
+                        const contentDiv = lastMsg.querySelector('.message-content');
+                        if (contentDiv) {
+                            contentDiv.innerHTML = `<strong>${sender}:</strong> ${utils.parseMarkdown(message)}`;
+                        } else {
+                            const newContentDiv = document.createElement('div');
+                            newContentDiv.className = 'message-content';
+                            newContentDiv.innerHTML = `<strong>${sender}:</strong> ${utils.parseMarkdown(message)}`;
+                            // Remove old content and add new structure
+                            const oldContent = lastMsg.childNodes;
+                            Array.from(oldContent).forEach(node => {
+                                if (!node.classList || !node.classList.contains('related-indicator-section')) {
+                                    node.remove();
+                                }
+                            });
+                            lastMsg.insertBefore(newContentDiv, lastMsg.querySelector('.related-indicator-section'));
+                        }
+                    } else {
+                        lastMsg.innerHTML = `<strong>${sender}:</strong> ${utils.parseMarkdown(message)}`;
                     }
-                }, 5000);
-            });
-        }
-        connectWebSocket();
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const msg = input.value.trim();
-            if (msg) {
-                socket.send(JSON.stringify({ 
-                    sender: 'User', 
-                    type: 'request', 
-                    id: sessionId, 
-                    method: 'chatAI',
-                    stream:streamingEnabled, 
-                    model : selectedModel,
-                    params: { prompt: msg } 
-                }));
-                appendMessage('You', msg, 'user');
-                input.value = '';
+                    utils.scrollToBottom();
+                    return lastMsg;
+                }
+                return null;
             }
-        });
-        function appendMessage(sender, message, type) {
-            const div = document.createElement('div');
-            div.className = 'message ' + type;
-            div.innerHTML = `<strong>${sender}:</strong> ${message}`;
-            messages.appendChild(div);
-            messages.scrollTop = messages.scrollHeight;
-            return div;
-        }
-        function addRelatedIndicator(messageElement, isRelated) {
-            if (!messageElement) return;
-            let indicator = messageElement.querySelector('.related-indicator');
-            if (!indicator) {
-                indicator = document.createElement('span');
-                indicator.className = 'related-indicator';
-                messageElement.appendChild(indicator);
-            }
-            updateRelatedIndicator(messageElement, isRelated);
-        }
-        function updateRelatedIndicator(messageElement, isRelated) {
-            const indicator = messageElement?.querySelector('.related-indicator');
-            if (indicator) {
-                // Remove both classes first
+        };
+
+        // ===== Related Indicator Management =====
+        const indicatorManager = {
+            add(messageElement, isRelated) {
+                if (!messageElement) return;
+                
+                let indicatorSection = messageElement.querySelector('.related-indicator-section');
+                if (!indicatorSection) {
+                    indicatorSection = document.createElement('div');
+                    indicatorSection.className = 'related-indicator-section';
+                    
+                    const indicator = document.createElement('span');
+                    indicator.className = 'related-indicator';
+                    indicatorSection.appendChild(indicator);
+                    
+                    messageElement.appendChild(indicatorSection);
+                }
+                this.update(messageElement, isRelated);
+            },
+
+            update(messageElement, isRelated) {
+                const indicator = messageElement?.querySelector('.related-indicator');
+                if (!indicator) return;
+
                 indicator.classList.remove('related', 'unrelated');
+                
                 if (isRelated === true) {
                     indicator.classList.add('related');
                     indicator.textContent = 'Related';
                 } else {
-                    // Default to unrelated if false or undefined
                     indicator.classList.add('unrelated');
                     indicator.textContent = 'Unrelated';
                 }
             }
-        }
-        function parseMarkdown(text) {
-            // Basic Markdown parsing: bold, italics, code, links, line breaks
-            return text
-                .replace(/(?:__|\*\*)(.*?)\1/g, '<strong>$1</strong>') // bold
-                .replace(/(?:_|\*)(.*?)\1/g, '<em>$1</em>') // italics
-                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>') // code blocks
-                .replace(/`([^`]+)`/g, '<code>$1</code>') // inline code
-                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>') // links
-                .replace(/\n/g, '<br>') // line breaks
-        }
-        function processStream(jsonLines) {
-            const obj = jsonLines;
-            console.log('Processing stream: ', obj);
-            if (obj.type === 'stream_start') {
-                isStreaming = true;
-                combinedContent = '';
-                loadingDotCount = 0;
-                console.log('Loading...');
-                return 'Loading...';
-            } else if (obj.type === 'stream_continue' && isStreaming) {
-                if (obj.aiResponse && obj.aiResponse.content) {
-                    combinedContent += obj.aiResponse.content;
+        };
+
+        // ===== Stream Processing =====
+        const streamProcessor = {
+            process(data) {
+                if (data.type === 'stream_start') {
+                    state.isStreaming = true;
+                    state.combinedContent = '';
+                    return 'Thinking...';
                 }
-                return combinedContent;
-            } else if (obj.type === 'stream_end' && isStreaming) {
-                isStreaming = false;
-                loadingDotCount = 0;
-                return combinedContent;
+                
+                if (data.type === 'stream_continue' && state.isStreaming) {
+                    if (data.aiResponse?.content) {
+                        state.combinedContent += data.aiResponse.content;
+                    }
+                    return state.combinedContent;
+                }
+                
+                if (data.type === 'stream_end' && state.isStreaming) {
+                    state.isStreaming = false;
+                    return state.combinedContent;
+                }
+                
+                return '';
             }
-            return '';
-        }
+        };
+
+        // ===== WebSocket Management =====
+        const websocketManager = {
+            connect() {
+                state.socket = new WebSocket(CONFIG.WS_URL);
+                
+                state.socket.addEventListener('open', () => {
+                    messageManager.append('System', 'Connected to chat server.', 'system');
+                    state.isConnected = true;
+                });
+
+                state.socket.addEventListener('message', (event) => {
+                    this.handleMessage(event);
+                });
+
+                state.socket.addEventListener('close', () => {
+                    messageManager.append('System', 'Disconnected from chat server.', 'system');
+                    state.isConnected = false;
+                    this.scheduleReconnect();
+                });
+            },
+
+            handleMessage(event) {
+                const data = JSON.parse(event.data);
+                console.log('Message from server:', event.data);
+
+                if (data.isRelated !== undefined) {
+                    state.currentIsRelated = data.isRelated;
+                }
+
+                const displayValue = streamProcessor.process(data);
+                const messageType = data.sender === 'AI' ? 'ai' : 'user';
+                const lastMsg = messageManager.updateLast(data.sender, displayValue, messageType);
+
+                if (lastMsg) {
+                    if (data.sender === 'AI') {
+                        const indicator = lastMsg.querySelector('.related-indicator');
+                        if (indicator) {
+                            indicatorManager.update(lastMsg, state.currentIsRelated);
+                        } else {
+                            indicatorManager.add(lastMsg, state.currentIsRelated);
+                        }
+                    }
+                } else {
+                    const msgElement = messageManager.append(data.sender, displayValue, messageType);
+                    if (data.sender === 'AI') {
+                        indicatorManager.add(msgElement, state.currentIsRelated);
+                    }
+                }
+            },
+
+            scheduleReconnect() {
+                setTimeout(() => {
+                    messageManager.append('System', 'Reconnecting...', 'system');
+                    if (!state.isConnected) {
+                        this.connect();
+                    }
+                }, CONFIG.RECONNECT_DELAY);
+            },
+
+            send(message) {
+                if (state.socket && state.socket.readyState === WebSocket.OPEN) {
+                    state.socket.send(JSON.stringify(message));
+                }
+            }
+        };
+
+        // ===== Model Management =====
+        const modelManager = {
+            async loadModels() {
+                try {
+                    const res = await fetch(CONFIG.MODELS_API_URL);
+                    const { models } = await res.json();
+                    
+                    if (Array.isArray(models) && models.length > 0) {
+                        console.log('Fetched models:', models);
+                        this.renderModels(models);
+                        state.selectedModel = models[CONFIG.DEFAULT_MODEL_INDEX]?.value || models[0].value;
+                    }
+                } catch (error) {
+                    console.error('Error fetching models:', error);
+                }
+            },
+
+            renderModels(models) {
+                elements.modelSelector.innerHTML = models
+                    .map((model, index) => `
+                        <button 
+                            type="button" 
+                            class="model-btn" 
+                            data-model="${model.value}" 
+                            aria-pressed="${index === CONFIG.DEFAULT_MODEL_INDEX ? 'true' : 'false'}"
+                        >
+                            ${model.label}
+                        </button>
+                    `)
+                    .join('');
+
+                const modelBtns = elements.modelSelector.querySelectorAll('.model-btn');
+                modelBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        modelBtns.forEach(b => b.setAttribute('aria-pressed', 'false'));
+                        btn.setAttribute('aria-pressed', 'true');
+                        state.selectedModel = btn.getAttribute('data-model');
+                    });
+                });
+            }
+        };
+
+        // ===== Streaming Toggle Management =====
+        const streamingToggle = {
+            init() {
+                elements.streamToggle.addEventListener('change', () => {
+                    state.streamingEnabled = elements.streamToggle.checked;
+                    this.updateLabel();
+                });
+                this.updateLabel();
+            },
+
+            updateLabel() {
+                elements.streamingLabel.textContent = 
+                    elements.streamToggle.checked ? 'Streaming' : 'No Streaming';
+            }
+        };
+
+        // ===== Form Handling =====
+        const formHandler = {
+            init() {
+                elements.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const message = elements.input.value.trim();
+                    
+                    if (message && state.socket) {
+                        websocketManager.send({
+                            sender: 'User',
+                            type: 'request',
+                            id: state.sessionId,
+                            method: 'chatAI',
+                            stream: state.streamingEnabled,
+                            model: state.selectedModel,
+                            params: { prompt: message }
+                        });
+                        
+                        messageManager.append('You', message, 'user');
+                        elements.input.value = '';
+                    }
+                });
+            }
+        };
+
+        // ===== Initialization =====
+        document.addEventListener('DOMContentLoaded', () => {
+            document.title = `ChatAI Session | ${state.sessionId}`;
+            
+            streamingToggle.init();
+            formHandler.init();
+            modelManager.loadModels();
+            websocketManager.connect();
+        });
     </script>
 </body>
 </html>
