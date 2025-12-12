@@ -47,18 +47,105 @@
             opacity: 0.7;
         }
 
+        /* ===== Main Container ===== */
+        #main-container {
+            display: flex;
+            gap: 16px;
+            max-width: 95vw;
+            margin: 40px auto;
+            height: 70vh;
+        }
+
         /* ===== Chat Container ===== */
         #chat-container {
             background: var(--bg-card);
-            max-width: 70vw;
-            margin: 40px auto;
+            flex: 1;
             border-radius: 8px;
             border: 1px solid var(--border);
             padding: 24px 16px 16px 16px;
             display: flex;
             flex-direction: column;
-            height: 70vh;
             backdrop-filter: blur(10px);
+        }
+
+        /* ===== Side Panel ===== */
+        #history-panel {
+            width: 300px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+
+        #history-panel-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #history-panel-title {
+            font-size: 1em;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        #close-history-btn {
+            display: none;
+        }
+
+        #history-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .history-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .history-item-content {
+            color: var(--text-primary);
+            font-size: 0.9em;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .history-item-time {
+            color: var(--text-secondary);
+            font-size: 0.75em;
+            margin-top: 4px;
+        }
+
+        #history-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #history-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #history-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        #history-content::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
         }
 
         #messages {
@@ -184,9 +271,9 @@
 
         /* ===== Related Indicator Styles ===== */
         .related-indicator-section {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid var(--border);
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: flex-end;
         }
@@ -377,9 +464,22 @@
             outline: 1px solid var(--text-secondary);
             outline-offset: 2px;
         }
+
+        /* ===== History Button Styles ===== */
+        #history-btn {
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <div id="main-container">
+        <div id="history-panel">
+            <div id="history-panel-header">
+                <h3 id="history-panel-title">Chat History</h3>
+                <button id="close-history-btn" type="button">×</button>
+            </div>
+            <div id="history-content"></div>
+        </div>
     <div id="chat-container">
         <div id="messages"></div>
         <form id="input-form">
@@ -402,7 +502,9 @@
                 <label for="model-selector" class="model-selector-label">AI Model:</label>
                 <div id="model-selector"></div>
             </div>
+            <button type="button" id="history-btn">Show History</button>
         </form>
+        </div>
     </div>
 
     <script nonce="abc123">
@@ -410,6 +512,7 @@
         const CONFIG = {
             WS_URL: 'ws://localhost:2020/ws/chatAI',
             MODELS_API_URL: 'http://localhost:2020/chatModels',
+            HISTORY_API_URL: 'http://localhost:2020/v1/aiUtils/chat-history',
             RECONNECT_DELAY: 5000,
             DEFAULT_MODEL_INDEX: 1
         };
@@ -433,7 +536,11 @@
             input: document.getElementById('input'),
             streamToggle: document.getElementById('stream-toggle'),
             streamingLabel: document.getElementById('streaming-label'),
-            modelSelector: document.getElementById('model-selector')
+            modelSelector: document.getElementById('model-selector'),
+            historyBtn: document.getElementById('history-btn'),
+            historyPanel: document.getElementById('history-panel'),
+            historyContent: document.getElementById('history-content'),
+            closeHistoryBtn: document.getElementById('close-history-btn')
         };
 
         // ===== Utility Functions =====
@@ -460,6 +567,7 @@
                 div.className = `message ${type}`;
                 
                 if (type === 'ai') {
+                    // Create content div first (will be inserted after indicator if it exists)
                     const contentDiv = document.createElement('div');
                     contentDiv.className = 'message-content';
                     contentDiv.innerHTML = `<strong>${sender}:</strong> ${utils.parseMarkdown(message)}`;
@@ -486,12 +594,18 @@
                             newContentDiv.innerHTML = `<strong>${sender}:</strong> ${utils.parseMarkdown(message)}`;
                             // Remove old content and add new structure
                             const oldContent = lastMsg.childNodes;
+                            const indicatorSection = lastMsg.querySelector('.related-indicator-section');
                             Array.from(oldContent).forEach(node => {
                                 if (!node.classList || !node.classList.contains('related-indicator-section')) {
                                     node.remove();
                                 }
                             });
-                            lastMsg.insertBefore(newContentDiv, lastMsg.querySelector('.related-indicator-section'));
+                            // Insert content after indicator section (if it exists) or at the beginning
+                            if (indicatorSection) {
+                                lastMsg.insertBefore(newContentDiv, indicatorSection.nextSibling);
+                            } else {
+                                lastMsg.appendChild(newContentDiv);
+                            }
                         }
                     } else {
                         lastMsg.innerHTML = `<strong>${sender}:</strong> ${utils.parseMarkdown(message)}`;
@@ -517,7 +631,13 @@
                     indicator.className = 'related-indicator';
                     indicatorSection.appendChild(indicator);
                     
-                    messageElement.appendChild(indicatorSection);
+                    // Insert at the beginning (top) of the message element
+                    const firstChild = messageElement.firstChild;
+                    if (firstChild) {
+                        messageElement.insertBefore(indicatorSection, firstChild);
+                    } else {
+                        messageElement.appendChild(indicatorSection);
+                    }
                 }
                 this.update(messageElement, isRelated);
             },
@@ -611,6 +731,11 @@
                         indicatorManager.add(msgElement, state.currentIsRelated);
                     }
                 }
+
+                // Reload history after response completion
+                if (data.type === 'stream_end') {
+                    historyManager.loadHistory();
+                }
             },
 
             scheduleReconnect() {
@@ -636,7 +761,7 @@
                     const res = await fetch(CONFIG.MODELS_API_URL);
                     const { models } = await res.json();
                     
-                    if (Array.isArray(models) && models.length > 0) {
+                if (Array.isArray(models) && models.length > 0) {
                         console.log('Fetched models:', models);
                         this.renderModels(models);
                         state.selectedModel = models[CONFIG.DEFAULT_MODEL_INDEX]?.value || models[0].value;
@@ -712,12 +837,66 @@
             }
         };
 
+        // ===== History Management =====
+        const historyManager = {
+            async loadHistory() {
+                if (!elements.historyContent) return;
+                
+                try {
+                    const response = await fetch(`${CONFIG.HISTORY_API_URL}/${state.sessionId}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.responseObject && Array.isArray(data.responseObject)) {
+                        // Clear existing history content
+                        elements.historyContent.innerHTML = '';
+                        
+                        if (data.responseObject.length === 0) {
+                            elements.historyContent.innerHTML = '<div class="history-item"><div class="history-item-content">No chat history found.</div></div>';
+                        } else {
+                            // Display each user message from history in the side panel
+                            data.responseObject.forEach((msg) => {
+                                if (msg.role === 'user' && msg.content) {
+                                    const historyItem = document.createElement('div');
+                                    historyItem.className = 'history-item';
+                                    
+                                    const content = document.createElement('div');
+                                    content.className = 'history-item-content';
+                                    content.textContent = msg.content;
+                                    
+                                    historyItem.appendChild(content);
+                                    
+                                    // Add click handler to insert message into chat
+                                    historyItem.addEventListener('click', () => {
+                                        elements.input.value = msg.content;
+                                        elements.input.focus();
+                                    });
+                                    
+                                    elements.historyContent.appendChild(historyItem);
+                                }
+                            });
+                        }
+                    } else {
+                        elements.historyContent.innerHTML = '<div class="history-item"><div class="history-item-content">Failed to load chat history.</div></div>';
+                    }
+                } catch (error) {
+                    console.error('Error loading history:', error);
+                    elements.historyContent.innerHTML = '<div class="history-item"><div class="history-item-content">Error loading chat history.</div></div>';
+                }
+            },
+
+            init() {
+                // Load history on page load
+                this.loadHistory();
+            }
+        };
+
         // ===== Initialization =====
         document.addEventListener('DOMContentLoaded', () => {
             document.title = `ChatAI Session | ${state.sessionId}`;
             
             streamingToggle.init();
             formHandler.init();
+            historyManager.init();
             modelManager.loadModels();
             websocketManager.connect();
         });

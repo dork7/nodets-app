@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 
+import { aiUtilsRouter } from '@/api/aiUtils/aiUtilsRouter';
 import { catalogueRouter } from '@/api/catalogue/catalogueRouter';
 import { healthCheckRouter } from '@/api/healthCheck/healthCheckRouter';
 import { kafkaRouter } from '@/api/kafka/kafkaRouter';
@@ -14,6 +15,7 @@ import { ordersRouter } from './orders/ordersRouter';
 const router = express.Router();
 
 router.use('/v1/health-check', healthCheckRouter);
+router.use('/aiUtils', aiUtilsRouter);
 router.use('/users', userRouter);
 router.use('/redis', redisRouter);
 router.use('/kafka', kafkaRouter);

@@ -54,3 +54,11 @@ export const webSearch = async (query: any) => {
  const data = await response.json();
  return data.AbstractText || 'No info found';
 };
+
+export const customPrompts = async (prompt: string, aiModel: string) => {
+ const completion = await openai.chat.completions.create({
+  model: aiModel, // or any model listed on OpenRouter
+  messages: [{ role: 'user', content: prompt }],
+ });
+ return completion.choices[0].message.content;
+}
