@@ -311,6 +311,38 @@
             background-color: var(--error);
         }
 
+        /* ===== Token Usage Styles ===== */
+        .token-usage-section {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            font-size: 0.75em;
+            color: var(--text-secondary);
+        }
+
+        .token-usage {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .token-usage-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .token-usage-label {
+            color: var(--text-secondary);
+        }
+
+        .token-usage-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
         /* ===== Input Form Styles ===== */
         #input-form {
             display: flex;
@@ -647,7 +679,7 @@
                 if (!indicator) return;
 
                 indicator.classList.remove('related', 'unrelated');
-                
+
                 if (isRelated === true) {
                     indicator.classList.add('related');
                     indicator.textContent = 'Related';
@@ -655,6 +687,64 @@
                     indicator.classList.add('unrelated');
                     indicator.textContent = 'Unrelated';
                 }
+            }
+        };
+
+        // ===== Token Usage Management =====
+        const tokenUsageManager = {
+            add(messageElement, tokenUsage) {
+                if (!messageElement) return;
+
+                let usageSection = messageElement.querySelector('.token-usage-section');
+                if (!usageSection) {
+                    usageSection = document.createElement('div');
+                    usageSection.className = 'token-usage-section';
+                    messageElement.appendChild(usageSection);
+                }
+                this.update(messageElement, tokenUsage);
+            },
+
+            update(messageElement, tokenUsage) {
+                const usageSection = messageElement?.querySelector('.token-usage-section');
+                if (!usageSection) return;
+
+                const promptTokens = tokenUsage?.prompt_tokens || 0;
+                const completionTokens = tokenUsage?.completion_tokens || 0;
+                const totalTokens = tokenUsage?.total_tokens || 0;
+
+                // Always show token usage section for AI messages
+                usageSection.innerHTML = `
+                    <div class="token-usage">
+                        <div class="token-usage-item">
+                            <span class="token-usage-label">Prompt:</span>
+                            <span class="token-usage-value">${promptTokens.toLocaleString()}</span>
+                        </div>
+                        <div class="token-usage-item">
+                            <span class="token-usage-label">Completion:</span>
+                            <span class="token-usage-value">${completionTokens.toLocaleString()}</span>
+                        </div>
+                        <div class="token-usage-item">
+                            <span class="token-usage-label">Total:</span>
+                            <span class="token-usage-value">${totalTokens.toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+                usageSection.style.display = 'flex';
+            },
+
+            async loadCumulativeUsage(userId) {
+                try {
+                    const response = await fetch(`${CONFIG.HISTORY_API_URL.replace('/chat-history', '/token-usage')}/${userId}`);
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success && result.data) {
+                            return result.data;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading cumulative token usage:', error);
+                }
+                return null;
             }
         };
 
@@ -729,11 +819,18 @@
                     const msgElement = messageManager.append(data.sender, displayValue, messageType);
                     if (data.sender === 'AI') {
                         indicatorManager.add(msgElement, state.currentIsRelated);
+                        // Initialize token usage section for AI messages
+                        tokenUsageManager.add(msgElement, {});
                     }
                 }
 
                 // Reload history after response completion
                 if (data.type === 'stream_end') {
+                    const lastMsg = elements.messages.lastElementChild;
+                    if (lastMsg) {
+                        // Always show token usage section, even if data is missing
+                        tokenUsageManager.add(lastMsg, data.tokenUsage || {});
+                    }
                     historyManager.loadHistory();
                 }
             },
