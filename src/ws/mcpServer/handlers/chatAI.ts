@@ -44,6 +44,7 @@ interface AIResponse {
 const DEFAULT_PROMPT = 'Hello, AI!';
 const HISTORY_KEY_PREFIX = 'chat_history_';
 const TOKEN_USAGE_KEY_PREFIX = 'token_usage_';
+const SAVE_HISTORY = false;
 
 // ===== Helper Functions =====
 const getHistoryKey = (userId: string): string => `${HISTORY_KEY_PREFIX}${userId}`;
@@ -62,7 +63,8 @@ const getPreviousMessageContent = (history: ChatMessage[]): string => {
 const buildConversationHistory = (userInput: string, previousHistory: ChatMessage[], isRelated: boolean): ChatMessage[] => {
  const newHistory: ChatMessage[] = [{ role: 'user', content: userInput }];
 
- if (isRelated && previousHistory.length > 0) {
+ if (isRelated && previousHistory.length > 0 && SAVE_HISTORY)
+     {
   newHistory.unshift(...previousHistory);
  }
 
@@ -264,13 +266,13 @@ export const handler = async (ws: any, message: WebSocketMessage): Promise<void>
 
   // Save final conversation history
   await saveChatHistory(message.id, conversationHistory);
- } catch (error) {
+ } catch (error:any) {
   logger.error(`Error in chatAI handler: ${error}`);
   sendWebSocketMessage(ws, {
    sender: 'AI',
    type: 'error',
    id: message.id,
-   error: 'An error occurred while processing your request.',
+   error: error.message || 'An error occurred while processing your request.',
   });
  }
 };
