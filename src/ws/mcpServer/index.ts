@@ -134,4 +134,5 @@ export const startWebSocketServer = async (httpServer: any) => {
  });
 
  logger.info(`WebSocket server running on the same HTTP server ws://${HOST}:2020`);
+ logger.info(`AI CHATBOT http://${HOST}:2020/chatAI`);
 };
