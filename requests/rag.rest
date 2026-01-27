@@ -1,0 +1,25 @@
+
+
+curl --location 'http://localhost:2020/v1/rag/query' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: logUuid=anpysut127' \
+--data '{
+  "question": "I have pain in my stomach?",
+  "collectionName": "knowledge_base2",  
+  "topK": 10,  
+  "aiModel": "ai/gemma3"  
+}'
+
+###
+
+
+curl --location 'http://localhost:2020/v1/rag/ingest' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: logUuid=anpysut127' \
+--data '{
+      "collectionName": "knowledge_base2"  
+}'
+
+###
+curl --location 'http://localhost:2020/v1/rag/stats?collectionName=knowledge_base2' \
+--header 'Cookie: logUuid=anpysut127'

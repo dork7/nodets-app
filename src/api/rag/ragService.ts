@@ -209,7 +209,7 @@ export const ragService = {
 
    // Generate answer using AI
    const systemPrompt =
-    'You are a helpful assistant. Answer the question based ONLY on the provided context. If there is no data in context say the requested item or information is not available.';
+    'You are a rude doctor. Answer the question based ONLY on the provided context also share the treatment plan. If there is no data in context say the requested item or information is not available.';
    const userPrompt = `Context:\n${context}\n\nQuestion: ${question}\n\nAnswer:`;
 
    const modelToUse = aiModel || env.AI_MODELS?.split(',')[0] || 'ai/gemma3';

@@ -1,302 +1,302 @@
 [
   {
     "id": 1,
-    "text": "Our office hours are from 9 AM to 5 PM.",
-    "category": "office_info",
-    "tags": ["hours", "schedule"]
+    "text": "Hypertension, also known as high blood pressure, is diagnosed when systolic pressure exceeds 140 mmHg or diastolic pressure exceeds 90 mmHg on multiple readings. Treatment includes lifestyle modifications such as DASH diet, regular exercise, and weight loss. First-line medications include ACE inhibitors like lisinopril, ARBs like losartan, thiazide diuretics, or calcium channel blockers. Target blood pressure is below 130/80 mmHg for most patients.",
+    "category": "cardiovascular",
+    "tags": ["hypertension", "blood_pressure", "diagnosis", "treatment", "ACE_inhibitors"]
   },
   {
     "id": 2,
-    "text": "We deliver products across UAE within 2 business days.",
-    "category": "delivery",
-    "tags": ["shipping", "UAE", "delivery_time"]
+    "text": "Type 2 diabetes is diagnosed when fasting blood glucose levels are 126 mg/dL or higher, or HbA1c is 6.5% or higher. Treatment includes metformin as first-line medication, along with lifestyle changes including diet modification and exercise. Additional medications may include SGLT2 inhibitors, GLP-1 agonists, or insulin if needed. Target HbA1c is below 7% for most patients.",
+    "category": "endocrinology",
+    "tags": ["diabetes", "blood_glucose", "HbA1c", "metformin", "treatment"]
   },
   {
     "id": 3,
-    "text": "Customer support email is help@company.com.",
-    "category": "contact",
-    "tags": ["support", "email", "contact"]
+    "text": "Pneumonia is diagnosed through chest X-ray showing lung infiltrates, along with symptoms of fever, cough, and difficulty breathing. Treatment depends on severity and cause. Community-acquired pneumonia is treated with amoxicillin-clavulanate or azithromycin. Severe cases require IV antibiotics like ceftriaxone plus azithromycin. Supportive care includes oxygen therapy, hydration, and antipyretics. Hospitalization is needed if CURB-65 score is 2 or higher.",
+    "category": "respiratory",
+    "tags": ["pneumonia", "chest_xray", "infection", "antibiotics", "treatment"]
   },
   {
     "id": 4,
-    "text": "Our customer support hotline is available 24/7 at +971-4-XXX-XXXX for urgent inquiries.",
-    "category": "contact",
-    "tags": ["support", "phone", "24/7"]
+    "text": "Asthma diagnosis requires spirometry showing reversible airway obstruction, with FEV1 improving by 12% or more after bronchodilator use. Treatment includes inhaled corticosteroids like budesonide as controller medication, and short-acting beta-agonists like albuterol as rescue medication. Severe cases may require long-acting beta-agonists, leukotriene modifiers, or biologics. Patients should avoid triggers and use peak flow meters for monitoring.",
+    "category": "respiratory",
+    "tags": ["asthma", "spirometry", "FEV1", "inhalers", "corticosteroids", "treatment"]
   },
   {
     "id": 5,
-    "text": "We offer free shipping on orders above AED 200 within UAE mainland.",
-    "category": "delivery",
-    "tags": ["shipping", "free_shipping", "UAE"]
+    "text": "Acute myocardial infarction is diagnosed when troponin levels are elevated along with ECG changes showing ST elevation or new Q waves. Immediate treatment includes dual antiplatelet therapy with aspirin and clopidogrel, statin therapy, and beta-blockers. STEMI requires urgent reperfusion with primary PCI or thrombolytics if PCI unavailable. ACE inhibitors and aldosterone antagonists are added for heart failure. Cardiac rehabilitation and lifestyle modifications are essential post-MI.",
+    "category": "cardiovascular",
+    "tags": ["heart_attack", "troponin", "ECG", "MI", "PCI", "antiplatelet", "treatment"]
   },
   {
     "id": 6,
-    "text": "Our return policy allows returns within 30 days of purchase with original receipt and packaging.",
-    "category": "policy",
-    "tags": ["returns", "refund", "policy"]
+    "text": "Rheumatoid arthritis is diagnosed using ACPA antibodies and rheumatoid factor, along with clinical symptoms of joint swelling and morning stiffness. Treatment includes methotrexate as first-line DMARD, often combined with hydroxychloroquine or sulfasalazine. Biologics like TNF-alpha inhibitors are used if conventional DMARDs fail. NSAIDs and corticosteroids provide symptom relief. Early aggressive treatment prevents joint damage.",
+    "category": "rheumatology",
+    "tags": ["arthritis", "ACPA", "rheumatoid_factor", "autoimmune", "methotrexate", "DMARDs", "treatment"]
   },
   {
     "id": 7,
-    "text": "We accept payments via credit card, debit card, cash on delivery, and Apple Pay.",
-    "category": "payment",
-    "tags": ["payment_methods", "checkout"]
+    "text": "Chronic kidney disease is diagnosed when eGFR is below 60 mL/min/1.73m² or albuminuria is present for more than 3 months. Treatment focuses on slowing progression: ACE inhibitors or ARBs for proteinuria, blood pressure control below 130/80, diabetes management, and avoiding nephrotoxic medications. Advanced CKD requires phosphate binders, erythropoietin for anemia, and preparation for dialysis or transplant when eGFR drops below 15.",
+    "category": "nephrology",
+    "tags": ["kidney_disease", "eGFR", "albuminuria", "CKD", "ACE_inhibitors", "dialysis", "treatment"]
   },
   {
     "id": 8,
-    "text": "Our main office is located in Dubai Marina, Building 5, Floor 12, Office 1203.",
-    "category": "office_info",
-    "tags": ["location", "address", "Dubai"]
+    "text": "Hypothyroidism is diagnosed when TSH levels are elevated above 4.5 mIU/L and free T4 levels are below the normal range. Treatment is levothyroxine replacement therapy, starting at 1.6 mcg/kg body weight daily. Dose is titrated based on TSH levels, targeting TSH between 0.5-2.5 mIU/L. Patients should take medication on empty stomach, 30-60 minutes before breakfast. Annual TSH monitoring is recommended.",
+    "category": "endocrinology",
+    "tags": ["hypothyroidism", "TSH", "T4", "thyroid", "levothyroxine", "treatment"]
   },
   {
     "id": 9,
-    "text": "Weekend hours are Saturday and Sunday from 10 AM to 3 PM. We are closed on public holidays.",
-    "category": "office_info",
-    "tags": ["hours", "weekend", "holidays"]
+    "text": "Migraine diagnosis is clinical, based on recurrent headaches lasting 4-72 hours with features like photophobia, phonophobia, or nausea. Acute treatment includes triptans like sumatriptan or NSAIDs like naproxen. Preventive therapy includes beta-blockers like propranolol, topiramate, or amitriptyline for frequent attacks. CGRP monoclonal antibodies are used for refractory cases. Lifestyle modifications include identifying triggers and maintaining regular sleep.",
+    "category": "neurology",
+    "tags": ["migraine", "headache", "neurological", "triptans", "prevention", "treatment"]
   },
   {
     "id": 10,
-    "text": "Express delivery is available for an additional AED 50 and guarantees next-day delivery within Dubai.",
-    "category": "delivery",
-    "tags": ["shipping", "express", "Dubai"]
+    "text": "Osteoarthritis is diagnosed through X-ray findings showing joint space narrowing, osteophytes, and subchondral sclerosis. Treatment includes acetaminophen or NSAIDs for pain relief, topical capsaicin, and physical therapy. Intra-articular corticosteroid injections provide temporary relief. Severe cases may require joint replacement surgery. Weight loss and low-impact exercise help reduce symptoms and slow progression.",
+    "category": "orthopedics",
+    "tags": ["osteoarthritis", "joint_disease", "Xray", "degenerative", "NSAIDs", "surgery", "treatment"]
   },
   {
     "id": 11,
-    "text": "We have a loyalty program where customers earn 1 point for every AED 10 spent. 100 points equals AED 10 discount.",
-    "category": "rewards",
-    "tags": ["loyalty", "points", "rewards"]
+    "text": "Gastroesophageal reflux disease (GERD) is diagnosed when symptoms occur more than twice weekly, confirmed by pH monitoring or endoscopy showing esophagitis. Treatment includes lifestyle modifications: weight loss, avoiding trigger foods, elevating head of bed. Medications include PPIs like omeprazole taken 30 minutes before meals, H2 blockers like ranitidine, or antacids. Severe cases may require fundoplication surgery if medical therapy fails.",
+    "category": "gastroenterology",
+    "tags": ["GERD", "acid_reflux", "endoscopy", "esophagitis", "PPIs", "lifestyle", "treatment"]
   },
   {
     "id": 12,
-    "text": "All products come with a standard 1-year manufacturer warranty covering defects and malfunctions.",
-    "category": "warranty",
-    "tags": ["warranty", "guarantee", "coverage"]
+    "text": "Anemia is diagnosed when hemoglobin levels are below 13 g/dL in men or 12 g/dL in women, with further classification by MCV and iron studies. Treatment depends on cause: iron deficiency anemia requires iron supplementation (ferrous sulfate 325mg daily) and addressing underlying cause. B12 deficiency needs B12 injections or high-dose oral supplements. Anemia of chronic disease may require erythropoietin. Severe anemia may need blood transfusion.",
+    "category": "hematology",
+    "tags": ["anemia", "hemoglobin", "MCV", "blood_disorder", "iron_supplement", "treatment"]
   },
   {
     "id": 13,
-    "text": "International shipping is available to GCC countries with delivery in 5-7 business days.",
-    "category": "delivery",
-    "tags": ["shipping", "international", "GCC"]
+    "text": "Chronic obstructive pulmonary disease (COPD) is diagnosed when FEV1/FVC ratio is less than 0.70 after bronchodilator, indicating persistent airflow limitation. Treatment includes long-acting bronchodilators like tiotropium or salmeterol, inhaled corticosteroids for frequent exacerbations, and short-acting bronchodilators for rescue. Smoking cessation is critical. Severe cases may need oxygen therapy or lung volume reduction surgery. Pulmonary rehabilitation improves quality of life.",
+    "category": "respiratory",
+    "tags": ["COPD", "spirometry", "FEV1_FVC", "lung_disease", "bronchodilators", "oxygen", "treatment"]
   },
   {
     "id": 14,
-    "text": "Our live chat support is available on our website from 9 AM to 9 PM daily.",
-    "category": "contact",
-    "tags": ["support", "live_chat", "online"]
+    "text": "Atrial fibrillation is diagnosed through ECG showing irregularly irregular rhythm with absent P waves and variable R-R intervals. Treatment includes rate control with beta-blockers or calcium channel blockers, and rhythm control with antiarrhythmics like amiodarone or cardioversion. Anticoagulation with warfarin or DOACs is essential for stroke prevention based on CHA2DS2-VASc score. Catheter ablation may be considered for symptomatic patients.",
+    "category": "cardiovascular",
+    "tags": ["atrial_fibrillation", "arrhythmia", "ECG", "AFib", "anticoagulation", "rate_control", "treatment"]
   },
   {
     "id": 15,
-    "text": "We offer installation services for electronics and appliances for AED 100-300 depending on the product.",
-    "category": "services",
-    "tags": ["installation", "service", "electronics"]
+    "text": "Urinary tract infection is diagnosed when urine culture shows more than 10^5 colony-forming units per mL, along with symptoms of dysuria or frequency. Uncomplicated UTI is treated with trimethoprim-sulfamethoxazole or nitrofurantoin for 3-5 days. Complicated UTI requires longer course of antibiotics like ciprofloxacin or ceftriaxone. Pyelonephritis needs 7-14 days of treatment. Increased fluid intake and urinary analgesics help with symptoms.",
+    "category": "urology",
+    "tags": ["UTI", "urine_culture", "infection", "bacteria", "antibiotics", "treatment"]
   },
   {
     "id": 16,
-    "text": "Price matching is available if you find the same product cheaper elsewhere. Terms and conditions apply.",
-    "category": "policy",
-    "tags": ["price_match", "policy", "guarantee"]
+    "text": "Depression is diagnosed using DSM-5 criteria requiring at least 5 symptoms including depressed mood, loss of interest, and sleep disturbances for 2 weeks. Treatment includes SSRIs like sertraline or fluoxetine as first-line, SNRIs like venlafaxine, or atypical antidepressants. Psychotherapy including CBT is equally effective. Severe cases may require ECT. Treatment duration is typically 6-12 months after symptom resolution to prevent relapse.",
+    "category": "psychiatry",
+    "tags": ["depression", "mental_health", "DSM5", "mood_disorder", "SSRIs", "CBT", "treatment"]
   },
   {
     "id": 17,
-    "text": "Students and educators receive a 10% discount on all purchases with valid ID.",
-    "category": "discounts",
-    "tags": ["discount", "students", "education"]
+    "text": "Peptic ulcer disease is diagnosed through endoscopy showing mucosal defects in stomach or duodenum, often associated with H. pylori infection. Treatment includes PPI therapy like omeprazole for 4-8 weeks, and H. pylori eradication with triple therapy: PPI plus amoxicillin plus clarithromycin for 14 days. Avoid NSAIDs. Refractory ulcers may need surgery. Follow-up endoscopy confirms healing.",
+    "category": "gastroenterology",
+    "tags": ["peptic_ulcer", "endoscopy", "H_pylori", "stomach", "PPI", "triple_therapy", "treatment"]
   },
   {
     "id": 18,
-    "text": "Our product catalog includes electronics, home appliances, furniture, and office supplies.",
-    "category": "products",
-    "tags": ["catalog", "categories", "products"]
+    "text": "Hyperthyroidism is diagnosed when TSH is suppressed below 0.4 mIU/L and free T4 or T3 levels are elevated above normal range. Treatment options include antithyroid medications like methimazole or propylthiouracil, radioactive iodine ablation, or thyroidectomy. Beta-blockers like propranolol control symptoms. Choice depends on patient age, severity, and preference. Radioactive iodine is most common for Graves' disease.",
+    "category": "endocrinology",
+    "tags": ["hyperthyroidism", "TSH", "T3", "T4", "thyroid", "methimazole", "radioactive_iodine", "treatment"]
   },
   {
     "id": 19,
-    "text": "Track your order online using the tracking number sent to your email after purchase.",
-    "category": "delivery",
-    "tags": ["tracking", "order_status", "shipping"]
+    "text": "Stroke is diagnosed through CT or MRI brain imaging showing acute infarction or hemorrhage, along with sudden neurological deficits. Ischemic stroke requires urgent thrombolysis with tPA within 4.5 hours or thrombectomy within 24 hours if large vessel occlusion. Treatment includes antiplatelet therapy with aspirin, statins, blood pressure control, and rehabilitation. Hemorrhagic stroke may need surgical evacuation. Secondary prevention is crucial.",
+    "category": "neurology",
+    "tags": ["stroke", "brain_imaging", "CT", "MRI", "neurological", "tPA", "thrombectomy", "treatment"]
   },
   {
     "id": 20,
-    "text": "We have showrooms in Dubai, Abu Dhabi, and Sharjah. Visit our website for exact addresses.",
-    "category": "office_info",
-    "tags": ["showroom", "location", "branches"]
+    "text": "Hepatitis B is diagnosed when HBsAg is positive, with further testing for HBeAg and HBV DNA to determine infectivity and need for treatment. Treatment includes antiviral therapy with entecavir or tenofovir for patients with elevated ALT and HBV DNA above 2000 IU/mL. Peginterferon may be used in selected cases. Regular monitoring of liver function and HBV DNA is essential. Vaccination prevents infection.",
+    "category": "infectious_disease",
+    "tags": ["hepatitis_B", "HBsAg", "viral_infection", "liver", "antivirals", "entecavir", "treatment"]
   },
   {
     "id": 21,
-    "text": "Bulk orders of 10+ items receive a 15% discount. Contact our sales team for quotes.",
-    "category": "discounts",
-    "tags": ["bulk", "wholesale", "discount"]
+    "text": "Osteoporosis is diagnosed when bone mineral density T-score is -2.5 or lower on DEXA scan, indicating increased fracture risk. Treatment includes bisphosphonates like alendronate or zoledronic acid, denosumab, or teriparatide for severe cases. Calcium 1200mg and vitamin D 800-1000 IU daily supplementation. Weight-bearing exercise and fall prevention strategies. Treatment duration varies by medication.",
+    "category": "orthopedics",
+    "tags": ["osteoporosis", "bone_density", "DEXA", "fracture_risk", "bisphosphonates", "calcium", "treatment"]
   },
   {
     "id": 22,
-    "text": "Extended warranty plans are available for 2 or 3 years at purchase for an additional fee.",
-    "category": "warranty",
-    "tags": ["extended_warranty", "coverage", "protection"]
+    "text": "Sepsis is diagnosed when there is confirmed or suspected infection plus two or more SIRS criteria: fever, tachycardia, tachypnea, or leukocytosis. Treatment requires immediate broad-spectrum antibiotics within 1 hour, IV fluids for hypotension, vasopressors if needed, and source control. Early goal-directed therapy improves outcomes. ICU admission is often necessary. Mortality is high without prompt treatment.",
+    "category": "critical_care",
+    "tags": ["sepsis", "infection", "SIRS", "critical_care", "antibiotics", "vasopressors", "treatment"]
   },
   {
     "id": 23,
-    "text": "Our mobile app offers exclusive deals and faster checkout. Available on iOS and Android.",
-    "category": "technology",
-    "tags": ["mobile_app", "deals", "app"]
+    "text": "Epilepsy is diagnosed when there are two or more unprovoked seizures occurring more than 24 hours apart, confirmed by EEG showing epileptiform activity. Treatment includes antiepileptic drugs like levetiracetam, lamotrigine, or valproic acid chosen based on seizure type. Monotherapy is preferred initially. Refractory epilepsy may require multiple medications or surgical evaluation. Patients should avoid triggers and maintain medication compliance.",
+    "category": "neurology",
+    "tags": ["epilepsy", "seizures", "EEG", "neurological", "antiepileptic", "levetiracetam", "treatment"]
   },
   {
     "id": 24,
-    "text": "Gift wrapping is available for AED 15 per item. Perfect for birthdays and special occasions.",
-    "category": "services",
-    "tags": ["gift_wrap", "service", "special"]
+    "text": "Chronic hepatitis C is diagnosed when HCV RNA is detectable in blood for more than 6 months, with genotype testing to guide treatment selection. Treatment includes direct-acting antivirals like sofosbuvir-velpatasvir or glecaprevir-pibrentasvir for 8-12 weeks, achieving cure rates above 95%. Genotype-specific regimens may be needed. Liver function monitoring during treatment. No vaccine available.",
+    "category": "infectious_disease",
+    "tags": ["hepatitis_C", "HCV", "viral_infection", "liver", "DAAs", "sofosbuvir", "treatment"]
   },
   {
     "id": 25,
-    "text": "Cancel your order free of charge within 2 hours of placing it if it hasn't shipped yet.",
-    "category": "policy",
-    "tags": ["cancellation", "policy", "order"]
+    "text": "Heart failure is diagnosed through echocardiography showing reduced ejection fraction below 50%, along with symptoms of dyspnea and fluid retention. Treatment includes ACE inhibitors or ARBs, beta-blockers like metoprolol, diuretics for fluid overload, and aldosterone antagonists. SGLT2 inhibitors reduce hospitalizations. Device therapy with ICD or CRT may be indicated. Salt restriction and fluid management are essential.",
+    "category": "cardiovascular",
+    "tags": ["heart_failure", "echocardiography", "ejection_fraction", "cardiac", "ACE_inhibitors", "beta_blockers", "treatment"]
   },
   {
     "id": 26,
-    "text": "Subscribe to our newsletter for 5% off your first order and weekly deals.",
-    "category": "marketing",
-    "tags": ["newsletter", "discount", "subscription"]
+    "text": "Celiac disease is diagnosed when anti-tTG IgA antibodies are positive, confirmed by small bowel biopsy showing villous atrophy and crypt hyperplasia. Treatment is strict lifelong gluten-free diet avoiding wheat, barley, and rye. Nutritional supplementation for deficiencies. Follow-up serology and biopsy confirm healing. Refractory cases may need steroids or immunosuppressants. Patient education is crucial.",
+    "category": "gastroenterology",
+    "tags": ["celiac_disease", "anti_tTG", "biopsy", "autoimmune", "gluten_free", "diet", "treatment"]
   },
   {
     "id": 27,
-    "text": "Our customer service team speaks Arabic, English, Hindi, and Urdu.",
-    "category": "contact",
-    "tags": ["support", "languages", "multilingual"]
+    "text": "Deep vein thrombosis is diagnosed through Doppler ultrasound showing non-compressible vein with absent blood flow, or elevated D-dimer with clinical suspicion. Treatment includes anticoagulation with heparin or low molecular weight heparin initially, followed by DOACs like rivaroxaban or apixaban for 3-6 months. Compression stockings reduce symptoms. Thrombolysis may be considered for extensive DVT. Recurrent cases need longer anticoagulation.",
+    "category": "hematology",
+    "tags": ["DVT", "thrombosis", "ultrasound", "D_dimer", "anticoagulation", "DOACs", "treatment"]
   },
   {
     "id": 28,
-    "text": "Same-day delivery is available for orders placed before 12 PM in Dubai and Abu Dhabi.",
-    "category": "delivery",
-    "tags": ["same_day", "fast_delivery", "shipping"]
+    "text": "Multiple sclerosis is diagnosed using McDonald criteria requiring dissemination in time and space, confirmed by MRI showing multiple white matter lesions. Treatment includes disease-modifying therapies like interferon-beta, glatiramer acetate, or newer agents like fingolimod or natalizumab. Acute relapses are treated with high-dose corticosteroids. Symptomatic treatment for fatigue, spasticity, and pain. Early treatment prevents disability.",
+    "category": "neurology",
+    "tags": ["multiple_sclerosis", "MS", "MRI", "autoimmune", "neurological", "DMTs", "corticosteroids", "treatment"]
   },
   {
     "id": 29,
-    "text": "Damaged items during delivery can be reported within 48 hours for free replacement.",
-    "category": "policy",
-    "tags": ["damage", "replacement", "policy"]
+    "text": "Acute appendicitis is diagnosed clinically with right lower quadrant pain, rebound tenderness, and confirmed by CT scan showing appendiceal wall thickening. Treatment is surgical appendectomy, either laparoscopic or open approach. Preoperative antibiotics reduce infection risk. Non-operative management with antibiotics may be considered for uncomplicated cases but has higher recurrence rate. Prompt surgery prevents perforation.",
+    "category": "surgery",
+    "tags": ["appendicitis", "abdominal_pain", "CT", "surgical", "appendectomy", "antibiotics", "treatment"]
   },
   {
     "id": 30,
-    "text": "We price our products competitively and offer best value guarantee in the market.",
-    "category": "pricing",
-    "tags": ["pricing", "value", "competitive"]
+    "text": "Gout is diagnosed when joint fluid analysis shows uric acid crystals, or serum uric acid is elevated above 6.8 mg/dL with characteristic joint symptoms. Acute treatment includes NSAIDs like indomethacin, colchicine, or corticosteroids. Colchicine should be started within 12 hours of symptom onset. Prophylaxis with allopurinol or febuxostat lowers uric acid levels. Lifestyle modifications include low-purine diet and avoiding alcohol.",
+    "category": "rheumatology",
+    "tags": ["gout", "uric_acid", "crystals", "arthritis", "colchicine", "allopurinol", "treatment"]
   },
   {
     "id": 31,
-    "text": "Corporate accounts are available with NET 30 payment terms and dedicated account managers.",
-    "category": "business",
-    "tags": ["corporate", "B2B", "business"]
+    "text": "Acute pancreatitis is diagnosed when serum amylase or lipase levels are three times the upper limit of normal, along with abdominal pain and imaging findings. Treatment includes NPO status, IV fluids, pain management with opioids, and treating underlying cause like gallstones or alcohol cessation. Severe cases need ICU care. ERCP may be needed for biliary obstruction. Most cases resolve with supportive care.",
+    "category": "gastroenterology",
+    "tags": ["pancreatitis", "amylase", "lipase", "abdominal_pain", "NPO", "IV_fluids", "treatment"]
   },
   {
     "id": 32,
-    "text": "Our eco-friendly packaging initiative uses 100% recyclable materials for all shipments.",
-    "category": "sustainability",
-    "tags": ["eco_friendly", "sustainable", "environment"]
+    "text": "Systemic lupus erythematosus is diagnosed using ACR criteria requiring at least 4 of 11 criteria including ANA positivity, rash, arthritis, and organ involvement. Treatment includes hydroxychloroquine as baseline therapy, corticosteroids for flares, and immunosuppressants like azathioprine or mycophenolate for severe organ involvement. Belimumab is used for refractory cases. Sun protection and regular monitoring are essential.",
+    "category": "rheumatology",
+    "tags": ["lupus", "SLE", "ANA", "autoimmune", "hydroxychloroquine", "corticosteroids", "treatment"]
   },
   {
     "id": 33,
-    "text": "Follow us on Instagram, Facebook, and Twitter @companyname for latest updates and promotions.",
-    "category": "social_media",
-    "tags": ["social", "marketing", "updates"]
+    "text": "Pulmonary embolism is diagnosed through CT pulmonary angiography showing filling defects in pulmonary arteries, or high-probability V/Q scan. Treatment includes anticoagulation with heparin initially, then DOACs like apixaban or rivaroxaban for 3-6 months. Thrombolysis is reserved for massive PE with hemodynamic instability. Inferior vena cava filter may be placed if anticoagulation contraindicated. Oxygen and supportive care.",
+    "category": "respiratory",
+    "tags": ["pulmonary_embolism", "PE", "CT_angiography", "thrombosis", "anticoagulation", "thrombolysis", "treatment"]
   },
   {
     "id": 34,
-    "text": "Product assembly services are available for furniture items starting at AED 150.",
-    "category": "services",
-    "tags": ["assembly", "furniture", "service"]
+    "text": "Acute kidney injury is diagnosed when serum creatinine increases by 0.3 mg/dL or 50% from baseline, or urine output is less than 0.5 mL/kg/hour. Treatment includes identifying and treating underlying cause, avoiding nephrotoxic medications, optimizing volume status, and correcting electrolyte imbalances. Severe cases may require renal replacement therapy. Most cases are reversible with prompt management.",
+    "category": "nephrology",
+    "tags": ["AKI", "kidney_injury", "creatinine", "renal", "dialysis", "fluid_management", "treatment"]
   },
   {
     "id": 35,
-    "text": "We offer trade-in programs for old electronics with up to 20% value towards new purchases.",
-    "category": "programs",
-    "tags": ["trade_in", "electronics", "recycling"]
+    "text": "Meningitis is diagnosed through lumbar puncture showing elevated white blood cells in CSF, with Gram stain and culture to identify causative organism. Bacterial meningitis requires immediate IV antibiotics like ceftriaxone plus vancomycin, with dexamethasone to reduce complications. Viral meningitis is supportive care. Treatment duration is 7-14 days for bacterial. Close contacts may need prophylaxis.",
+    "category": "infectious_disease",
+    "tags": ["meningitis", "CSF", "lumbar_puncture", "infection", "antibiotics", "ceftriaxone", "treatment"]
   },
   {
     "id": 36,
-    "text": "All refunds are processed within 7-10 business days to the original payment method.",
-    "category": "policy",
-    "tags": ["refund", "payment", "policy"]
+    "text": "Parkinson's disease is diagnosed clinically with bradykinesia plus tremor or rigidity, with response to levodopa supporting the diagnosis. Treatment includes levodopa-carbidopa as mainstay therapy, dopamine agonists like pramipexole, MAO-B inhibitors like rasagiline, and COMT inhibitors. Deep brain stimulation may be considered for advanced cases. Physical therapy and exercise are important. Treatment is symptomatic, not curative.",
+    "category": "neurology",
+    "tags": ["parkinsons", "movement_disorder", "bradykinesia", "neurological", "levodopa", "DBS", "treatment"]
   },
   {
     "id": 37,
-    "text": "Personal shopping assistance is available by appointment for customized product recommendations.",
-    "category": "services",
-    "tags": ["personal_shopping", "consultation", "service"]
+    "text": "Inflammatory bowel disease is diagnosed through colonoscopy with biopsy showing chronic inflammation, distinguishing Crohn's from ulcerative colitis by distribution. Treatment includes mesalamine for mild UC, corticosteroids for flares, immunomodulators like azathioprine, and biologics like infliximab or adalimumab for moderate-severe disease. Surgery may be needed for complications. Nutritional support is important.",
+    "category": "gastroenterology",
+    "tags": ["IBD", "Crohns", "ulcerative_colitis", "colonoscopy", "biologics", "mesalamine", "treatment"]
   },
   {
     "id": 38,
-    "text": "Our website uses 256-bit SSL encryption to ensure secure transactions and data protection.",
-    "category": "security",
-    "tags": ["security", "SSL", "privacy"]
+    "text": "Acute coronary syndrome is diagnosed when troponin is elevated with or without ST changes, indicating unstable angina or myocardial infarction. Treatment includes dual antiplatelet therapy, high-intensity statin, beta-blockers, and ACE inhibitors. STEMI requires urgent PCI or thrombolytics. NSTEMI may be managed medically or with early invasive strategy. Cardiac rehabilitation after stabilization.",
+    "category": "cardiovascular",
+    "tags": ["ACS", "coronary_syndrome", "troponin", "cardiac", "antiplatelet", "PCI", "treatment"]
   },
   {
     "id": 39,
-    "text": "Seasonal sales occur during Ramadan, National Day, Black Friday, and New Year with up to 50% off.",
-    "category": "discounts",
-    "tags": ["sales", "seasonal", "discount"]
+    "text": "Hypocalcemia is diagnosed when serum calcium is below 8.5 mg/dL, often associated with low parathyroid hormone or vitamin D deficiency. Treatment includes IV calcium gluconate for severe symptomatic cases, then oral calcium carbonate or citrate 1000-2000mg daily. Vitamin D supplementation if deficient. Treat underlying cause. Monitor for hypercalcemia with treatment.",
+    "category": "endocrinology",
+    "tags": ["hypocalcemia", "calcium", "PTH", "electrolytes", "calcium_supplement", "vitamin_D", "treatment"]
   },
   {
     "id": 40,
-    "text": "Product specifications, user manuals, and setup guides are available for download on our website.",
-    "category": "resources",
-    "tags": ["manuals", "documentation", "resources"]
+    "text": "Acute cholecystitis is diagnosed through ultrasound showing gallbladder wall thickening, pericholecystic fluid, or positive Murphy's sign. Treatment includes NPO status, IV fluids, and antibiotics like piperacillin-tazobactam. Cholecystectomy is definitive treatment, preferably within 72 hours. Laparoscopic approach is preferred. Delayed surgery may be needed if patient unstable. ERCP if common bile duct stones present.",
+    "category": "surgery",
+    "tags": ["cholecystitis", "gallbladder", "ultrasound", "surgical", "cholecystectomy", "antibiotics", "treatment"]
   },
   {
     "id": 41,
-    "text": "We partner with leading brands including Samsung, LG, Sony, Apple, and Bosch.",
-    "category": "products",
-    "tags": ["brands", "partners", "manufacturers"]
+    "text": "Tuberculosis is diagnosed through sputum acid-fast bacilli smear and culture, with chest X-ray showing upper lobe infiltrates or cavitation. Treatment includes 4-drug regimen: isoniazid, rifampin, ethambutol, and pyrazinamide for 2 months, then isoniazid and rifampin for 4 months. Directly observed therapy ensures compliance. Drug-resistant TB requires longer treatment with second-line agents. Contact tracing is essential.",
+    "category": "infectious_disease",
+    "tags": ["tuberculosis", "TB", "AFB", "chest_Xray", "isoniazid", "rifampin", "DOT", "treatment"]
   },
   {
     "id": 42,
-    "text": "Parking is available at all our showroom locations with designated customer parking spots.",
-    "category": "office_info",
-    "tags": ["parking", "showroom", "facilities"]
+    "text": "Acute bronchitis is diagnosed clinically with productive cough lasting less than 3 weeks, usually viral in origin, without evidence of pneumonia. Treatment is primarily supportive: rest, hydration, and symptomatic relief with cough suppressants or expectorants. Antibiotics are not indicated unless bacterial cause suspected. Most cases resolve within 1-2 weeks. Smoking cessation improves recovery.",
+    "category": "respiratory",
+    "tags": ["bronchitis", "cough", "respiratory_infection", "supportive_care", "treatment"]
   },
   {
     "id": 43,
-    "text": "Gift cards are available in denominations of AED 100, 250, 500, and 1000 with no expiry date.",
-    "category": "services",
-    "tags": ["gift_card", "voucher", "gift"]
+    "text": "Hypercalcemia is diagnosed when serum calcium exceeds 10.5 mg/dL, commonly caused by hyperparathyroidism, malignancy, or excessive vitamin D. Treatment includes IV fluids and loop diuretics for severe cases, bisphosphonates like zoledronic acid for malignancy-related hypercalcemia, calcitonin for rapid reduction, and treating underlying cause. Parathyroidectomy for primary hyperparathyroidism.",
+    "category": "endocrinology",
+    "tags": ["hypercalcemia", "calcium", "PTH", "electrolytes", "bisphosphonates", "parathyroidectomy", "treatment"]
   },
   {
     "id": 44,
-    "text": "Technical support for products is available via phone, email, or in-person at service centers.",
-    "category": "contact",
-    "tags": ["support", "technical", "service"]
+    "text": "Acute pyelonephritis is diagnosed when urine culture is positive with symptoms of fever, flank pain, and costovertebral angle tenderness. Treatment includes IV antibiotics like ceftriaxone or fluoroquinolones initially, then oral antibiotics for 7-14 days total. Hospitalization needed if severe symptoms, dehydration, or unable to take oral medications. Supportive care with IV fluids and antipyretics. Follow-up culture confirms clearance.",
+    "category": "urology",
+    "tags": ["pyelonephritis", "kidney_infection", "UTI", "fever", "antibiotics", "ceftriaxone", "treatment"]
   },
   {
     "id": 45,
-    "text": "Our inventory is updated daily on the website showing real-time stock availability.",
-    "category": "technology",
-    "tags": ["inventory", "stock", "availability"]
+    "text": "Bell's palsy is diagnosed clinically with sudden unilateral facial weakness, excluding other causes through imaging if atypical features are present. Treatment includes oral corticosteroids like prednisone 60-80mg daily for 7-10 days if started within 72 hours of onset. Antiviral therapy with acyclovir or valacyclovir may be added. Eye protection with artificial tears and patching prevents corneal damage. Most patients recover fully.",
+    "category": "neurology",
+    "tags": ["bells_palsy", "facial_weakness", "neurological", "corticosteroids", "antivirals", "treatment"]
   },
   {
     "id": 46,
-    "text": "Pre-orders are accepted for new product launches with a 10% deposit. Balance due upon release.",
-    "category": "policy",
-    "tags": ["pre_order", "new_products", "policy"]
+    "text": "Acute viral gastroenteritis is diagnosed clinically with diarrhea and vomiting, usually self-limiting, with stool studies if bacterial cause is suspected. Treatment includes oral rehydration solution to prevent dehydration, antiemetics like ondansetron if severe vomiting, and avoiding antidiarrheals initially. Most cases resolve in 1-3 days. Antibiotics only if bacterial cause confirmed. Probiotics may help recovery.",
+    "category": "gastroenterology",
+    "tags": ["gastroenteritis", "diarrhea", "vomiting", "infection", "rehydration", "supportive_care", "treatment"]
   },
   {
     "id": 47,
-    "text": "We maintain a 98% customer satisfaction rating based on verified customer reviews.",
-    "category": "company_info",
-    "tags": ["satisfaction", "reviews", "ratings"]
+    "text": "Iron deficiency anemia is diagnosed when ferritin is low, transferrin saturation is reduced, and microcytic hypochromic red cells are seen on peripheral smear. Treatment includes oral iron supplementation with ferrous sulfate 325mg once or twice daily, taken with vitamin C to enhance absorption, avoiding with meals. IV iron if oral not tolerated or severe deficiency. Treat underlying cause like bleeding. Recheck hemoglobin in 4-6 weeks.",
+    "category": "hematology",
+    "tags": ["iron_deficiency", "anemia", "ferritin", "blood_disorder", "iron_supplement", "ferrous_sulfate", "treatment"]
   },
   {
     "id": 48,
-    "text": "Senior citizens aged 60+ receive a 5% discount on all purchases every Tuesday.",
-    "category": "discounts",
-    "tags": ["senior_discount", "special_offers", "discount"]
+    "text": "Acute otitis media is diagnosed through otoscopy showing bulging tympanic membrane with reduced mobility, often associated with ear pain and fever. Treatment includes amoxicillin or amoxicillin-clavulanate for 5-7 days in children, or watchful waiting for 48-72 hours in mild cases. Pain management with acetaminophen or ibuprofen. Tympanostomy tubes may be needed for recurrent cases. Most resolve without complications.",
+    "category": "otolaryngology",
+    "tags": ["otitis_media", "ear_infection", "otoscopy", "pediatrics", "amoxicillin", "antibiotics", "treatment"]
   },
   {
     "id": 49,
-    "text": "Our FAQ section on the website covers common questions about orders, shipping, and returns.",
-    "category": "resources",
-    "tags": ["FAQ", "help", "information"]
+    "text": "Acute sinusitis is diagnosed clinically with facial pain, nasal congestion, and purulent discharge lasting more than 10 days, or CT showing sinus opacification. Treatment includes nasal saline irrigation, intranasal corticosteroids, and decongestants. Antibiotics like amoxicillin-clavulanate only if symptoms persist beyond 10 days or severe. Most cases are viral and resolve without antibiotics. Surgery for chronic or recurrent cases.",
+    "category": "otolaryngology",
+    "tags": ["sinusitis", "sinus_infection", "CT", "ENT", "nasal_irrigation", "corticosteroids", "treatment"]
   },
   {
     "id": 50,
-    "text": "We are committed to customer privacy and never share personal information with third parties.",
-    "category": "security",
-    "tags": ["privacy", "data_protection", "policy"]
+    "text": "Acute pharyngitis is diagnosed clinically with sore throat, and rapid strep test or throat culture confirms Group A Streptococcus if bacterial cause is suspected. Treatment includes penicillin or amoxicillin for 10 days if strep positive, or azithromycin if penicillin allergic. Viral pharyngitis is supportive care with rest, hydration, and pain relief. Antibiotics not needed for viral causes. Most cases resolve in 3-7 days.",
+    "category": "otolaryngology",
+    "tags": ["pharyngitis", "strep_throat", "throat_culture", "infection", "penicillin", "antibiotics", "treatment"]
   }
 ]
