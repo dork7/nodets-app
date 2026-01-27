@@ -1,4 +1,5 @@
 import { ChromaClient } from 'chromadb';
+import { DefaultEmbeddingFunction } from '@chroma-core/default-embed';
 
 import { logger } from '@/server';
 
@@ -48,9 +49,9 @@ export const testChromaConnection = async (): Promise<boolean> => {
 };
 
 /**
- * Get or create a collection
+ * Get or create a collection with default embedding function
  */
-export const getOrCreateCollection = async (name: string) => {
+export const getOrCreateCollection = async (name: string, useEmbeddings: boolean = true) => {
  try {
   const client = getChromaClient();
   const existing = await client.listCollections();
@@ -58,11 +59,51 @@ export const getOrCreateCollection = async (name: string) => {
 
   if (found) {
    logger.info(`📚 Using existing collection: ${name}`);
-   return await client.getCollection({ name });
+   try {
+    // Try to get collection with embedding function if needed
+    if (useEmbeddings) {
+     const collection = await client.getCollection({
+      name,
+      embeddingFunction: new DefaultEmbeddingFunction(),
+     });
+     return collection;
+    }
+    return await client.getCollection({ name });
+   } catch (error) {
+    // If collection exists but doesn't support embeddings, we might need to recreate it
+    // For now, log a warning and try without embedding function
+    logger.warn(
+     `Collection ${name} may not have embedding function. If you get errors, delete and recreate the collection.`
+    );
+    if (useEmbeddings) {
+     // Try to delete and recreate with embeddings
+     logger.info(`Attempting to recreate collection ${name} with embedding function...`);
+     try {
+      await client.deleteCollection({ name });
+      const collection = await client.createCollection({
+       name,
+       embeddingFunction: new DefaultEmbeddingFunction(),
+      });
+      logger.info(`✅ Recreated collection ${name} with default embeddings`);
+      return collection;
+     } catch (recreateError) {
+      logger.error(`Failed to recreate collection: ${(recreateError as Error).message}`);
+      throw error; // Throw original error
+     }
+    }
+    return await client.getCollection({ name });
+   }
   }
 
-  const collection = await client.createCollection({ name });
-  logger.info(`✅ Created new collection: ${name}`);
+  // Create collection with default embedding function if enabled
+  const collection = useEmbeddings
+   ? await client.createCollection({
+      name,
+      embeddingFunction: new DefaultEmbeddingFunction(),
+     })
+   : await client.createCollection({ name });
+
+  logger.info(`✅ Created new collection: ${name}${useEmbeddings ? ' with default embeddings' : ''}`);
   return collection;
  } catch (error) {
   logger.error(`❌ Error getting/creating collection: ${(error as Error).message}`);

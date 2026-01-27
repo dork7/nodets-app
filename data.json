@@ -1,5 +1,302 @@
 [
-  { "id": 1, "text": "Our office hours are from 9 AM to 5 PM." },
-  { "id": 2, "text": "We deliver products across UAE within 2 business days." },
-  { "id": 3, "text": "Customer support email is help@company.com." }
+  {
+    "id": 1,
+    "text": "Our office hours are from 9 AM to 5 PM.",
+    "category": "office_info",
+    "tags": ["hours", "schedule"]
+  },
+  {
+    "id": 2,
+    "text": "We deliver products across UAE within 2 business days.",
+    "category": "delivery",
+    "tags": ["shipping", "UAE", "delivery_time"]
+  },
+  {
+    "id": 3,
+    "text": "Customer support email is help@company.com.",
+    "category": "contact",
+    "tags": ["support", "email", "contact"]
+  },
+  {
+    "id": 4,
+    "text": "Our customer support hotline is available 24/7 at +971-4-XXX-XXXX for urgent inquiries.",
+    "category": "contact",
+    "tags": ["support", "phone", "24/7"]
+  },
+  {
+    "id": 5,
+    "text": "We offer free shipping on orders above AED 200 within UAE mainland.",
+    "category": "delivery",
+    "tags": ["shipping", "free_shipping", "UAE"]
+  },
+  {
+    "id": 6,
+    "text": "Our return policy allows returns within 30 days of purchase with original receipt and packaging.",
+    "category": "policy",
+    "tags": ["returns", "refund", "policy"]
+  },
+  {
+    "id": 7,
+    "text": "We accept payments via credit card, debit card, cash on delivery, and Apple Pay.",
+    "category": "payment",
+    "tags": ["payment_methods", "checkout"]
+  },
+  {
+    "id": 8,
+    "text": "Our main office is located in Dubai Marina, Building 5, Floor 12, Office 1203.",
+    "category": "office_info",
+    "tags": ["location", "address", "Dubai"]
+  },
+  {
+    "id": 9,
+    "text": "Weekend hours are Saturday and Sunday from 10 AM to 3 PM. We are closed on public holidays.",
+    "category": "office_info",
+    "tags": ["hours", "weekend", "holidays"]
+  },
+  {
+    "id": 10,
+    "text": "Express delivery is available for an additional AED 50 and guarantees next-day delivery within Dubai.",
+    "category": "delivery",
+    "tags": ["shipping", "express", "Dubai"]
+  },
+  {
+    "id": 11,
+    "text": "We have a loyalty program where customers earn 1 point for every AED 10 spent. 100 points equals AED 10 discount.",
+    "category": "rewards",
+    "tags": ["loyalty", "points", "rewards"]
+  },
+  {
+    "id": 12,
+    "text": "All products come with a standard 1-year manufacturer warranty covering defects and malfunctions.",
+    "category": "warranty",
+    "tags": ["warranty", "guarantee", "coverage"]
+  },
+  {
+    "id": 13,
+    "text": "International shipping is available to GCC countries with delivery in 5-7 business days.",
+    "category": "delivery",
+    "tags": ["shipping", "international", "GCC"]
+  },
+  {
+    "id": 14,
+    "text": "Our live chat support is available on our website from 9 AM to 9 PM daily.",
+    "category": "contact",
+    "tags": ["support", "live_chat", "online"]
+  },
+  {
+    "id": 15,
+    "text": "We offer installation services for electronics and appliances for AED 100-300 depending on the product.",
+    "category": "services",
+    "tags": ["installation", "service", "electronics"]
+  },
+  {
+    "id": 16,
+    "text": "Price matching is available if you find the same product cheaper elsewhere. Terms and conditions apply.",
+    "category": "policy",
+    "tags": ["price_match", "policy", "guarantee"]
+  },
+  {
+    "id": 17,
+    "text": "Students and educators receive a 10% discount on all purchases with valid ID.",
+    "category": "discounts",
+    "tags": ["discount", "students", "education"]
+  },
+  {
+    "id": 18,
+    "text": "Our product catalog includes electronics, home appliances, furniture, and office supplies.",
+    "category": "products",
+    "tags": ["catalog", "categories", "products"]
+  },
+  {
+    "id": 19,
+    "text": "Track your order online using the tracking number sent to your email after purchase.",
+    "category": "delivery",
+    "tags": ["tracking", "order_status", "shipping"]
+  },
+  {
+    "id": 20,
+    "text": "We have showrooms in Dubai, Abu Dhabi, and Sharjah. Visit our website for exact addresses.",
+    "category": "office_info",
+    "tags": ["showroom", "location", "branches"]
+  },
+  {
+    "id": 21,
+    "text": "Bulk orders of 10+ items receive a 15% discount. Contact our sales team for quotes.",
+    "category": "discounts",
+    "tags": ["bulk", "wholesale", "discount"]
+  },
+  {
+    "id": 22,
+    "text": "Extended warranty plans are available for 2 or 3 years at purchase for an additional fee.",
+    "category": "warranty",
+    "tags": ["extended_warranty", "coverage", "protection"]
+  },
+  {
+    "id": 23,
+    "text": "Our mobile app offers exclusive deals and faster checkout. Available on iOS and Android.",
+    "category": "technology",
+    "tags": ["mobile_app", "deals", "app"]
+  },
+  {
+    "id": 24,
+    "text": "Gift wrapping is available for AED 15 per item. Perfect for birthdays and special occasions.",
+    "category": "services",
+    "tags": ["gift_wrap", "service", "special"]
+  },
+  {
+    "id": 25,
+    "text": "Cancel your order free of charge within 2 hours of placing it if it hasn't shipped yet.",
+    "category": "policy",
+    "tags": ["cancellation", "policy", "order"]
+  },
+  {
+    "id": 26,
+    "text": "Subscribe to our newsletter for 5% off your first order and weekly deals.",
+    "category": "marketing",
+    "tags": ["newsletter", "discount", "subscription"]
+  },
+  {
+    "id": 27,
+    "text": "Our customer service team speaks Arabic, English, Hindi, and Urdu.",
+    "category": "contact",
+    "tags": ["support", "languages", "multilingual"]
+  },
+  {
+    "id": 28,
+    "text": "Same-day delivery is available for orders placed before 12 PM in Dubai and Abu Dhabi.",
+    "category": "delivery",
+    "tags": ["same_day", "fast_delivery", "shipping"]
+  },
+  {
+    "id": 29,
+    "text": "Damaged items during delivery can be reported within 48 hours for free replacement.",
+    "category": "policy",
+    "tags": ["damage", "replacement", "policy"]
+  },
+  {
+    "id": 30,
+    "text": "We price our products competitively and offer best value guarantee in the market.",
+    "category": "pricing",
+    "tags": ["pricing", "value", "competitive"]
+  },
+  {
+    "id": 31,
+    "text": "Corporate accounts are available with NET 30 payment terms and dedicated account managers.",
+    "category": "business",
+    "tags": ["corporate", "B2B", "business"]
+  },
+  {
+    "id": 32,
+    "text": "Our eco-friendly packaging initiative uses 100% recyclable materials for all shipments.",
+    "category": "sustainability",
+    "tags": ["eco_friendly", "sustainable", "environment"]
+  },
+  {
+    "id": 33,
+    "text": "Follow us on Instagram, Facebook, and Twitter @companyname for latest updates and promotions.",
+    "category": "social_media",
+    "tags": ["social", "marketing", "updates"]
+  },
+  {
+    "id": 34,
+    "text": "Product assembly services are available for furniture items starting at AED 150.",
+    "category": "services",
+    "tags": ["assembly", "furniture", "service"]
+  },
+  {
+    "id": 35,
+    "text": "We offer trade-in programs for old electronics with up to 20% value towards new purchases.",
+    "category": "programs",
+    "tags": ["trade_in", "electronics", "recycling"]
+  },
+  {
+    "id": 36,
+    "text": "All refunds are processed within 7-10 business days to the original payment method.",
+    "category": "policy",
+    "tags": ["refund", "payment", "policy"]
+  },
+  {
+    "id": 37,
+    "text": "Personal shopping assistance is available by appointment for customized product recommendations.",
+    "category": "services",
+    "tags": ["personal_shopping", "consultation", "service"]
+  },
+  {
+    "id": 38,
+    "text": "Our website uses 256-bit SSL encryption to ensure secure transactions and data protection.",
+    "category": "security",
+    "tags": ["security", "SSL", "privacy"]
+  },
+  {
+    "id": 39,
+    "text": "Seasonal sales occur during Ramadan, National Day, Black Friday, and New Year with up to 50% off.",
+    "category": "discounts",
+    "tags": ["sales", "seasonal", "discount"]
+  },
+  {
+    "id": 40,
+    "text": "Product specifications, user manuals, and setup guides are available for download on our website.",
+    "category": "resources",
+    "tags": ["manuals", "documentation", "resources"]
+  },
+  {
+    "id": 41,
+    "text": "We partner with leading brands including Samsung, LG, Sony, Apple, and Bosch.",
+    "category": "products",
+    "tags": ["brands", "partners", "manufacturers"]
+  },
+  {
+    "id": 42,
+    "text": "Parking is available at all our showroom locations with designated customer parking spots.",
+    "category": "office_info",
+    "tags": ["parking", "showroom", "facilities"]
+  },
+  {
+    "id": 43,
+    "text": "Gift cards are available in denominations of AED 100, 250, 500, and 1000 with no expiry date.",
+    "category": "services",
+    "tags": ["gift_card", "voucher", "gift"]
+  },
+  {
+    "id": 44,
+    "text": "Technical support for products is available via phone, email, or in-person at service centers.",
+    "category": "contact",
+    "tags": ["support", "technical", "service"]
+  },
+  {
+    "id": 45,
+    "text": "Our inventory is updated daily on the website showing real-time stock availability.",
+    "category": "technology",
+    "tags": ["inventory", "stock", "availability"]
+  },
+  {
+    "id": 46,
+    "text": "Pre-orders are accepted for new product launches with a 10% deposit. Balance due upon release.",
+    "category": "policy",
+    "tags": ["pre_order", "new_products", "policy"]
+  },
+  {
+    "id": 47,
+    "text": "We maintain a 98% customer satisfaction rating based on verified customer reviews.",
+    "category": "company_info",
+    "tags": ["satisfaction", "reviews", "ratings"]
+  },
+  {
+    "id": 48,
+    "text": "Senior citizens aged 60+ receive a 5% discount on all purchases every Tuesday.",
+    "category": "discounts",
+    "tags": ["senior_discount", "special_offers", "discount"]
+  },
+  {
+    "id": 49,
+    "text": "Our FAQ section on the website covers common questions about orders, shipping, and returns.",
+    "category": "resources",
+    "tags": ["FAQ", "help", "information"]
+  },
+  {
+    "id": 50,
+    "text": "We are committed to customer privacy and never share personal information with third parties.",
+    "category": "security",
+    "tags": ["privacy", "data_protection", "policy"]
+  }
 ]

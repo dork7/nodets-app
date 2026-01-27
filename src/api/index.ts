@@ -5,6 +5,7 @@ import { aiUtilsRouter } from '@/api/aiUtils/aiUtilsRouter';
 import { catalogueRouter } from '@/api/catalogue/catalogueRouter';
 import { healthCheckRouter } from '@/api/healthCheck/healthCheckRouter';
 import { kafkaRouter } from '@/api/kafka/kafkaRouter';
+import { ragRouter } from '@/api/rag/ragRouter';
 import { redisRouter } from '@/api/redis/redisRouter';
 import { userRouter } from '@/api/user/userRouter';
 import { readFileData } from '@/common/utils/fileUtils';
@@ -22,6 +23,7 @@ router.use('/kafka', kafkaRouter);
 router.use('/catalogue', catalogueRouter);
 router.use('/orders', ordersRouter);
 router.use('/vision', visionRouter);
+router.use('/rag', ragRouter);
 
 router.use('/dashboard', async (req, res) => {
  const fileContent = await readFileData('file.txt');
