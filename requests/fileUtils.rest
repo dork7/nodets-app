@@ -1,0 +1,4 @@
+curl --location 'http://localhost:2020/v1/file-utils/extract-and-convert' \
+--header 'Content-Type: multipart/form-data' \
+--header 'Cookie: logUuid=anpysut127' \
+--form 'file=@"/Users/hamza/Downloads/___ Airblue ___ - View Reservation.pdf"'

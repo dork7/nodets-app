@@ -23,6 +23,15 @@ const ExtractTextResponseSchema = z.object({
  characterCount: z.number(),
 });
 
+const ChromaDBFormatResponseSchema = z.object({
+ ids: z.array(z.string()),
+ documents: z.array(z.string()),
+ metadatas: z.array(z.record(z.union([z.string(), z.number(), z.boolean(), z.null()]))),
+ totalChunks: z.number(),
+});
+
+const ExtractAndConvertResponseSchema = ExtractTextResponseSchema.merge(ChromaDBFormatResponseSchema);
+
 // Configure multer for file uploads
 const upload = multer({
  storage: multer.memoryStorage(),
@@ -58,6 +67,8 @@ const upload = multer({
 
 // Register schemas
 fileUtilsRegistry.register('ExtractTextResponse', ExtractTextResponseSchema);
+fileUtilsRegistry.register('ChromaDBFormatResponse', ChromaDBFormatResponseSchema);
+fileUtilsRegistry.register('ExtractAndConvertResponse', ExtractAndConvertResponseSchema);
 
 // Register paths
 fileUtilsRegistry.registerPath({
@@ -76,6 +87,26 @@ fileUtilsRegistry.registerPath({
   },
  },
  responses: createApiResponse(ExtractTextResponseSchema, 'Text extracted successfully'),
+});
+
+fileUtilsRegistry.registerPath({
+ method: 'post',
+ path: '/file-utils/extract-and-convert',
+ tags: ['FileUtils'],
+ request: {
+  body: {
+   content: {
+    'multipart/form-data': {
+     schema: z.object({
+      file: z.any(),
+      chunkSize: z.number().optional(),
+      overlap: z.number().optional(),
+     }),
+    },
+   },
+  },
+ },
+ responses: createApiResponse(ExtractAndConvertResponseSchema, 'Text extracted and converted to ChromaDB format successfully'),
 });
 
 export const fileUtilsRouter: Router = (() => {
@@ -119,6 +150,56 @@ export const fileUtilsRouter: Router = (() => {
    }
 
    const serviceResponse = await fileUtilsService.extractText(file);
+   handleServiceResponse(serviceResponse, res);
+  });
+ });
+
+ // Extract text and convert to ChromaDB format endpoint
+ router.post('/extract-and-convert', (req: Request, res: Response) => {
+  singleUpload(req, res, async (err: unknown) => {
+   if (err) {
+    const errorMessage =
+     err instanceof multer.MulterError
+      ? err.message
+      : 'Unable to process the uploaded file.';
+    const statusCode =
+     err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE'
+      ? 413 // PAYLOAD_TOO_LARGE
+      : StatusCodes.BAD_REQUEST;
+
+    const serviceResponse = new ServiceResponse(
+     ResponseStatus.Failed,
+     errorMessage,
+     null,
+     statusCode,
+     err
+    );
+
+    return handleServiceResponse(serviceResponse, res);
+   }
+
+   const file = req.file;
+
+   if (!file) {
+    const serviceResponse = new ServiceResponse(
+     ResponseStatus.Failed,
+     'File is required. Please upload a file using the "file" form field.',
+     null,
+     StatusCodes.BAD_REQUEST
+    );
+    return handleServiceResponse(serviceResponse, res);
+   }
+
+   // Parse optional options from request body
+   const chunkSize = req.body.chunkSize ? parseInt(req.body.chunkSize, 10) : undefined;
+   const overlap = req.body.overlap ? parseInt(req.body.overlap, 10) : undefined;
+
+   const options = {
+    ...(chunkSize && { chunkSize }),
+    ...(overlap && { overlap }),
+   };
+
+   const serviceResponse = await fileUtilsService.extractAndConvertToChromaDB(file, options);
    handleServiceResponse(serviceResponse, res);
   });
  });

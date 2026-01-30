@@ -8,6 +8,7 @@ import { env } from '@/common/utils/envConfig';
 import { logger } from '@/server';
 import { getOrCreateCollection } from '@/config/chroma';
 import { callAI } from '@/openai';
+import { fileUtilsService } from '@/api/fileUtils/fileUtilsService';
 
 interface JsonDocument {
  id: string | number;
@@ -171,7 +172,8 @@ export const ragService = {
   question: string,
   collectionName: string = DEFAULT_COLLECTION_NAME,
   topK: number = 3,
-  aiModel?: string
+  aiModel?: string,
+  customPrompt?: string
  ): Promise<ServiceResponse<QueryResponse>> => {
   try {
    if (!question || question.trim().length === 0) {
@@ -208,8 +210,11 @@ export const ragService = {
    const sources = (results.ids[0] || []).filter((id): id is string => id !== null);
 
    // Generate answer using AI
-   const systemPrompt =
-    'You are a rude doctor. Answer the question based ONLY on the provided context also share the treatment plan. If there is no data in context say the requested item or information is not available.';
+   let systemPrompt =
+    'You are a rude assistant. Answer the question based ONLY on the provided context. If there is no data in context say the requested item or information is not available.';
+   if (customPrompt) {
+    systemPrompt = `You are a rude assistant. Answer the question based ONLY on the provided context.` + customPrompt;
+   }
    const userPrompt = `Context:\n${context}\n\nQuestion: ${question}\n\nAnswer:`;
 
    const modelToUse = aiModel || env.AI_MODELS?.split(',')[0] || 'ai/gemma3';
@@ -245,6 +250,87 @@ export const ragService = {
    const errorMessage = `Error querying dataset: ${(error as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse<QueryResponse>(
+    ResponseStatus.Failed,
+    errorMessage,
+    null as any,
+    StatusCodes.INTERNAL_SERVER_ERROR
+   );
+  }
+ },
+
+ /**
+  * Ingest data from uploaded file into ChromaDB
+  */
+ ingestFromFile: async (
+  file: Express.Multer.File,
+  collectionName: string = DEFAULT_COLLECTION_NAME,
+  options?: {
+   chunkSize?: number;
+   overlap?: number;
+  }
+ ): Promise<ServiceResponse<IngestResponse>> => {
+  try {
+   logger.info(`📄 Ingesting file into ChromaDB: ${file.originalname} (${file.mimetype})`);
+
+   // Extract text and convert to ChromaDB format using fileUtils service
+   const extractResponse = await fileUtilsService.extractAndConvertToChromaDB(file, options);
+
+   if (!extractResponse.responseObject) {
+    return new ServiceResponse<IngestResponse>(
+     ResponseStatus.Failed,
+     'Failed to extract text from file',
+     null as any,
+     StatusCodes.BAD_REQUEST
+    );
+   }
+
+   const { ids, documents, metadatas } = extractResponse.responseObject;
+
+   if (!ids || ids.length === 0 || !documents || documents.length === 0) {
+    return new ServiceResponse<IngestResponse>(
+     ResponseStatus.Failed,
+     'No valid data extracted from file',
+     null as any,
+     StatusCodes.BAD_REQUEST
+    );
+   }
+
+   // Get or create collection with built-in embeddings
+   const collection = await getOrCreateCollection(collectionName, USE_CHROMADB_EMBEDDINGS);
+
+   // Process documents in batches
+   const batchSize = 10;
+   let processedCount = 0;
+
+   for (let i = 0; i < ids.length; i += batchSize) {
+    const batchIds = ids.slice(i, i + batchSize);
+    const batchDocuments = documents.slice(i, i + batchSize);
+    const batchMetadatas = metadatas.slice(i, i + batchSize);
+
+    // Add to ChromaDB - embeddings are generated automatically by ChromaDB
+    await collection.add({
+     ids: batchIds,
+     documents: batchDocuments,
+     metadatas: batchMetadatas,
+    });
+
+    processedCount += batchIds.length;
+    logger.info(`✅ Processed ${processedCount}/${ids.length} chunks`);
+   }
+
+   return new ServiceResponse<IngestResponse>(
+    ResponseStatus.Success,
+    `Successfully ingested ${processedCount} chunks from file: ${file.originalname}`,
+    {
+     ingested: processedCount,
+     collectionName,
+    },
+    StatusCodes.OK
+   );
+  } catch (error) {
+   const errorMessage = `Error ingesting file: ${(error as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse<IngestResponse>(
     ResponseStatus.Failed,
     errorMessage,
     null as any,

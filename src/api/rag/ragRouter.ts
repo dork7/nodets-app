@@ -1,6 +1,7 @@
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import express, { Request, Response, Router } from 'express';
+import multer from 'multer';
 import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
 
@@ -45,6 +46,39 @@ const QueryResponseSchema = z.object({
 const CollectionStatsSchema = z.object({
  count: z.number(),
  name: z.string(),
+});
+
+// Configure multer for file uploads
+const upload = multer({
+ storage: multer.memoryStorage(),
+ limits: {
+  fileSize: 50 * 1024 * 1024, // 50MB max file size
+ },
+ fileFilter: (_req, file, cb) => {
+  // Allow text, PDF, and DOCX files
+  const allowedMimeTypes = [
+   'text/plain',
+   'application/pdf',
+   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ];
+  const allowedExtensions = ['.txt', '.pdf', '.docx'];
+
+  const hasAllowedMimeType = allowedMimeTypes.includes(file.mimetype);
+  const hasAllowedExtension = allowedExtensions.some((ext) =>
+   file.originalname.toLowerCase().endsWith(ext)
+  );
+
+  if (hasAllowedMimeType || hasAllowedExtension) {
+   cb(null, true);
+  } else {
+   cb(
+    new multer.MulterError(
+     'LIMIT_UNEXPECTED_FILE',
+     `File type not supported. Allowed types: ${allowedExtensions.join(', ')}`
+    )
+   );
+  }
+ },
 });
 
 // Register schemas
@@ -97,8 +131,30 @@ ragRegistry.registerPath({
  responses: createApiResponse(CollectionStatsSchema, 'Collection stats retrieved successfully'),
 });
 
+ragRegistry.registerPath({
+ method: 'post',
+ path: '/rag/ingest-file',
+ tags: ['RAG'],
+ request: {
+  body: {
+   content: {
+    'multipart/form-data': {
+     schema: z.object({
+      file: z.any(),
+      collectionName: z.string().optional(),
+      chunkSize: z.number().optional(),
+      overlap: z.number().optional(),
+     }),
+    },
+   },
+  },
+ },
+ responses: createApiResponse(IngestResponseSchema, 'File ingested successfully'),
+});
+
 export const ragRouter: Router = (() => {
  const router = express.Router();
+ const singleUpload = upload.single('file');
 
  // Ingest from JSON endpoint
  router.post('/ingest', async (req: Request, res: Response) => {
@@ -143,12 +199,73 @@ export const ragRouter: Router = (() => {
    const serviceResponse = await ragService.getCollectionStats(collectionName);
    handleServiceResponse(serviceResponse, res);
   } catch (error) {
-    res.status(500).json({
-     success: false,
-     message: `Error getting stats: ${(error as Error).message}`,
-     responseObject: null,
-    });
+   res.status(500).json({
+    success: false,
+    message: `Error getting stats: ${(error as Error).message}`,
+    responseObject: null,
+   });
   }
+ });
+
+ // Ingest from file endpoint
+ router.post('/ingest-file', (req: Request, res: Response) => {
+  singleUpload(req, res, async (err: unknown) => {
+   if (err) {
+    const errorMessage =
+     err instanceof multer.MulterError
+      ? err.message
+      : 'Unable to process the uploaded file.';
+    const statusCode =
+     err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE'
+      ? 413 // PAYLOAD_TOO_LARGE
+      : StatusCodes.BAD_REQUEST;
+
+    const serviceResponse = new ServiceResponse(
+     ResponseStatus.Failed,
+     errorMessage,
+     null,
+     statusCode,
+     err
+    );
+
+    return handleServiceResponse(serviceResponse, res);
+   }
+
+   const file = req.file;
+
+   if (!file) {
+    const serviceResponse = new ServiceResponse(
+     ResponseStatus.Failed,
+     'File is required. Please upload a file using the "file" form field.',
+     null,
+     StatusCodes.BAD_REQUEST
+    );
+    return handleServiceResponse(serviceResponse, res);
+   }
+
+   try {
+    const collectionName = req.body.collectionName || undefined;
+    const chunkSize = req.body.chunkSize ? parseInt(req.body.chunkSize, 10) : undefined;
+    const overlap = req.body.overlap ? parseInt(req.body.overlap, 10) : undefined;
+
+    const options = {
+     ...(chunkSize && { chunkSize }),
+     ...(overlap && { overlap }),
+    };
+
+    const serviceResponse = await ragService.ingestFromFile(file, collectionName, options);
+    handleServiceResponse(serviceResponse, res);
+   } catch (error) {
+    const serviceResponse = new ServiceResponse(
+     ResponseStatus.Failed,
+     `Error ingesting file: ${(error as Error).message}`,
+     null,
+     StatusCodes.INTERNAL_SERVER_ERROR,
+     error
+    );
+    handleServiceResponse(serviceResponse, res);
+   }
+  });
  });
 
  return router;
