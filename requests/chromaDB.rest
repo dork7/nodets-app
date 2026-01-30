@@ -1,0 +1,8 @@
+
+
+###
+curl --location --request DELETE 'http://localhost:2020/v1/rag/collection?collectionName=knowledge_base2' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: logUuid=anpysut127; logUuid=anpysut127; logUuid=anpysut127'
+
+###

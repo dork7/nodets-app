@@ -6,7 +6,7 @@ import path from 'path';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { env } from '@/common/utils/envConfig';
 import { logger } from '@/server';
-import { getOrCreateCollection } from '@/config/chroma';
+import { getOrCreateCollection, deleteCollection as deleteChromaCollection } from '@/config/chroma';
 import { callAI } from '@/openai';
 import { fileUtilsService } from '@/api/fileUtils/fileUtilsService';
 
@@ -211,7 +211,7 @@ export const ragService = {
 
    // Generate answer using AI
    let systemPrompt =
-    'You are a rude assistant. Answer the question based ONLY on the provided context. If there is no data in context say the requested item or information is not available.';
+    'You are a rude assistant. Answer the question based ONLY on the provided context. If there is no data in context say the requested item or information is not available. Read the context carefullhy and answer accordingly';
    if (customPrompt) {
     systemPrompt = `You are a rude assistant. Answer the question based ONLY on the provided context.` + customPrompt;
    }
@@ -359,6 +359,44 @@ export const ragService = {
    const errorMessage = `Error getting collection stats: ${(error as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse<{ count: number; name: string }>(
+    ResponseStatus.Failed,
+    errorMessage,
+    null as any,
+    StatusCodes.INTERNAL_SERVER_ERROR
+   );
+  }
+ },
+
+ /**
+  * Delete a ChromaDB collection (and all its embeddings)
+  */
+ deleteCollection: async (
+  collectionName: string = DEFAULT_COLLECTION_NAME
+ ): Promise<ServiceResponse<{ deleted: boolean; collectionName: string }>> => {
+  try {
+   logger.info(`🗑️  Deleting collection: ${collectionName}`);
+
+   const deleted = await deleteChromaCollection(collectionName);
+
+   if (!deleted) {
+    return new ServiceResponse(
+     ResponseStatus.Failed,
+     `Collection ${collectionName} does not exist`,
+     { deleted: false, collectionName },
+     StatusCodes.NOT_FOUND
+    );
+   }
+
+   return new ServiceResponse(
+    ResponseStatus.Success,
+    `Successfully deleted collection: ${collectionName}`,
+    { deleted: true, collectionName },
+    StatusCodes.OK
+   );
+  } catch (error) {
+   const errorMessage = `Error deleting collection: ${(error as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse<{ deleted: boolean; collectionName: string }>(
     ResponseStatus.Failed,
     errorMessage,
     null as any,

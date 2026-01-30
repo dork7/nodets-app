@@ -354,7 +354,7 @@ export const fileUtilsService = {
             const fileType = file.mimetype || `application/${fileExtension}`;
 
             // const response = await customPrompts(
-            //    `Format this text, answer based on the provided text only: ${text.slice(0, 500)}`,
+            //    `Format this text, answer based on the provided text only keep only the information relevant to fligth details: ${text}`,
             //     'ai/gemma3'
             // );
             // const answer = response || '';

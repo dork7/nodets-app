@@ -110,3 +110,26 @@ export const getOrCreateCollection = async (name: string, useEmbeddings: boolean
   throw error;
  }
 };
+
+/**
+ * Delete a ChromaDB collection
+ */
+export const deleteCollection = async (name: string): Promise<boolean> => {
+ try {
+  const client = getChromaClient();
+  const existing = await client.listCollections();
+  const found = existing.find((c) => c.name === name);
+
+  if (!found) {
+   logger.warn(`Collection ${name} does not exist`);
+   return false;
+  }
+
+  await client.deleteCollection({ name });
+  logger.info(`✅ Deleted collection: ${name}`);
+  return true;
+ } catch (error) {
+  logger.error(`❌ Error deleting collection: ${(error as Error).message}`);
+  throw error;
+ }
+};

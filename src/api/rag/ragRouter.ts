@@ -48,6 +48,11 @@ const CollectionStatsSchema = z.object({
  name: z.string(),
 });
 
+const DeleteCollectionResponseSchema = z.object({
+ deleted: z.boolean(),
+ collectionName: z.string(),
+});
+
 // Configure multer for file uploads
 const upload = multer({
  storage: multer.memoryStorage(),
@@ -85,6 +90,7 @@ const upload = multer({
 ragRegistry.register('IngestResponse', IngestResponseSchema);
 ragRegistry.register('QueryResponse', QueryResponseSchema);
 ragRegistry.register('CollectionStats', CollectionStatsSchema);
+ragRegistry.register('DeleteCollectionResponse', DeleteCollectionResponseSchema);
 
 // Register paths
 ragRegistry.registerPath({
@@ -150,6 +156,18 @@ ragRegistry.registerPath({
   },
  },
  responses: createApiResponse(IngestResponseSchema, 'File ingested successfully'),
+});
+
+ragRegistry.registerPath({
+ method: 'delete',
+ path: '/rag/collection',
+ tags: ['RAG'],
+ request: {
+  query: z.object({
+   collectionName: z.string().optional(),
+  }),
+ },
+ responses: createApiResponse(DeleteCollectionResponseSchema, 'Collection deleted successfully'),
 });
 
 export const ragRouter: Router = (() => {
@@ -266,6 +284,21 @@ export const ragRouter: Router = (() => {
     handleServiceResponse(serviceResponse, res);
    }
   });
+ });
+
+ // Delete collection endpoint
+ router.delete('/collection', async (req: Request, res: Response) => {
+  try {
+   const collectionName = (req.query?.collectionName as string | undefined) || undefined;
+   const serviceResponse = await ragService.deleteCollection(collectionName);
+   handleServiceResponse(serviceResponse, res);
+  } catch (error) {
+   res.status(500).json({
+    success: false,
+    message: `Error deleting collection: ${(error as Error).message}`,
+    responseObject: null,
+   });
+  }
  });
 
  return router;
