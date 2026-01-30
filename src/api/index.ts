@@ -3,6 +3,7 @@ import path from 'path';
 
 import { aiUtilsRouter } from '@/api/aiUtils/aiUtilsRouter';
 import { catalogueRouter } from '@/api/catalogue/catalogueRouter';
+import { fileUtilsRouter } from '@/api/fileUtils/fileUtilsRouter';
 import { healthCheckRouter } from '@/api/healthCheck/healthCheckRouter';
 import { kafkaRouter } from '@/api/kafka/kafkaRouter';
 import { ragRouter } from '@/api/rag/ragRouter';
@@ -24,6 +25,7 @@ router.use('/catalogue', catalogueRouter);
 router.use('/orders', ordersRouter);
 router.use('/vision', visionRouter);
 router.use('/rag', ragRouter);
+router.use('/file-utils', fileUtilsRouter);
 
 router.use('/dashboard', async (req, res) => {
  const fileContent = await readFileData('file.txt');

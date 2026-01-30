@@ -1,0 +1,4 @@
+curl --location 'http://localhost:2020/v1/vision/analyze' \
+--header 'Cookie: logUuid=anpysut127' \
+--form 'image=@"/path/to/file"' \
+--form 'collectionName="my_collection"'
