@@ -4,18 +4,7 @@ import mongoose, { mongo } from 'mongoose';
 import { Order, OrdersSchema } from '@/api/orders/ordersModel';
 import { logger } from '@/server';
 
-export const orders: Order[] = [
- { id: 1, name: 'Alice', email: 'alice@example.com', age: 42, createdAt: new Date(), updatedAt: new Date() },
- {
-  id: 2,
-  name: 'Bob',
-  email: 'bob@example.com',
-  age: 21,
-  createdAt: new Date(),
-  hobbies: ['Trecking'],
-  updatedAt: new Date(),
- },
-];
+export const orders: Order[] = [];
 
 const orderSchemaa = zodSchema(OrdersSchema);
 
@@ -52,7 +41,7 @@ export const orderRepository = {
  },
 
  deleteorderAsync: async (id: string): Promise<any> => {
-  return orderModel.findOneAndDelete(id as unknown as mongoose.FilterQuery<order>);
+  return orderModel.findOneAndDelete(id as unknown as mongoose.FilterQuery<Order>);
  },
 
  deleteAllorderAsync: async (): Promise<any> => {

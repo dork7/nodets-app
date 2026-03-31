@@ -21,6 +21,7 @@
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.0.0",
     "@chroma-core/default-embed": "^0.1.8",
+    "@modelcontextprotocol/sdk": "^1.28.0",
     "@slack/web-api": "^7.8.0",
     "@stomp/stompjs": "^7.2.1",
     "@types/graphql": "^14.5.0",
@@ -51,7 +52,7 @@
     "tesseract.js": "^6.0.1",
     "ws": "^8.18.3",
     "zlib": "^1.0.5",
-    "zod": "^3.22.4"
+    "zod": "3.23.8"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.2.1",

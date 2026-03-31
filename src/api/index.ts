@@ -11,6 +11,7 @@ import { readFileData } from '@/common/utils/fileUtils';
 import { visionRouter } from '@/api/vision/visionRouter';
 
 import { ordersRouter } from './orders/ordersRouter';
+import { mcpRouter } from './mcp/router';
 
 const router = express.Router();
 
@@ -22,6 +23,8 @@ router.use('/kafka', kafkaRouter);
 router.use('/catalogue', catalogueRouter);
 router.use('/orders', ordersRouter);
 router.use('/vision', visionRouter);
+
+router.use('/mcp', mcpRouter);
 
 router.use('/dashboard', async (req, res) => {
  const fileContent = await readFileData('file.txt');
