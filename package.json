@@ -6,6 +6,8 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts | pino-pretty",
+    "mcp:server": "tsx src/config/mcpSever.ts",
+    "server:inspect": "npx @modelcontextprotocol/inspector node --import tsx src/config/mcpSever.ts",
     "build": "rimraf dist && tsup",
     "start": "node dist/index.js",
     "clean": "rimraf dist coverage",
@@ -21,7 +23,7 @@
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.0.0",
     "@chroma-core/default-embed": "^0.1.8",
-    "@modelcontextprotocol/sdk": "^1.28.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@slack/web-api": "^7.8.0",
     "@stomp/stompjs": "^7.2.1",
     "@types/graphql": "^14.5.0",
@@ -57,6 +59,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.2.1",
     "@commitlint/config-conventional": "^19.1.0",
+    "@modelcontextprotocol/inspector": "^0.21.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^10.0.3",

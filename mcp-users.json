@@ -1,0 +1,23 @@
+[
+  {
+    "id": "user_1775406166362",
+    "name": "lol",
+    "email": "mail@lul.cum",
+    "age": 22,
+    "createdAt": "2026-04-05T16:22:46.362Z"
+  },
+  {
+    "id": "user_1775406182031",
+    "name": "ww",
+    "email": "ww",
+    "age": 12,
+    "createdAt": "2026-04-05T16:23:02.031Z"
+  },
+  {
+    "id": "user_1775406751978",
+    "name": "ooo",
+    "email": "ooo@example.com",
+    "age": 333,
+    "createdAt": "2026-04-05T16:32:31.978Z"
+  }
+]
