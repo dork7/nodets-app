@@ -16,7 +16,10 @@ export const cacheConfig = {
   const decoded = hashObject.keys(hash);
   return decoded as unknown as CacheConfig;
  },
- checkConfig: (req: RequestProps, cacheConfigHash: string[]) => {
+ checkConfig: (req: RequestProps, cacheConfigHash: string[] | undefined) => {
+  if (!cacheConfigHash?.length) {
+   return undefined;
+  }
   const queryKeys = Object.keys(req.query) ?? [];
   const url = req.url.split('?')[0];
   const hash = hashObject({
@@ -43,9 +46,15 @@ export const cacheConfigHandler = async (req: RequestProps, res: Response, next:
  if (!hasCacheRule) {
   next();
  } else {
-  const ttl = cacheConfig.getTTL(hasCacheRule);
+  const ttlRaw = cacheConfig.getTTL(hasCacheRule);
+  const ttl = parseInt(ttlRaw, 10);
   req.hashKey = cacheConfig.generateHashKey(req);
-  req.cacheTTL = ttl;
+  req.cacheTTL = Number.isFinite(ttl) ? ttl : undefined;
   next();
  }
 };
+
+declare global {
+ var cacheHash: string[] | undefined;
+}
+export {};
