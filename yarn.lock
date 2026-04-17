@@ -260,6 +260,13 @@
     "@types/conventional-commits-parser" "^5.0.0"
     chalk "^5.3.0"
 
+"@dork7/filehasher@^0.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@dork7/filehasher/-/filehasher-1.0.1.tgz#46191ade68c5117cb6edf9302a867689806351a4"
+  integrity sha512-L4nyHampzUytzgSJwBoURDrx9LD0tp+WvdTKghceuACgYL2r1rEbEcHTCO/2m8e2Q2Gbnt/dVg1WBiPeNSA5Fw==
+  dependencies:
+    commander "^13.1.0"
+
 "@emnapi/runtime@^1.5.0":
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/@emnapi/runtime/-/runtime-1.6.0.tgz#8fe297e0090f6e89a57a1f31f1c440bdbc3c01d8"
@@ -2568,6 +2575,11 @@ combined-stream@^1.0.8:
   integrity sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==
   dependencies:
     delayed-stream "~1.0.0"
+
+commander@^13.1.0:
+  version "13.1.0"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-13.1.0.tgz#776167db68c78f38dcce1f9b8d7b8b9a488abf46"
+  integrity sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==
 
 commander@^4.0.0:
   version "4.1.1"
