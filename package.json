@@ -16,11 +16,16 @@
     "test:dev": "vitest dev",
     "test:cover": "vitest run --coverage",
     "release": "semantic-release",
-    "prepare": "husky"
+    "prepare": "husky",
+    "filehasher": "npm run start -w @dork7/filehasher",
+    "hash": "npm run hash -w @dork7/filehasher",
+    "env:hash": "npx filehasher encrypt -i .env -o IMP.fhc",
+    "env:dehash": "npx filehasher decrypt -i IMP.fhc -o .env"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.0.0",
     "@chroma-core/default-embed": "^0.1.8",
+    "@dork7/filehasher": "^0.0.1",
     "@slack/web-api": "^7.8.0",
     "@stomp/stompjs": "^7.2.1",
     "@types/graphql": "^14.5.0",

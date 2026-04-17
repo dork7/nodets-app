@@ -56,10 +56,11 @@ const app: Express = express();
 // Set the application to trust the reverse proxy
 app.set('trust proxy', true);
 
+global.cacheHash = cacheConfig.createHash(cacheRules);
+
 if (env.ENV === 'local') {
  redisClient.connect();
  initKafka().catch((err) => logger.error(err));
- global.cacheHash = cacheConfig.createHash(cacheRules);
  mongoDB();
 }
 
