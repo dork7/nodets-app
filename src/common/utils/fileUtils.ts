@@ -7,7 +7,7 @@ const ENABLE_FILE_LOGGING = env.ENABLE_FILE_LOGGING;
 export const writeDataInFile = async (data: string, fileName: string) => {
  try {
   if (ENABLE_FILE_LOGGING) {
-   await fs.appendFile(fileName, `${data} \n`, 'utf8');
+   await fs.appendFile(fileName, `${JSON.stringify(data)} \n`, 'utf8');
   }
  } catch (error) {
   logger.error(error);

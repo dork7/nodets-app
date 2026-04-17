@@ -9,7 +9,7 @@ curl -X 'POST' \
     "topic" : "test",
     "key" : "key1"
   },
-  "data" : {"test" : "12312313"}
+  "data" : {"test" : "asdasdsadasds"}
 }'
 ###
  

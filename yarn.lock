@@ -266,6 +266,12 @@
   integrity sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
+"@dork7/filehasher@^0.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@dork7/filehasher/-/filehasher-1.0.1.tgz#46191ade68c5117cb6edf9302a867689806351a4"
+  integrity sha512-L4nyHampzUytzgSJwBoURDrx9LD0tp+WvdTKghceuACgYL2r1rEbEcHTCO/2m8e2Q2Gbnt/dVg1WBiPeNSA5Fw==
+  dependencies:
+    commander "^13.1.0"
 
 "@emnapi/runtime@^1.5.0":
   version "1.6.0"
