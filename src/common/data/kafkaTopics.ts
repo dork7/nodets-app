@@ -14,7 +14,7 @@ export const TOPIC_LIST: TTopicList[] = [
    { name: 'file.delete.delay.ms', value: '360000' },
   ],
   readConfig: async ({ topic, partition, message, heartbeat, pause }: any) => {
-   await writeDataInFile(JSON.parse(message.value.toString()), 'file.txt');
+   await writeDataInFile('file.txt', JSON.parse(message.value.toString()));
   },
  },
  {
@@ -26,7 +26,7 @@ export const TOPIC_LIST: TTopicList[] = [
   ],
   readConfig: async ({ topic, partition, message, heartbeat, pause }) => {
    //    logger.info(JSON.parse(message.value.toString()));
-   await writeDataInFile(message.value.toString(), 'file.txt');
+   await writeDataInFile('file.txt', message.value.toString());
 
    return null;
   },

@@ -14,7 +14,7 @@ function readUsers(): Record<string, unknown>[] {
 function writeUsers(users: Record<string, unknown>[]) {
  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
 }
-
+ 
 const server = new McpServer({
  name: 'mcp-server',
  version: '1.0.0',
@@ -75,9 +75,9 @@ server.registerResource(
  })
 );
 
-const main = async () => {
+export default async function startMcpServer() {
  const transport = new StdioServerTransport();
  await server.connect(transport);
 };
 
-main();
+

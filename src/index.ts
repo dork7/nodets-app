@@ -3,7 +3,7 @@ import { app, logger } from '@/server';
 
 import { startWebSocketServer } from './ws/mcpServer';
 import { loadHandlers } from './ws/mcpServer/methods';
-import { startMcpServer } from './config/mcpSever';
+import  startMcpServer  from './config/mcpSever';
 
 const server = app.listen(env.PORT, async () => {
  const { NODE_ENV, HOST, PORT } = env;

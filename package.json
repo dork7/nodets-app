@@ -28,7 +28,7 @@
     "@asteasolutions/zod-to-openapi": "^7.0.0",
     "@chroma-core/default-embed": "^0.1.8",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@dork7/filehasher": "^0.0.1",
+    "@dork7/filehasher": "1.0.1",
     "@slack/web-api": "^7.8.0",
     "@stomp/stompjs": "^7.2.1",
     "@types/graphql": "^14.5.0",
