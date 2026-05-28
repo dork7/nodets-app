@@ -179,7 +179,7 @@
         .message {
             display: block;
             margin-bottom: 12px;
-            padding: 10px 16px;
+            padding: 10px 42px 10px 16px;
             border-radius: 4px;
             max-width: 80%;
             word-break: break-word;
@@ -208,6 +208,46 @@
 
         .message-content {
             flex: 1;
+        }
+
+        .copy-message-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 26px;
+            height: 26px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s, color 0.2s, background 0.2s, border-color 0.2s;
+        }
+
+        .message:hover .copy-message-btn,
+        .copy-message-btn:focus {
+            opacity: 1;
+        }
+
+        .copy-message-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--border);
+        }
+
+        .copy-message-btn.copied {
+            color: var(--success);
+            opacity: 1;
+        }
+
+        .copy-message-btn svg {
+            width: 15px;
+            height: 15px;
+            pointer-events: none;
         }
 
         .message.system {
@@ -370,7 +410,8 @@
             color: var(--text-secondary);
         }
 
-        #send {
+        #send,
+        #stop-stream {
             background: var(--bg-input);
             color: var(--text-primary);
             border: 1px solid var(--border);
@@ -382,8 +423,14 @@
             transition: background 0.2s;
         }
 
-        #send:hover {
+        #send:hover,
+        #stop-stream:not(:disabled):hover {
             background: var(--bg-hover);
+        }
+
+        #stop-stream:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
         }
 
         /* ===== Streaming Toggle Styles ===== */
@@ -529,6 +576,7 @@
             </div>
             
             <button id="send" type="submit">Send</button>
+            <button id="stop-stream" type="button" disabled>Stop</button>
             
             <div id="model-selector-container">
                 <label for="model-selector" class="model-selector-label">AI Model:</label>
@@ -546,14 +594,15 @@
             MODELS_API_URL: 'http://localhost:2020/chatModels',
             HISTORY_API_URL: 'http://localhost:2020/v1/aiUtils/chat-history',
             RECONNECT_DELAY: 5000,
-            DEFAULT_MODEL_INDEX: 1
+            DEFAULT_MODEL_INDEX: 1,
+            LOADING_MESSAGES: ['Cooking...', 'Chirming...', 'Loading...', 'Fking...']
         };
 
         // ===== State Management =====
         const state = {
             selectedModel: '',
             streamingEnabled: false,
-            isStreaming: false,
+            isStreaming: true,
             isConnected: false,
             currentIsRelated: false,
             combinedContent: '',
@@ -566,6 +615,7 @@
             messages: document.getElementById('messages'),
             form: document.getElementById('input-form'),
             input: document.getElementById('input'),
+            stopBtn: document.getElementById('stop-stream'),
             streamToggle: document.getElementById('stream-toggle'),
             streamingLabel: document.getElementById('streaming-label'),
             modelSelector: document.getElementById('model-selector'),
@@ -589,14 +639,80 @@
 
             scrollToBottom() {
                 elements.messages.scrollTop = elements.messages.scrollHeight;
+            },
+
+            getLoadingMessage() {
+                const index = Math.floor(Math.random() * CONFIG.LOADING_MESSAGES.length);
+                return CONFIG.LOADING_MESSAGES[index];
+            },
+
+            setStopButtonEnabled(isEnabled) {
+                elements.stopBtn.disabled = !isEnabled;
+            },
+
+            async copyToClipboard(text) {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    return;
+                }
+
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.setAttribute('readonly', '');
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                textarea.remove();
             }
         };
 
         // ===== Message Management =====
         const messageManager = {
+            createCopyButton() {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'copy-message-btn';
+                button.title = 'Copy message';
+                button.setAttribute('aria-label', 'Copy message text');
+                button.innerHTML = `
+                    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="10" height="10" rx="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                `;
+                button.addEventListener('click', async (event) => {
+                    event.stopPropagation();
+                    const messageElement = button.closest('.message');
+                    const textToCopy = messageElement?.dataset.copyText || '';
+
+                    try {
+                        await utils.copyToClipboard(textToCopy);
+                        button.classList.add('copied');
+                        button.title = 'Copied';
+                        button.setAttribute('aria-label', 'Copied message text');
+                        setTimeout(() => {
+                            button.classList.remove('copied');
+                            button.title = 'Copy message';
+                            button.setAttribute('aria-label', 'Copy message text');
+                        }, 1200);
+                    } catch (error) {
+                        console.error('Unable to copy message:', error);
+                    }
+                });
+
+                return button;
+            },
+
+            setCopyText(messageElement, message) {
+                messageElement.dataset.copyText = message;
+            },
+
             append(sender, message, type) {
                 const div = document.createElement('div');
                 div.className = `message ${type}`;
+                this.setCopyText(div, message);
                 
                 if (type === 'ai') {
                     // Create content div first (will be inserted after indicator if it exists)
@@ -607,6 +723,8 @@
                 } else {
                     div.innerHTML = `<strong>${sender}:</strong> ${utils.parseMarkdown(message)}`;
                 }
+
+                div.appendChild(this.createCopyButton());
                 
                 elements.messages.appendChild(div);
                 utils.scrollToBottom();
@@ -616,6 +734,7 @@
             updateLast(sender, message, type) {
                 const lastMsg = elements.messages.lastElementChild;
                 if (lastMsg && lastMsg.classList.contains(type)) {
+                    this.setCopyText(lastMsg, message);
                     if (type === 'ai') {
                         const contentDiv = lastMsg.querySelector('.message-content');
                         if (contentDiv) {
@@ -628,7 +747,7 @@
                             const oldContent = lastMsg.childNodes;
                             const indicatorSection = lastMsg.querySelector('.related-indicator-section');
                             Array.from(oldContent).forEach(node => {
-                                if (!node.classList || !node.classList.contains('related-indicator-section')) {
+                                if (!node.classList || (!node.classList.contains('related-indicator-section') && !node.classList.contains('copy-message-btn'))) {
                                     node.remove();
                                 }
                             });
@@ -641,6 +760,7 @@
                         }
                     } else {
                         lastMsg.innerHTML = `<strong>${sender}:</strong> ${utils.parseMarkdown(message)}`;
+                        lastMsg.appendChild(this.createCopyButton());
                     }
                     utils.scrollToBottom();
                     return lastMsg;
@@ -754,7 +874,8 @@
                 if (data.type === 'stream_start') {
                     state.isStreaming = true;
                     state.combinedContent = '';
-                    return 'Thinking...';
+                    utils.setStopButtonEnabled(true);
+                    return utils.getLoadingMessage();
                 }
                 
                 if (data.type === 'stream_continue' && state.isStreaming) {
@@ -766,7 +887,20 @@
                 
                 if (data.type === 'stream_end' && state.isStreaming) {
                     state.isStreaming = false;
+                    utils.setStopButtonEnabled(false);
                     return state.combinedContent;
+                }
+
+                if (data.type === 'stream_stopped') {
+                    state.isStreaming = false;
+                    utils.setStopButtonEnabled(false);
+                    return state.combinedContent || 'Stopped.';
+                }
+
+                if (data.type === 'stream_error' || data.type === 'error') {
+                    state.isStreaming = false;
+                    utils.setStopButtonEnabled(false);
+                    return `Error: ${data.error || 'Something went wrong while streaming.'}`;
                 }
                 
                 return '';
@@ -825,7 +959,7 @@
                 }
 
                 // Reload history after response completion
-                if (data.type === 'stream_end') {
+                if (data.type === 'stream_end' || data.type === 'stream_stopped' || data.type === 'stream_error' || data.type === 'error') {
                     const lastMsg = elements.messages.lastElementChild;
                     if (lastMsg) {
                         // Always show token usage section, even if data is missing
@@ -930,6 +1064,20 @@
                         messageManager.append('You', message, 'user');
                         elements.input.value = '';
                     }
+                });
+
+                elements.stopBtn.addEventListener('click', () => {
+                    if (!state.isStreaming || !state.socket) {
+                        return;
+                    }
+
+                    websocketManager.send({
+                        sender: 'User',
+                        type: 'stop_stream',
+                        id: state.sessionId,
+                        method: 'chatAI'
+                    });
+                    utils.setStopButtonEnabled(false);
                 });
             }
         };

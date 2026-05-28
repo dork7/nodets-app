@@ -11,6 +11,7 @@ interface ChatMessage {
 interface WebSocketMessage {
  id: string;
  method?: string;
+ type?: string;
  model?: string;
  stream?: boolean | string;
  params?: {
@@ -44,6 +45,7 @@ interface AIResponse {
 const DEFAULT_PROMPT = 'Hello, AI!';
 const HISTORY_KEY_PREFIX = 'chat_history_';
 const TOKEN_USAGE_KEY_PREFIX = 'token_usage_';
+const activeAIRequests = new Map<string, AbortController>();
 
 // ===== Helper Functions =====
 const getHistoryKey = (userId: string): string => `${HISTORY_KEY_PREFIX}${userId}`;
@@ -55,11 +57,38 @@ const normalizeStreamParam = (streamParam: boolean | string | undefined): boolea
  return Boolean(streamParam);
 };
 
+const isStopStreamMessage = (message: WebSocketMessage): boolean => message.type === 'stop_stream';
+
+const getErrorMessage = (error: unknown): string => {
+ if (error instanceof Error && error.message) {
+  return error.message;
+ }
+
+ if (typeof error === 'string') {
+  return error;
+ }
+
+ return 'An error occurred while processing your request.';
+};
+
+const sendStreamError = (ws: any, messageId: string, error: unknown): void => {
+ sendWebSocketMessage(ws, {
+  sender: 'AI',
+  type: 'stream_error',
+  id: messageId,
+  error: getErrorMessage(error),
+ });
+};
+
 const getPreviousMessageContent = (history: ChatMessage[]): string => {
  return history.length > 0 ? history[history.length - 1].content : '';
 };
 
-const buildConversationHistory = (userInput: string, previousHistory: ChatMessage[], isRelated: boolean): ChatMessage[] => {
+const buildConversationHistory = (
+ userInput: string,
+ previousHistory: ChatMessage[],
+ isRelated: boolean
+): ChatMessage[] => {
  const newHistory: ChatMessage[] = [{ role: 'user', content: userInput }];
 
  if (isRelated && previousHistory.length > 0) {
@@ -132,16 +161,21 @@ const handleStreamingResponse = async (
  aiResponse: AsyncIterable<AIResponseChunk>,
  conversationHistory: ChatMessage[],
  messageId: string,
- isRelated: boolean
+ isRelated: boolean,
+ abortSignal: AbortSignal
 ): Promise<TokenUsage> => {
  let responseText = '';
  let tokenUsage: TokenUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
 
  try {
   for await (const chunk of aiResponse) {
+   if (abortSignal.aborted) {
+    break;
+   }
+
    const choices = chunk.choices;
    const content = choices?.[0]?.delta?.content;
-   
+
    // Extract token usage from chunk if available (usually in final chunk)
    if (chunk.usage) {
     tokenUsage = {
@@ -151,7 +185,7 @@ const handleStreamingResponse = async (
     };
     logger.info(`Token usage captured: ${JSON.stringify(tokenUsage)}`);
    }
-   
+
    if (content && choices?.[0]?.delta) {
     logger.info(`AI Response Chunk: ${content}`);
     sendWebSocketMessage(ws, {
@@ -164,11 +198,18 @@ const handleStreamingResponse = async (
    }
   }
 
-  const fullResponse: ChatMessage = { role: 'assistant', content: responseText };
-  conversationHistory.push(fullResponse);
+  if (responseText) {
+   const fullResponse: ChatMessage = { role: 'assistant', content: responseText };
+   conversationHistory.push(fullResponse);
+  }
+
   return tokenUsage;
  } catch (error) {
-  logger.error(`Error processing streaming response: ${error}`);
+  if (abortSignal.aborted) {
+   return tokenUsage;
+  }
+
+  logger.error(`Error processing streaming response: ${getErrorMessage(error)}`);
   throw error;
  }
 };
@@ -209,6 +250,24 @@ const handleNonStreamingResponse = async (
 export const name = 'chatAI';
 
 export const handler = async (ws: any, message: WebSocketMessage): Promise<void> => {
+ if (isStopStreamMessage(message)) {
+  const activeRequest = activeAIRequests.get(message.id);
+  if (activeRequest) {
+   activeRequest.abort();
+  } else {
+   sendWebSocketMessage(ws, {
+    sender: 'AI',
+    type: 'stream_stopped',
+    id: message.id,
+   });
+  }
+  return;
+ }
+
+ const abortController = new AbortController();
+ activeAIRequests.get(message.id)?.abort();
+ activeAIRequests.set(message.id, abortController);
+
  try {
   // Extract and validate input
   const userInput = message.params?.prompt || DEFAULT_PROMPT;
@@ -238,14 +297,27 @@ export const handler = async (ws: any, message: WebSocketMessage): Promise<void>
   });
 
   // Get AI response
-  const aiResponse = await callAI(conversationHistory as [], isStreaming, aiModel);
+  const aiResponse = await callAI(conversationHistory, isStreaming, aiModel, abortController.signal);
 
   // Handle response based on streaming mode and get token usage
   let tokenUsage: TokenUsage;
   if (isStreaming) {
-   tokenUsage = await handleStreamingResponse(ws, aiResponse as AsyncIterable<AIResponseChunk>, conversationHistory, message.id, isRelated);
+   tokenUsage = await handleStreamingResponse(
+    ws,
+    aiResponse as AsyncIterable<AIResponseChunk>,
+    conversationHistory,
+    message.id,
+    isRelated,
+    abortController.signal
+   );
   } else {
-   tokenUsage = await handleNonStreamingResponse(ws, aiResponse as AIResponse, conversationHistory, message.id, isRelated);
+   tokenUsage = await handleNonStreamingResponse(
+    ws,
+    aiResponse as AIResponse,
+    conversationHistory,
+    message.id,
+    isRelated
+   );
   }
 
   // Save token usage
@@ -256,7 +328,7 @@ export const handler = async (ws: any, message: WebSocketMessage): Promise<void>
   // Send stream end notification with token usage
   sendWebSocketMessage(ws, {
    sender: 'AI',
-   type: 'stream_end',
+   type: abortController.signal.aborted ? 'stream_stopped' : 'stream_end',
    id: message.id,
    isRelated,
    tokenUsage,
@@ -265,12 +337,20 @@ export const handler = async (ws: any, message: WebSocketMessage): Promise<void>
   // Save final conversation history
   await saveChatHistory(message.id, conversationHistory);
  } catch (error) {
-  logger.error(`Error in chatAI handler: ${error}`);
-  sendWebSocketMessage(ws, {
-   sender: 'AI',
-   type: 'error',
-   id: message.id,
-   error: 'An error occurred while processing your request.',
-  });
+  if (abortController.signal.aborted) {
+   sendWebSocketMessage(ws, {
+    sender: 'AI',
+    type: 'stream_stopped',
+    id: message.id,
+   });
+   return;
+  }
+
+  logger.error(`Error in chatAI handler: ${getErrorMessage(error)}`);
+  sendStreamError(ws, message.id, error);
+ } finally {
+  if (activeAIRequests.get(message.id) === abortController) {
+   activeAIRequests.delete(message.id);
+  }
  }
 };
