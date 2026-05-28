@@ -8,7 +8,7 @@ export async function getLLMModels() {
   const { stdout } = await execAsync('docker model list --openai');
 
   const parsedData = JSON.parse(stdout);
-  const llmImages = parsedData.data.map((model: any) => model.id.split(':')[0]);
+  const llmImages = parsedData.data.map((model: any) => model.id);
 
   console.log('🧠 LLM-related Docker images found:');
   console.log(llmImages.length ? llmImages : 'No LLM models found.');

@@ -3,6 +3,7 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
+    restart: on-failure
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -14,6 +15,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
+    restart: on-failure
     depends_on:
       - zookeeper
     ports:
@@ -60,6 +62,7 @@ services:
   db:
     image: mongo
     container_name: mongoDB
+    restart: on-failure
     ports:
       - "27017:27017"
     # command: sh /db/migrateData.sh

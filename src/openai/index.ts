@@ -1,7 +1,6 @@
 import OpenAI from 'openai';
 
 import { env } from '@/common/utils/envConfig';
-import { logger } from '@/server';
 
 /*
 const openai = new OpenAI({
@@ -22,12 +21,15 @@ const openai = new OpenAI({
  apiKey: env.OPENAI_API_KEY || '',
 });
 
-export async function callAI(params: [], streamMode = true, aiModel: string) {
- const completion = await openai.chat.completions.create({
-  model: aiModel, // or any model listed on OpenRouter
-  messages: params,
-  stream: streamMode, // Enable streaming
- });
+export async function callAI(params: any[], streamMode = true, aiModel: string, signal?: AbortSignal) {
+ const completion = await openai.chat.completions.create(
+  {
+   model: aiModel, // or any model listed on OpenRouter
+   messages: params,
+   stream: streamMode, // Enable streaming
+  },
+  { signal }
+ );
  return completion;
 }
 
@@ -61,4 +63,4 @@ export const customPrompts = async (prompt: string, aiModel: string) => {
   messages: [{ role: 'user', content: prompt }],
  });
  return completion.choices[0].message.content;
-}
+};

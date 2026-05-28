@@ -31,6 +31,18 @@ const TokenUsageResponseSchema = z.object({
  total_tokens: z.number().optional(),
 });
 
+const UnloadModelResultSchema = z.object({
+ model: z.string(),
+ success: z.boolean(),
+ message: z.string(),
+});
+
+const UnloadModelsResponseSchema = z.object({
+ unloaded: z.array(z.string()),
+ failed: z.array(UnloadModelResultSchema),
+ results: z.array(UnloadModelResultSchema),
+});
+
 const GetTokenUsageSchema = z.object({
  params: z.object({
   userId: z.string().min(1, 'User ID is required'),
@@ -39,6 +51,7 @@ const GetTokenUsageSchema = z.object({
 
 aiUtilsRegistry.register('ChatHistory', ChatHistoryResponseSchema);
 aiUtilsRegistry.register('TokenUsage', TokenUsageResponseSchema);
+aiUtilsRegistry.register('UnloadModels', UnloadModelsResponseSchema);
 
 export const aiUtilsRouter: Router = (() => {
  const router = express.Router();
@@ -59,6 +72,13 @@ export const aiUtilsRouter: Router = (() => {
   responses: createApiResponse(TokenUsageResponseSchema, 'Success'),
  });
 
+ aiUtilsRegistry.registerPath({
+  method: 'post',
+  path: '/unload-models',
+  tags: ['AI Utils'],
+  responses: createApiResponse(UnloadModelsResponseSchema, 'Success'),
+ });
+
  router.get('/chat-history/:userId', validateRequest(GetChatHistorySchema), async (req: Request, res: Response) => {
   const userId = req.params.userId;
   const serviceResponse = await aiUtilsService.getChatHistory(userId);
@@ -71,6 +91,10 @@ export const aiUtilsRouter: Router = (() => {
   handleServiceResponse(serviceResponse, res);
  });
 
+ router.post('/unload-models', async (_req: Request, res: Response) => {
+  const serviceResponse = await aiUtilsService.unloadLLMModels();
+  handleServiceResponse(serviceResponse, res);
+ });
+
  return router;
 })();
-

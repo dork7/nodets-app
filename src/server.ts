@@ -60,8 +60,8 @@ global.cacheHash = cacheConfig.createHash(cacheRules);
 
 if (env.ENV === 'local') {
  redisClient.connect();
- initKafka().catch((err) => logger.error(err));
- mongoDB();
+//  initKafka().catch((err) => logger.error(err));
+//  mongoDB();
 }
 
 // Middlewares
@@ -112,7 +112,7 @@ app.get('/chatModels', async function (req, res) {
 
  const configModels = dockerLLMS ?? env.AI_MODELS;
  const models = configModels.split(',').map((m) => {
-  const label = m.split('/')[1].charAt(0).toUpperCase() + m.split('/')[1].slice(1);
+  const label = m.split('/')[2]; //.charAt(0).toUpperCase() + m.split('/')[1].slice(1);
   return { value: m, label: label };
  });
  res.json({ models });
