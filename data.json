@@ -1,5 +1,22 @@
 [
-  { "id": 1, "text": "Our office hours are from 9 AM to 5 PM." },
-  { "id": 2, "text": "We deliver products across UAE within 2 business days." },
-  { "id": 3, "text": "Customer support email is help@company.com." }
+  { "id": 1, "text": "We currently deliver orders within Abu Dhabi only." },
+  { "id": 2, "text": "Standard delivery inside Abu Dhabi city takes 1 to 2 business days." },
+  { "id": 3, "text": "Same-day delivery may be available in selected Abu Dhabi areas when the order is placed before 12 PM." },
+  { "id": 4, "text": "Delivery is available to Abu Dhabi city, Khalifa City, Mohammed Bin Zayed City, Al Reem Island, Al Raha, and Yas Island." },
+  { "id": 5, "text": "We do not currently deliver to Dubai, Sharjah, Ajman, or other emirates." },
+  { "id": 6, "text": "Customers must provide a complete Abu Dhabi address, building name, apartment or villa number, and contact number for delivery." },
+  { "id": 7, "text": "Delivery fees inside Abu Dhabi are calculated during checkout based on the delivery area." },
+  { "id": 8, "text": "If the customer is unavailable during delivery, our courier will contact them to reschedule within Abu Dhabi." },
+  { "id": 9, "text": "Orders can be returned within 7 days of delivery if the item is unused, unopened, and in its original packaging." },
+  { "id": 10, "text": "Electronics can only be returned if all accessories, manuals, warranty cards, and original packaging are included." },
+  { "id": 11, "text": "Opened electronics are not eligible for return unless they are defective or damaged on arrival." },
+  { "id": 12, "text": "Refunds are processed after the returned item passes inspection by our support team." },
+  { "id": 13, "text": "Return pickup is available within Abu Dhabi only." },
+  { "id": 14, "text": "Customers must report damaged or incorrect items within 24 hours of delivery." },
+  { "id": 15, "text": "Most electronics include a 1-year manufacturer warranty unless a different warranty period is mentioned on the product page." },
+  { "id": 16, "text": "The electronics warranty covers manufacturing defects but does not cover physical damage, liquid damage, misuse, or unauthorized repair." },
+  { "id": 17, "text": "Warranty claims for electronics require the original invoice and the product serial number." },
+  { "id": 18, "text": "Accessories such as chargers, cables, and batteries may have a shorter warranty period depending on the manufacturer." },
+  { "id": 19, "text": "For electronics warranty service, customers can contact support to arrange inspection or service center guidance in Abu Dhabi." },
+  { "id": 20, "text": "Customer support is available for Abu Dhabi delivery, returns, and electronics warranty questions at help@company.com." }
 ]

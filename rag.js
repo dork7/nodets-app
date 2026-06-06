@@ -1,3 +1,22 @@
+/*
+Steps to run this file:
+
+1. Install dependencies:
+   npm install
+
+2. Start ChromaDB and LocalAI:
+   docker compose -f ai-docker-compose.yml up -d
+
+3. Make sure the LocalAI model used below is available in ./models:
+   mathstral-7b-v0.1-imat
+
+4. Run the file:
+   node rag.js
+
+5. Stop the AI services when finished:
+   docker compose -f ai-docker-compose.yml down --remove-orphans
+*/
+
 import axios from 'axios';
 import { ChromaClient } from 'chromadb';
 import fs from 'fs';

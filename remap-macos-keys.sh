@@ -7,6 +7,7 @@ SWITCH_APPS_KEYS="['<Control>Tab']"
 SWITCH_APPS_BACKWARD_KEYS="['<Shift><Control>Tab']"
 SWITCH_SAME_APP_KEYS="['<Control>Above_Tab']"
 SWITCH_SAME_APP_BACKWARD_KEYS="['<Shift><Control>Above_Tab']"
+SCREENSHOT_UI_KEYS="['<Shift><Control>4', '<Shift><Super>4']"
 RECTANGLE_TILE_LEFT_KEYS="['<Control><Alt>Left', '<Control><Super>Left']"
 RECTANGLE_TILE_RIGHT_KEYS="['<Control><Alt>Right', '<Control><Super>Right']"
 RECTANGLE_MAXIMIZE_KEYS="['<Control><Alt>Up', '<Control><Super>Up']"
@@ -30,6 +31,7 @@ Notes:
   - That makes Left Alt behave like Ctrl, so Alt+C/V/S/Z works like macOS Command+C/V/S/Z.
   - It also binds Cmd+Space to the GNOME app drawer.
   - It binds Cmd+Tab to switch apps, and Cmd+` to switch windows in the same app.
+  - It binds Cmd+Shift+4 to the GNOME screenshot UI.
   - It binds Rectangle-style tiling:
     Control+Option+Left/Right for halves, Up for maximize, Down for restore.
 EOF
@@ -63,6 +65,9 @@ save_backup() {
   fi
   if [[ "$backup_contents" != *"SWITCH_SAME_APP_BACKWARD_BINDING="* ]]; then
     printf 'SWITCH_SAME_APP_BACKWARD_BINDING=%q\n' "$(gsettings get org.gnome.desktop.wm.keybindings switch-group-backward)" >>"$BACKUP_FILE"
+  fi
+  if [[ "$backup_contents" != *"SCREENSHOT_UI_BINDING="* ]]; then
+    printf 'SCREENSHOT_UI_BINDING=%q\n' "$(gsettings get org.gnome.shell.keybindings show-screenshot-ui)" >>"$BACKUP_FILE"
   fi
   if [[ "$backup_contents" != *"TILE_LEFT_BINDING="* ]]; then
     printf 'TILE_LEFT_BINDING=%q\n' "$(gsettings get org.gnome.mutter.keybindings toggle-tiled-left)" >>"$BACKUP_FILE"
@@ -102,6 +107,7 @@ apply_mapping() {
   gsettings set org.gnome.desktop.wm.keybindings switch-applications-backward "$SWITCH_APPS_BACKWARD_KEYS"
   gsettings set org.gnome.desktop.wm.keybindings switch-group "$SWITCH_SAME_APP_KEYS"
   gsettings set org.gnome.desktop.wm.keybindings switch-group-backward "$SWITCH_SAME_APP_BACKWARD_KEYS"
+  gsettings set org.gnome.shell.keybindings show-screenshot-ui "$SCREENSHOT_UI_KEYS"
   gsettings set org.gnome.mutter.keybindings toggle-tiled-left "$RECTANGLE_TILE_LEFT_KEYS"
   gsettings set org.gnome.mutter.keybindings toggle-tiled-right "$RECTANGLE_TILE_RIGHT_KEYS"
   gsettings set org.gnome.desktop.wm.keybindings maximize "$RECTANGLE_MAXIMIZE_KEYS"
@@ -138,6 +144,7 @@ undo_all() {
     restore_or_reset SWITCH_APPLICATIONS_BACKWARD_BINDING org.gnome.desktop.wm.keybindings switch-applications-backward
     restore_or_reset SWITCH_SAME_APP_BINDING org.gnome.desktop.wm.keybindings switch-group
     restore_or_reset SWITCH_SAME_APP_BACKWARD_BINDING org.gnome.desktop.wm.keybindings switch-group-backward
+    restore_or_reset SCREENSHOT_UI_BINDING org.gnome.shell.keybindings show-screenshot-ui
     restore_or_reset TILE_LEFT_BINDING org.gnome.mutter.keybindings toggle-tiled-left
     restore_or_reset TILE_RIGHT_BINDING org.gnome.mutter.keybindings toggle-tiled-right
     restore_or_reset MAXIMIZE_BINDING org.gnome.desktop.wm.keybindings maximize
@@ -156,6 +163,7 @@ undo_all() {
     gsettings reset org.gnome.desktop.wm.keybindings switch-applications-backward
     gsettings reset org.gnome.desktop.wm.keybindings switch-group
     gsettings reset org.gnome.desktop.wm.keybindings switch-group-backward
+    gsettings reset org.gnome.shell.keybindings show-screenshot-ui
     gsettings reset org.gnome.mutter.keybindings toggle-tiled-left
     gsettings reset org.gnome.mutter.keybindings toggle-tiled-right
     gsettings reset org.gnome.desktop.wm.keybindings maximize
@@ -180,6 +188,8 @@ show_status() {
   gsettings get org.gnome.desktop.wm.keybindings switch-applications
   echo -n "Current same-app switch shortcut: "
   gsettings get org.gnome.desktop.wm.keybindings switch-group
+  echo -n "Current screenshot UI shortcut: "
+  gsettings get org.gnome.shell.keybindings show-screenshot-ui
   echo -n "Current tile-left shortcut: "
   gsettings get org.gnome.mutter.keybindings toggle-tiled-left
   echo -n "Current tile-right shortcut: "

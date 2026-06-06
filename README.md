@@ -55,6 +55,42 @@ Developed to streamline backend development, this boilerplate is your solution f
 - Building: `npm run build`
 - Production Mode: Set `.env` to `NODE_ENV="production"` then `npm run build && npm run start`
 
+## Running `rag.js`
+
+`rag.js` loads the dummy records from `data.json`, stores embeddings in ChromaDB, and asks a sample delivery question using LocalAI.
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Start ChromaDB and LocalAI:
+
+```bash
+docker compose -f ai-docker-compose.yml up -d
+```
+
+3. Make sure LocalAI has the model used by `rag.js` available in `./models`:
+
+```js
+model: 'mathstral-7b-v0.1-imat'
+```
+
+If you use a different LocalAI model, update the `model` value in `rag.js`.
+
+4. Run the RAG demo file:
+
+```bash
+node rag.js
+```
+
+5. Stop the AI services when finished:
+
+```bash
+docker compose -f ai-docker-compose.yml down --remove-orphans
+```
+
 ## 📁 Project Structure
 
 ```
@@ -110,6 +146,91 @@ curl -X POST http://localhost:3000/v1/vision/analyze \
 ├── index.ts
 └── server.ts
 
+```
+
+## 🐳 Docker Models (Local AI)
+
+Run LLM models locally using Docker Model Runner (requires Docker Desktop 4.40+).
+
+### Lightweight (low RAM)
+
+```bash
+docker model pull ai/smollm2              # 135M–1.7B, very fast
+docker model pull ai/phi4-mini            # 3.8B, Microsoft
+docker model pull ai/llama3.2:1b          # 1B, Meta
+docker model pull ai/llama3.2:3b          # 3B, Meta
+docker model pull ai/qwen2.5:0.5b         # 0.5B, Alibaba
+docker model pull ai/qwen2.5:1.5b
+docker model pull ai/qwen2.5:3b
+```
+
+### Best Lightweight Models by Use Case
+
+**General Chat**
+
+| Model | Size | Pull Command |
+|-------|------|-------------|
+| Qwen2.5 3B | ~2 GB | `docker model pull ai/qwen2.5:3b` |
+| Llama 3.2 3B | ~2 GB | `docker model pull ai/llama3.2:3b` |
+| Phi-4 Mini | ~2.5 GB | `docker model pull ai/phi4-mini` |
+| Gemma 3 4B | ~3 GB | `docker model pull ai/gemma3:4b` |
+
+**Coding**
+
+| Model | Size | Pull Command |
+|-------|------|-------------|
+| Qwen2.5-Coder 3B | ~2 GB | `docker model pull ai/qwen2.5-coder:3b` |
+| Qwen2.5-Coder 7B | ~4.5 GB | `docker model pull ai/qwen2.5-coder:7b` |
+
+**Ultra-light (very low RAM / fast inference)**
+
+| Model | Size | Pull Command |
+|-------|------|-------------|
+| SmolLM2 1.7B | ~1 GB | `docker model pull ai/smollm2:1.7b` |
+| Qwen2.5 1.5B | ~1 GB | `docker model pull ai/qwen2.5:1.5b` |
+| Llama 3.2 1B | ~0.7 GB | `docker model pull ai/llama3.2:1b` |
+
+**Embeddings (RAG / semantic search)**
+
+| Model | Pull Command |
+|-------|-------------|
+| nomic-embed-text | `docker model pull ai/nomic-embed-text` |
+| mxbai-embed-large | `docker model pull ai/mxbai-embed-large` |
+
+> **Best picks:** `ai/qwen2.5:3b` for general use, `ai/qwen2.5-coder:3b` for coding, `ai/smollm2:1.7b` for fastest/lowest RAM.
+
+### Mid-range (8–16 GB RAM)
+
+```bash
+docker model pull ai/llama3.2             # 8B default, Meta
+docker model pull ai/mistral              # 7B, Mistral AI
+docker model pull ai/gemma3               # 4B/9B, Google
+docker model pull ai/phi4                 # 14B, Microsoft
+docker model pull ai/qwen2.5:7b
+docker model pull ai/qwen2.5-coder:7b     # code-focused
+```
+
+### Large (32 GB+ RAM / GPU)
+
+```bash
+docker model pull ai/llama3.3:70b
+docker model pull ai/qwen2.5:72b
+docker model pull ai/mistral-small
+```
+
+### Embedding models (for RAG)
+
+```bash
+docker model pull ai/mxbai-embed-large    # good all-around
+docker model pull ai/nomic-embed-text
+```
+
+### Usage
+
+```bash
+docker model run ai/llama3.2              # interactive chat
+docker model run ai/smollm2 "your prompt" # one-shot
+docker model list                          # list pulled models
 ```
 
 ## 🤝 Feedback and Contributions
