@@ -13,6 +13,13 @@
       "skipFiles": ["<node_internals>/**"]
     },
     {
+      "type": "node-terminal",
+      "request": "launch",
+      "name": "Yarn Dev Terminal",
+      "command": "yarn dev",
+      "cwd": "${workspaceFolder}"
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "Debug Current Test File",
