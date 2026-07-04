@@ -16,11 +16,7 @@
     "test:dev": "vitest dev",
     "test:cover": "vitest run --coverage",
     "release": "semantic-release",
-    "prepare": "husky",
-    "filehasher": "npm run start -w @dork7/filehasher",
-    "hash": "npm run hash -w @dork7/filehasher",
-    "env:hash": "npx filehasher encrypt -i .env -o IMP.fhc",
-    "env:dehash": "npx filehasher decrypt -i IMP.fhc -o .env"
+    "prepare": "husky"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.0.0",
