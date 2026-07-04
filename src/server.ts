@@ -23,6 +23,7 @@ import { getLLMModels } from './common/utils/getDockerLLMS';
 import { sendSlackNotification } from './common/utils/slack';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
 import { initKafka } from './config/kafka';
+import { initMinio } from './services/minio';
 import mongoDB from './config/mongoose';
 import { redisClient } from './config/redisStore';
 const loggerOriginal = pino({ name: 'server start' });
@@ -59,7 +60,8 @@ app.set('trust proxy', true);
 global.cacheHash = cacheConfig.createHash(cacheRules);
 
 if (env.ENV === 'local') {
- redisClient.connect();
+  redisClient.connect();
+  initMinio();
 //  initKafka().catch((err) => logger.error(err));
 //  mongoDB();
 }
