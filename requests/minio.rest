@@ -1,0 +1,105 @@
+### Upload a single file (with bucket)
+POST http://localhost:2020/v1/minio/upload
+Content-Type: multipart/form-data
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="package.json"
+Content-Type: application/json
+
+< ./package.json
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="bucket"
+
+uploads
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Upload a single file (curl - with bucket)
+```bash
+curl -X POST 'http://localhost:2020/v1/minio/upload' \
+  -F 'file=@./package.json' \
+  -F 'bucket=uploads'
+```
+
+### Upload a single file (no bucket - uses default)
+POST http://localhost:2020/v1/minio/upload
+Content-Type: multipart/form-data
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="package.json"
+Content-Type: application/json
+
+< ./package.json
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Upload a single file (curl - no bucket)
+```bash
+curl -X POST 'http://localhost:2020/v1/minio/upload' \
+  -F 'file=@./package.json'
+```
+
+### Upload multiple files (with bucket)
+POST http://localhost:2020/v1/minio/upload/multiple
+Content-Type: multipart/form-data
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="files"; filename="package.json"
+Content-Type: application/json
+
+< ./package.json
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="files"; filename="tsconfig.json"
+Content-Type: application/json
+
+< ./tsconfig.json
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="bucket"
+
+uploads
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Upload multiple files (curl - with bucket)
+```bash
+curl -X POST 'http://localhost:2020/v1/minio/upload/multiple' \
+  -F 'files=@./package.json' \
+  -F 'files=@./tsconfig.json' \
+  -F 'bucket=uploads'
+```
+
+### Upload multiple files (curl - no bucket)
+```bash
+curl -X POST 'http://localhost:2020/v1/minio/upload/multiple' \
+  -F 'files=@./package.json' \
+  -F 'files=@./tsconfig.json'
+```
+
+### Get file by ID
+GET http://localhost:2020/v1/minio/550e8400-e29b-41d4-a716-446655440000
+
+### Get file by ID (curl)
+```bash
+curl -X GET 'http://localhost:2020/v1/minio/550e8400-e29b-41d4-a716-446655440000'
+```
+
+### Get file by ID with bucket
+GET http://localhost:2020/v1/minio/550e8400-e29b-41d4-a716-446655440000?bucket=uploads
+
+### Get file by ID with bucket (curl)
+```bash
+curl -X GET 'http://localhost:2020/v1/minio/550e8400-e29b-41d4-a716-446655440000?bucket=uploads'
+```
+
+### Delete file by ID
+DELETE http://localhost:2020/v1/minio/550e8400-e29b-41d4-a716-446655440000
+
+### Delete file by ID (curl)
+```bash
+curl -X DELETE 'http://localhost:2020/v1/minio/550e8400-e29b-41d4-a716-446655440000'
+```
+
+### Delete file by ID with bucket
+DELETE http://localhost:2020/v1/minio/550e8400-e29b-41d4-a716-446655440000?bucket=uploads
+
+### Delete file by ID with bucket (curl)
+```bash
+curl -X DELETE 'http://localhost:2020/v1/minio/550e8400-e29b-41d4-a716-446655440000?bucket=uploads'
+```

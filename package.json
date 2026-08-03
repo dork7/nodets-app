@@ -16,16 +16,11 @@
     "test:dev": "vitest dev",
     "test:cover": "vitest run --coverage",
     "release": "semantic-release",
-    "prepare": "husky",
-    "filehasher": "npm run start -w @dork7/filehasher",
-    "hash": "npm run hash -w @dork7/filehasher",
-    "env:hash": "npx filehasher encrypt -i .env -o IMP.fhc",
-    "env:dehash": "npx filehasher decrypt -i IMP.fhc -o .env"
+    "prepare": "husky"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.0.0",
     "@chroma-core/default-embed": "^0.1.8",
-    "@dork7/filehasher": "^0.0.1",
     "@slack/web-api": "^7.8.0",
     "@stomp/stompjs": "^7.2.1",
     "@types/graphql": "^14.5.0",
@@ -46,6 +41,7 @@
     "helmet": "^7.1.0",
     "http-status-codes": "^2.3.0",
     "kafkajs": "^2.2.4",
+    "minio": "^8.0.7",
     "mongoose": "^8.7.2",
     "multer": "^2.0.2",
     "object-hash": "^3.0.0",
@@ -54,6 +50,7 @@
     "redis": "^4.6.14",
     "swagger-ui-express": "^5.0.0",
     "tesseract.js": "^6.0.1",
+    "uuid": "^14.0.1",
     "ws": "^8.18.3",
     "zlib": "^1.0.5",
     "zod": "^3.22.4"
