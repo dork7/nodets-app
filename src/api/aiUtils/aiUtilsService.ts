@@ -4,6 +4,7 @@ import { promisify } from 'util';
 
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { getLLMModels } from '@/common/utils/getDockerLLMS';
+import { LOCALAI_URL } from '@/common/utils/getLocalAILLMs';
 import { logger } from '@/server';
 import { redis } from '@/services/redisStore';
 
@@ -27,7 +28,32 @@ interface UnloadModelsResponse {
  results: UnloadModelResult[];
 }
 
+interface LoadedModel {
+ model: string;
+ backend?: string;
+ in_memory?: boolean;
+ size?: number;
+}
+
 const TOKEN_USAGE_KEY_PREFIX = 'token_usage_';
+
+const fetchLocalAI = async <T>(path: string, init?: RequestInit): Promise<T> => {
+ const controller = new AbortController();
+ const timeout = setTimeout(() => controller.abort(), 5000);
+ try {
+  const res = await fetch(`${LOCALAI_URL}${path}`, {
+   headers: { 'Content-Type': 'application/json' },
+   signal: controller.signal,
+   ...init,
+  });
+  if (!res.ok) {
+   throw new Error(`LocalAI returned status ${res.status}`);
+  }
+  return (await res.json()) as T;
+ } finally {
+  clearTimeout(timeout);
+ }
+};
 
 export const aiUtilsService = {
  async getChatHistory(userId: string): Promise<ServiceResponse<any[] | null>> {
@@ -159,6 +185,49 @@ export const aiUtilsService = {
    );
   } catch (ex) {
    const errorMessage = `Error unloading LLM models: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
+
+ async getLoadedModels(): Promise<ServiceResponse<LoadedModel[] | null>> {
+  try {
+   const system = await fetchLocalAI<any>('/system');
+   const loadedModels: LoadedModel[] = (system.loaded_models || []).map((model: any) => ({
+    model: model.id,
+    // backend: model.backend,
+    // in_memory: model.in_memory,
+    // size: model.size,
+   }));
+
+   return new ServiceResponse<LoadedModel[]>(
+    ResponseStatus.Success,
+    'Loaded models retrieved successfully',
+    loadedModels,
+    StatusCodes.OK
+   );
+  } catch (ex) {
+   const errorMessage = `Error retrieving loaded models: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
+
+ async unloadModel(model: string): Promise<ServiceResponse<UnloadModelResult | null>> {
+  try {
+   const result = await fetchLocalAI<{ message?: string }>('/backend/shutdown', {
+    method: 'POST',
+    body: JSON.stringify({ model }),
+   });
+
+   return new ServiceResponse<UnloadModelResult>(
+    ResponseStatus.Success,
+    result.message || 'Model unloaded successfully',
+    { model, success: true, message: result.message || 'Model unloaded successfully' },
+    StatusCodes.OK
+   );
+  } catch (ex) {
+   const errorMessage = `Error unloading model ${model}: ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
   }

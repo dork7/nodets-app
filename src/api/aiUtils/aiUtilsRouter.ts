@@ -49,9 +49,23 @@ const GetTokenUsageSchema = z.object({
  }),
 });
 
+const LoadedModelSchema = z.object({
+ model: z.string(),
+ backend: z.string().optional(),
+ in_memory: z.boolean().optional(),
+ size: z.number().optional(),
+});
+
+const UnloadModelSchema = z.object({
+ body: z.object({
+  model: z.string().min(1, 'Model name is required'),
+ }),
+});
+
 aiUtilsRegistry.register('ChatHistory', ChatHistoryResponseSchema);
 aiUtilsRegistry.register('TokenUsage', TokenUsageResponseSchema);
 aiUtilsRegistry.register('UnloadModels', UnloadModelsResponseSchema);
+aiUtilsRegistry.register('LoadedModel', LoadedModelSchema);
 
 export const aiUtilsRouter: Router = (() => {
  const router = express.Router();
@@ -93,6 +107,36 @@ export const aiUtilsRouter: Router = (() => {
 
  router.post('/unload-models', async (_req: Request, res: Response) => {
   const serviceResponse = await aiUtilsService.unloadLLMModels();
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ aiUtilsRegistry.registerPath({
+  method: 'get',
+  path: '/loaded-models',
+  tags: ['AI Utils'],
+  responses: createApiResponse(z.array(LoadedModelSchema), 'Success'),
+ });
+
+ router.get('/loaded-models', async (_req: Request, res: Response) => {
+  const serviceResponse = await aiUtilsService.getLoadedModels();
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ aiUtilsRegistry.registerPath({
+  method: 'post',
+  path: '/unload-model',
+  tags: ['AI Utils'],
+  request: {
+   body: {
+    content: { 'application/json': { schema: UnloadModelSchema.shape.body } },
+   },
+  },
+  responses: createApiResponse(UnloadModelResultSchema, 'Success'),
+ });
+
+ router.post('/unload-model', validateRequest(UnloadModelSchema), async (req: Request, res: Response) => {
+  const { model } = req.body;
+  const serviceResponse = await aiUtilsService.unloadModel(model);
   handleServiceResponse(serviceResponse, res);
  });
 

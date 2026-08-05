@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
+import { pino } from 'pino';
 
 import { env } from '@/common/utils/envConfig';
-import { logger } from '@/server';
+
+const logger = pino({ name: 'mongoose' });
 
 // Exit application on error
 mongoose.connection.on('error', (err) => {

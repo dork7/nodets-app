@@ -26,6 +26,7 @@ import { initKafka } from './config/kafka';
 import { initMinio } from './services/minio';
 import mongoDB from './config/mongoose';
 import { redisClient } from './config/redisStore';
+import { getLocalAILLMs } from './common/utils/getLocalAILLMs';
 const loggerOriginal = pino({ name: 'server start' });
 
 const logger = new Proxy(loggerOriginal, {
@@ -62,8 +63,8 @@ global.cacheHash = cacheConfig.createHash(cacheRules);
 if (env.ENV === 'local') {
   redisClient.connect();
   initMinio();
+  mongoDB();
 //  initKafka().catch((err) => logger.error(err));
-//  mongoDB();
 }
 
 // Middlewares
@@ -110,12 +111,12 @@ app.get('/chatAI', async function (req, res) {
 });
 
 app.get('/chatModels', async function (req, res) {
- const dockerLLMS =await getLLMModels();
+ const dockerLLMS =await getLocalAILLMs();
 
  const configModels = dockerLLMS ?? env.AI_MODELS;
  const models = configModels.split(',').map((m) => {
   const label = m.split('/')[2]; //.charAt(0).toUpperCase() + m.split('/')[1].slice(1);
-  return { value: m, label: label };
+  return { value: m, label: m };
  });
  res.json({ models });
 });

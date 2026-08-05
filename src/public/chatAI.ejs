@@ -384,6 +384,29 @@
         }
 
         /* ===== Input Form Styles ===== */
+        #drop-overlay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            font-size: 1.4em;
+            font-weight: 500;
+            border-radius: 4px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        #chat-container {
+            position: relative;
+        }
+
+        #drop-overlay.active {
+            display: flex;
+        }
+
         #input-form {
             display: flex;
             gap: 8px;
@@ -411,7 +434,8 @@
         }
 
         #send,
-        #stop-stream {
+        #stop-stream,
+        #upload-btn {
             background: var(--bg-input);
             color: var(--text-primary);
             border: 1px solid var(--border);
@@ -424,11 +448,13 @@
         }
 
         #send:hover,
-        #stop-stream:not(:disabled):hover {
+        #stop-stream:not(:disabled):hover,
+        #upload-btn:hover:not(:disabled) {
             background: var(--bg-hover);
         }
 
-        #stop-stream:disabled {
+        #stop-stream:disabled,
+        #upload-btn:disabled {
             opacity: 0.45;
             cursor: not-allowed;
         }
@@ -550,7 +576,8 @@
             outline-offset: 2px;
         }
 
-        #model-actions-container {
+        /* ===== Loaded Models Styles ===== */
+        #loaded-models-container {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -562,28 +589,60 @@
             border-radius: 4px;
         }
 
-        #model-actions {
+        #loaded-models {
             display: flex;
+            flex-direction: column;
             gap: 8px;
+            width: 100%;
         }
 
-        #unload-models-btn {
+        .loaded-models-empty {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin: 0;
+        }
+
+        .loaded-model-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .loaded-model-name {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9em;
+            word-break: break-all;
+        }
+
+        .loaded-model-meta {
+            color: var(--text-secondary);
+            font-size: 0.8em;
+            margin-left: auto;
+        }
+
+        .unload-model-btn {
             background: var(--bg-input);
             color: var(--text-primary);
             border: 1px solid var(--border);
             border-radius: 4px;
-            padding: 6px 12px;
-            font-size: 0.9em;
+            padding: 4px 10px;
+            font-size: 0.85em;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        #unload-models-btn:hover:not(:disabled) {
+        .unload-model-btn:hover:not(:disabled) {
             background: var(--bg-hover);
             border-color: var(--text-secondary);
         }
 
-        #unload-models-btn:disabled {
+        .unload-model-btn:disabled {
             opacity: 0.45;
             cursor: not-allowed;
         }
@@ -604,6 +663,7 @@
             <div id="history-content"></div>
         </div>
     <div id="chat-container">
+        <div id="drop-overlay">Drop files to upload</div>
         <div id="messages"></div>
         <form id="input-form">
             <input id="input" autocomplete="off" placeholder="Type your message..." />
@@ -622,16 +682,19 @@
             <button id="send" type="submit">Send</button>
             <button id="stop-stream" type="button" disabled>Stop</button>
             
+            <button type="button" id="upload-btn" title="Upload file">Upload</button>
+            <input id="file-input" type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp,.svg,.bmp,.ico,.tiff,.tif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*" hidden />
+            
             <button type="button" id="history-btn">Show History</button>
         </form>
         <div id="model-selector-container">
             <div class="model-selector-label">AI Model</div>
             <div id="model-selector"></div>
         </div>
-        <div id="model-actions-container">
-            <div class="model-selector-label">Model Actions</div>
-            <div id="model-actions">
-                <button id="unload-models-btn" type="button">Unload Models</button>
+        <div id="loaded-models-container">
+            <div class="model-selector-label">Loaded Models (RAM)</div>
+            <div id="loaded-models">
+                <p class="loaded-models-empty">No models loaded in memory.</p>
             </div>
         </div>
     </div>
@@ -643,7 +706,10 @@
             WS_URL: 'ws://localhost:2020/ws/chatAI',
             MODELS_API_URL: 'http://localhost:2020/chatModels',
             HISTORY_API_URL: 'http://localhost:2020/v1/aiUtils/chat-history',
-            UNLOAD_MODELS_API_URL: '/v1/aiUtils/unload-models',
+            LOADED_MODELS_API_URL: 'http://localhost:2020/v1/aiUtils/loaded-models',
+            UNLOAD_MODEL_API_URL: 'http://localhost:2020/v1/aiUtils/unload-model',
+            UPLOAD_API_URL: 'http://localhost:2020/v1/minio/upload',
+            MAX_FILE_SIZE: 10 * 1024 * 1024,
             RECONNECT_DELAY: 5000,
             DEFAULT_MODEL_INDEX: 1,
             LOADING_MESSAGES: [
@@ -653,38 +719,22 @@
                 'Fking...',
                 'Thinking...',
                 'Brewing...',
-                'Crunching...',
-                'Warming up...',
-                'Mixing tokens...',
-                'Summoning words...',
+
                 'Almost there...',
                 'Stirring the soup...',
                 'Connecting neurons...',
                 'Reading vibes...',
                 'Generating chaos...',
                 'One sec...',
-                'Hold tight...',
-                'Spinning gears...',
-                'Making magic...',
-                'Asking the tiny brain...',
-                'Polishing pixels...',
-                'Rolling dice...',
-                'Stacking thoughts...',
+ 
                 'Feeding the model...',
-                'Sharpening pencils...',
-                'Boiling ideas...',
-                'Untangling noodles...',
-                'Charging brain cells...',
-                'Consulting ghosts...',
-                'Baking answers...',
+ 
                 'Loading brain juice...',
-                'Counting sheep...',
-                'Wrestling tokens...',
+    
                 'Tuning antennas...',
-                'Finding the plot...',
-                'Reticulating splines...',
+
                 'Doing model stuff...',
-                'Calculating vibes...',
+              
                 'Typing imaginary notes...',
                 'Negotiating with electrons...'
             ]
@@ -696,7 +746,6 @@
             streamingEnabled: true,
             isStreaming: false,
             isConnected: false,
-            isUnloadingModels: false,
             currentIsRelated: false,
             combinedContent: '',
             socket: null,
@@ -712,7 +761,11 @@
             streamToggle: document.getElementById('stream-toggle'),
             streamingLabel: document.getElementById('streaming-label'),
             modelSelector: document.getElementById('model-selector'),
-            unloadModelsBtn: document.getElementById('unload-models-btn'),
+            loadedModels: document.getElementById('loaded-models'),
+            uploadBtn: document.getElementById('upload-btn'),
+            fileInput: document.getElementById('file-input'),
+            dropOverlay: document.getElementById('drop-overlay'),
+            chatContainer: document.getElementById('chat-container'),
             historyBtn: document.getElementById('history-btn'),
             historyPanel: document.getElementById('history-panel'),
             historyContent: document.getElementById('history-content'),
@@ -1082,9 +1135,7 @@
         // ===== Model Management =====
         const modelManager = {
             init() {
-                elements.unloadModelsBtn.addEventListener('click', () => {
-                    this.unloadModels();
-                });
+                this.loadLoadedModels();
             },
 
             async loadModels() {
@@ -1126,39 +1177,68 @@
                 });
             },
 
-            async unloadModels() {
-                if (state.isUnloadingModels) {
+            async loadLoadedModels() {
+                try {
+                    const res = await fetch(CONFIG.LOADED_MODELS_API_URL);
+                    const result = await res.json();
+                    const models = result.responseObject;
+                    this.renderLoadedModels(models);
+                } catch (error) {
+                    console.error('Error fetching loaded models:', error);
+                    elements.loadedModels.innerHTML =
+                        '<p class="loaded-models-empty">Failed to load models.</p>';
+                }
+            },
+
+            renderLoadedModels(models) {
+                if (!Array.isArray(models) || models.length === 0) {
+                    elements.loadedModels.innerHTML =
+                        '<p class="loaded-models-empty">No models loaded in memory.</p>';
                     return;
                 }
 
-                state.isUnloadingModels = true;
-                elements.unloadModelsBtn.disabled = true;
-                elements.unloadModelsBtn.textContent = 'Unloading...';
-                messageManager.append('System', 'Unloading Docker LLM models...', 'system');
+                elements.loadedModels.innerHTML = models
+                    .map((model) => `
+                        <div class="loaded-model-item">
+                            <span class="loaded-model-name">${model.model}</span>
+                            <span class="loaded-model-meta">${model.backend || ''}${model.in_memory ? ' · in memory' : ''}</span>
+                            <button type="button" class="unload-model-btn" data-model="${model.model}">Unload</button>
+                        </div>
+                    `)
+                    .join('');
+
+                elements.loadedModels.querySelectorAll('.unload-model-btn').forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        this.unloadSingleModel(btn.getAttribute('data-model'), btn);
+                    });
+                });
+            },
+
+            async unloadSingleModel(model, btn) {
+                if (!model || btn.disabled) {
+                    return;
+                }
+
+                btn.disabled = true;
+                const originalText = btn.textContent;
+                btn.textContent = 'Unloading...';
+                messageManager.append('System', `Unloading model ${model}...`, 'system');
 
                 try {
-                    const response = await fetch(CONFIG.UNLOAD_MODELS_API_URL, { method: 'POST' });
-                    const result = await response.json();
-                    const responseObject = result.responseObject;
-
-                    if (!response.ok || !result.success) {
-                        const failedCount = responseObject?.failed?.length || 0;
-                        const failureMessage = failedCount
-                            ? `${result.message}. Failed models: ${responseObject.failed.map((item) => item.model).join(', ')}`
-                            : result.message || 'Failed to unload models.';
-                        messageManager.append('System', failureMessage, 'system');
-                        return;
-                    }
-
-                    const unloadedCount = responseObject?.unloaded?.length || 0;
-                    messageManager.append('System', `Unload command completed for ${unloadedCount} model(s).`, 'system');
+                    const res = await fetch(CONFIG.UNLOAD_MODEL_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ model }),
+                    });
+                    const result = await res.json();
+                    messageManager.append('System', result.message || 'Model unloaded.', 'system');
                 } catch (error) {
-                    console.error('Error unloading models:', error);
-                    messageManager.append('System', 'Error unloading Docker LLM models.', 'system');
+                    console.error(`Error unloading model ${model}:`, error);
+                    messageManager.append('System', `Error unloading model ${model}.`, 'system');
                 } finally {
-                    state.isUnloadingModels = false;
-                    elements.unloadModelsBtn.disabled = false;
-                    elements.unloadModelsBtn.textContent = 'Unload Models';
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    this.loadLoadedModels();
                 }
             }
         };
@@ -1215,6 +1295,127 @@
                     });
                     utils.setStopButtonEnabled(false);
                 });
+            }
+        };
+
+        // ===== Upload Management =====
+        const ACCEPTED_UPLOAD_TYPES = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/png',
+            'image/jpeg',
+            'image/gif',
+            'image/webp',
+            'image/svg+xml',
+            'image/bmp',
+            'image/x-icon',
+            'image/tiff'
+        ];
+
+        const ACCEPTED_UPLOAD_EXTENSIONS = [
+            '.pdf',
+            '.doc',
+            '.docx',
+            '.png',
+            '.jpg',
+            '.jpeg',
+            '.gif',
+            '.webp',
+            '.svg',
+            '.bmp',
+            '.ico',
+            '.tiff',
+            '.tif'
+        ];
+
+        const uploadManager = {
+            init() {
+                elements.uploadBtn.addEventListener('click', () => {
+                    elements.fileInput.value = '';
+                    elements.fileInput.click();
+                });
+
+                elements.fileInput.addEventListener('change', () => {
+                    if (elements.fileInput.files && elements.fileInput.files.length > 0) {
+                        this.uploadFiles(Array.from(elements.fileInput.files));
+                    }
+                    elements.fileInput.value = '';
+                });
+
+                ['dragenter', 'dragover'].forEach((eventName) => {
+                    elements.chatContainer.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        elements.dropOverlay.classList.add('active');
+                    });
+                });
+
+                ['dragleave', 'drop'].forEach((eventName) => {
+                    elements.chatContainer.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        elements.dropOverlay.classList.remove('active');
+                    });
+                });
+
+                elements.chatContainer.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const files = e.dataTransfer && e.dataTransfer.files
+                        ? Array.from(e.dataTransfer.files)
+                        : [];
+                    if (files.length > 0) {
+                        this.uploadFiles(files);
+                    }
+                });
+            },
+
+            uploadFiles(files) {
+                files.forEach((file) => this.uploadFile(file));
+            },
+
+            uploadFile(file) {
+                if (file.size > CONFIG.MAX_FILE_SIZE) {
+                    messageManager.append('System', `File "${file.name}" exceeds the ${Math.round(CONFIG.MAX_FILE_SIZE / 1024 / 1024)} MB size limit.`, 'system');
+                    return;
+                }
+
+                const lowerName = file.name.toLowerCase();
+                const hasAcceptedType = ACCEPTED_UPLOAD_TYPES.includes(file.type);
+                const hasAcceptedExtension = ACCEPTED_UPLOAD_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
+
+                if (!hasAcceptedType && !hasAcceptedExtension) {
+                    messageManager.append('System', `"${file.name}" is not a supported file. Only PDF, Word, and image files are allowed.`, 'system');
+                    return;
+                }
+
+                messageManager.append('System', `Uploading "${file.name}"...`, 'system');
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', CONFIG.UPLOAD_API_URL);
+
+                xhr.onload = () => {
+                    try {
+                        const result = JSON.parse(xhr.responseText);
+                        if (xhr.status >= 200 && xhr.status < 300 && result.success && result.responseObject) {
+                            const uploaded = result.responseObject;
+                            messageManager.append('System', `Uploaded "${file.name}"`, 'system');
+                            messageManager.append('System', `File URL: ${uploaded.url}`, 'system');
+                        } else {
+                            messageManager.append('System', `Upload failed: ${result.message || `HTTP ${xhr.status}`}`, 'system');
+                        }
+                    } catch (error) {
+                        console.error('Error parsing upload response:', error);
+                        messageManager.append('System', `Upload failed: unexpected server response.`, 'system');
+                    }
+                };
+
+                xhr.onerror = () => {
+                    messageManager.append('System', `Upload failed: network error for "${file.name}".`, 'system');
+                };
+
+                xhr.send(formData);
             }
         };
 
@@ -1277,6 +1478,7 @@
             
             streamingToggle.init();
             formHandler.init();
+            uploadManager.init();
             historyManager.init();
             modelManager.init();
             modelManager.loadModels();

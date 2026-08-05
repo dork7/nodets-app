@@ -17,7 +17,7 @@ export async function callAI(params: string, streamMode = true) {
  return completion;
 } */
 const openai = new OpenAI({
- baseURL: 'http://localhost:12434/engines/llama.cpp/v1',
+ baseURL: 'http://localhost:8080/v1',
  apiKey: env.OPENAI_API_KEY || '',
 });
 

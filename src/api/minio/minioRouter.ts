@@ -94,6 +94,21 @@ export const minioRouter: Router = (() => {
 
   minioRegistry.registerPath({
     method: 'get',
+    path: '/minio/files',
+    tags: ['Minio'],
+    responses: createApiResponse(
+      z.array(z.object({ id: z.string(), url: z.string(), name: z.string() })),
+      'Success'
+    ),
+  });
+
+  router.get('/files', async (_req: Request, res: Response) => {
+    const serviceResponse = await minioService.listFiles();
+    handleServiceResponse(serviceResponse, res);
+  });
+
+  minioRegistry.registerPath({
+    method: 'get',
     path: '/minio/{id}',
     tags: ['Minio'],
     request: { params: z.object({ id: z.string() }) },
