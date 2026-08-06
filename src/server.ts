@@ -63,7 +63,7 @@ global.cacheHash = cacheConfig.createHash(cacheRules);
 if (env.ENV === 'local') {
   redisClient.connect();
   initMinio();
-  mongoDB();
+  // mongoDB();
 //  initKafka().catch((err) => logger.error(err));
 }
 

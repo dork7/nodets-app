@@ -1,22 +1,25 @@
 version: "3.8"
 
 services:
-  localai:
-    image: quay.io/go-skynet/local-ai:latest-cpu
-    container_name: localai
-    ports:
-      - "8080:8080"
-    environment:
-      - MODELS_PATH=/models
-      - DEBUG=true
-    volumes:
-      - ./models:/models
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
     restart: unless-stopped
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web Console
+    environment:
+      MINIO_ROOT_USER: admin123
+      MINIO_ROOT_PASSWORD: admin123
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/models"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
-      timeout: 10s
-      retries: 5
+      timeout: 20s
+      retries: 3
 
   chromadb:
     image: ghcr.io/chroma-core/chroma:latest
@@ -58,4 +61,5 @@ services:
       - 5540:5540
 
 volumes:
+  minio_data:
   redis_data:

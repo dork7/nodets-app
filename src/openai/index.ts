@@ -27,6 +27,9 @@ export async function callAI(params: any[], streamMode = true, aiModel: string, 
    model: aiModel, // or any model listed on OpenRouter
    messages: params,
    stream: streamMode, // Enable streaming
+   // Ask the server to include usage in the final streaming chunk so token
+   // counts are available to the WebSocket client.
+   ...(streamMode ? { stream_options: { include_usage: true } } : {}),
   },
   { signal }
  );
@@ -48,6 +51,21 @@ Respond with only "related" or "unrelated".
  });
  return completion.choices[0].message.content === 'related';
 }
+
+export async function getSummeriseHistory(previousMessage: string, currentMessage: string, aiModel: string) {
+    const systmePrompt = `
+   Conversation so far: "${previousMessage}"
+   User's new message: "${currentMessage}"
+   Summarize the conversation so far.
+   `;
+   
+   
+    const completion = await openai.chat.completions.create({
+     model: aiModel, // or any model listed on OpenRouter
+     messages: [{ role: 'user', content: systmePrompt }],
+    });
+    return completion.choices[0].message.content;
+   }
 
 // Function to fetch data from the web
 export const webSearch = async (query: any) => {

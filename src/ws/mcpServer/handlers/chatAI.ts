@@ -1,5 +1,6 @@
-import { callAI, isRelatedConversation } from '@/openai';
+import { callAI, getSummeriseHistory, isRelatedConversation } from '@/openai';
 import { logger } from '@/server';
+import { MINIO_BUCKET, minioClient } from '@/services/minio';
 import { redis } from '@/services/redisStore';
 
 // ===== Types =====
@@ -16,6 +17,7 @@ interface WebSocketMessage {
  stream?: boolean | string;
  params?: {
   prompt?: string;
+  imageId?: string;
  };
 }
 
@@ -98,6 +100,51 @@ const buildConversationHistory = (
  return newHistory;
 };
 
+const getImageDataUrl = async (id: string): Promise<string | null> => {
+ try {
+  const files: any[] = [];
+  for await (const obj of minioClient.listObjects(MINIO_BUCKET, `${id}-`, true)) {
+   files.push(obj);
+  }
+
+  const file = files.find((f) => f.name.startsWith(`${id}-`));
+  if (!file) {
+   logger.error(`Image not found for id ${id}`);
+   return null;
+  }
+
+  const stream = await minioClient.getObject(MINIO_BUCKET, file.name);
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream as AsyncIterable<Buffer>) {
+   chunks.push(chunk);
+  }
+
+  const buffer = Buffer.concat(chunks);
+  const mimetype = file.contentType || 'application/octet-stream';
+  return `data:${mimetype};base64,${buffer.toString('base64')}`;
+ } catch (ex) {
+  logger.error(`Error fetching image ${id}: ${(ex as Error).message}`);
+  return null;
+ }
+};
+
+const buildAIMessages = (conversationHistory: ChatMessage[], imageDataUrl?: string): any[] => {
+ const messages: any[] = conversationHistory.map((m) => ({ role: m.role, content: m.content }));
+
+ if (imageDataUrl) {
+  const lastIndex = messages.length - 1;
+  const lastMessage = messages[lastIndex];
+  if (lastMessage && lastMessage.role === 'user') {
+   lastMessage.content = [
+    { type: 'text', text: lastMessage.content },
+    { type: 'image_url', image_url: { url: imageDataUrl } },
+   ];
+  }
+ }
+
+ return messages;
+};
+
 const sendWebSocketMessage = (ws: any, message: Record<string, unknown>): void => {
  try {
   ws.send(JSON.stringify(message));
@@ -149,7 +196,7 @@ const saveTokenUsage = async (userId: string, usage: TokenUsage): Promise<void> 
    completion_tokens: (currentUsage.completion_tokens || 0) + (usage.completion_tokens || 0),
    total_tokens: (currentUsage.total_tokens || 0) + (usage.total_tokens || 0),
   };
-  await redis.setValue(getTokenUsageKey(userId), updatedUsage);
+  await redis.setValue(getTokenUsageKey(userId), updatedUsage, 60*60*60);
  } catch (error) {
   logger.error(`Error saving token usage for user ${userId}: ${error}`);
  }
@@ -271,19 +318,26 @@ export const handler = async (ws: any, message: WebSocketMessage): Promise<void>
  try {
   // Extract and validate input
   const userInput = message.params?.prompt || DEFAULT_PROMPT;
+  const imageId = message.params?.imageId;
   const globalModels = (global as { aiModels?: string[] })?.aiModels;
   const aiModel = message?.model || globalModels?.[0] || '';
   const isStreaming = normalizeStreamParam(message?.stream);
+
+  // Resolve uploaded image to a base64 data URL (if any)
+  const imageDataUrl = imageId ? await getImageDataUrl(imageId) : undefined;
 
   // Get conversation history
   const previousHistory = await getChatHistory(message.id);
 
   // Check if conversation is related to previous context
   const previousMessageContent = getPreviousMessageContent(previousHistory);
-  const isRelated = await isRelatedConversation(previousMessageContent, userInput, aiModel);
+
+  // const summeriseHistory:any = await getSummeriseHistory(previousMessageContent, userInput, aiModel);
+
+  const isRelated =  await isRelatedConversation(previousMessageContent, userInput, aiModel);
 
   // Build conversation history
-  const conversationHistory = buildConversationHistory(userInput, previousHistory, isRelated);
+  const conversationHistory = buildConversationHistory(userInput, previousHistory, true);
 
   // Save updated history (before AI response)
   await saveChatHistory(message.id, conversationHistory);
@@ -296,8 +350,11 @@ export const handler = async (ws: any, message: WebSocketMessage): Promise<void>
    isRelated,
   });
 
+  // Build OpenAI messages, attaching the image to the last user message if present
+  const aiMessages = buildAIMessages(conversationHistory, imageDataUrl ?? undefined);
+
   // Get AI response
-  const aiResponse = await callAI(conversationHistory, isStreaming, aiModel, abortController.signal);
+  const aiResponse = await callAI(aiMessages, isStreaming, aiModel, abortController.signal);
 
   // Handle response based on streaming mode and get token usage
   let tokenUsage: TokenUsage;

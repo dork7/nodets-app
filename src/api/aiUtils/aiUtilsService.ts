@@ -5,6 +5,7 @@ import { promisify } from 'util';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { getLLMModels } from '@/common/utils/getDockerLLMS';
 import { LOCALAI_URL } from '@/common/utils/getLocalAILLMs';
+import { redisClient } from '@/config/redisStore';
 import { logger } from '@/server';
 import { redis } from '@/services/redisStore';
 
@@ -110,12 +111,60 @@ export const aiUtilsService = {
     },
     StatusCodes.OK
    );
-  } catch (ex) {
-   const errorMessage = `Error retrieving token usage for user ${userId}: ${(ex as Error).message}`;
-   logger.error(errorMessage);
-   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
-  }
- },
+   } catch (ex) {
+    const errorMessage = `Error retrieving token usage for user ${userId}: ${(ex as Error).message}`;
+    logger.error(errorMessage);
+    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   }
+  },
+
+  async getTotalTokenUsage(sessionId?: string): Promise<ServiceResponse<TokenUsage | null>> {
+   try {
+    // If a session id is provided, return that session's accumulated usage only
+    if (sessionId) {
+     const key = `${TOKEN_USAGE_KEY_PREFIX}${sessionId}`;
+     const raw = await redisClient.get(key);
+     const usage = raw ? (JSON.parse(raw) as TokenUsage) : null;
+
+     const totals: TokenUsage = {
+      prompt_tokens: usage?.prompt_tokens || 0,
+      completion_tokens: usage?.completion_tokens || 0,
+      total_tokens: usage?.total_tokens || 0,
+     };
+
+     return new ServiceResponse<TokenUsage>(
+      ResponseStatus.Success,
+      'Session token usage retrieved successfully',
+      totals,
+      StatusCodes.OK
+     );
+    }
+
+    const totals: TokenUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+
+    for await (const key of redisClient.scanIterator({ MATCH: `${TOKEN_USAGE_KEY_PREFIX}*` })) {
+     const raw = await redisClient.get(key);
+     if (!raw) {
+      continue;
+     }
+     const usage = JSON.parse(raw) as TokenUsage;
+     totals.prompt_tokens = (totals.prompt_tokens || 0) + (usage.prompt_tokens || 0);
+     totals.completion_tokens = (totals.completion_tokens || 0) + (usage.completion_tokens || 0);
+     totals.total_tokens = (totals.total_tokens || 0) + (usage.total_tokens || 0);
+    }
+
+    return new ServiceResponse<TokenUsage>(
+     ResponseStatus.Success,
+     'Total token usage retrieved successfully',
+     totals,
+     StatusCodes.OK
+    );
+   } catch (ex) {
+    const errorMessage = `Error retrieving total token usage: ${(ex as Error).message}`;
+    logger.error(errorMessage);
+    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   }
+  },
 
  async unloadLLMModels(): Promise<ServiceResponse<UnloadModelsResponse | null>> {
   try {

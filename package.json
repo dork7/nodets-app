@@ -46,6 +46,7 @@
     "multer": "^2.0.2",
     "object-hash": "^3.0.0",
     "openai": "^6.6.0",
+    "opencode-tps-meter": "^0.3.1",
     "pino-http": "^10.0.0",
     "redis": "^4.6.14",
     "swagger-ui-express": "^5.0.0",

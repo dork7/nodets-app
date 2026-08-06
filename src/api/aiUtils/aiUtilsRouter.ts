@@ -62,6 +62,12 @@ const UnloadModelSchema = z.object({
  }),
 });
 
+const GetTotalTokenUsageSchema = z.object({
+ query: z.object({
+  sessionId: z.string().optional(),
+ }),
+});
+
 aiUtilsRegistry.register('ChatHistory', ChatHistoryResponseSchema);
 aiUtilsRegistry.register('TokenUsage', TokenUsageResponseSchema);
 aiUtilsRegistry.register('UnloadModels', UnloadModelsResponseSchema);
@@ -102,6 +108,20 @@ export const aiUtilsRouter: Router = (() => {
  router.get('/token-usage/:userId', validateRequest(GetTokenUsageSchema), async (req: Request, res: Response) => {
   const userId = req.params.userId;
   const serviceResponse = await aiUtilsService.getTokenUsage(userId);
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ aiUtilsRegistry.registerPath({
+  method: 'get',
+  path: '/total-token-usage',
+  tags: ['AI Utils'],
+  request: { query: GetTotalTokenUsageSchema.shape.query },
+  responses: createApiResponse(TokenUsageResponseSchema, 'Success'),
+ });
+
+ router.get('/total-token-usage', validateRequest(GetTotalTokenUsageSchema), async (req: Request, res: Response) => {
+  const sessionId = req.query.sessionId ? String(req.query.sessionId) : undefined;
+  const serviceResponse = await aiUtilsService.getTotalTokenUsage(sessionId);
   handleServiceResponse(serviceResponse, res);
  });
 

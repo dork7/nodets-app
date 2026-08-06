@@ -67,7 +67,7 @@ export const minioService = {
     StatusCodes.OK
    );
   } catch (ex) {
-   const errorMessage = `Failed to upload file to Minio: ${(ex as Error).message}`;
+   const errorMessage = `Failed to upload file to Minio: ${(ex as Error).message} ${JSON.stringify(ex.stack)}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
   }
