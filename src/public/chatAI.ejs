@@ -12,10 +12,10 @@
      --carbon-black: #252422;
      --paprika: #eb5e28;
 
-     --bg: #1a1815;
-     --surface: color-mix(in srgb, #1a1815 90%, var(--carbon-black) 10%);
-     --surface-2: color-mix(in srgb, #1a1815 78%, var(--carbon-black) 22%);
-     --surface-3: color-mix(in srgb, #1a1815 66%, var(--carbon-black) 34%);
+     --bg: #000000;
+     --surface: color-mix(in srgb, #000000 90%, var(--carbon-black) 10%);
+     --surface-2: color-mix(in srgb, #000000 78%, var(--carbon-black) 22%);
+     --surface-3: color-mix(in srgb, #000000 66%, var(--carbon-black) 34%);
      --text: var(--floral-white);
      --muted: var(--dust-grey);
      --accent: var(--paprika);
@@ -42,7 +42,8 @@
      color: var(--text);
      font-family: var(--mono);
      margin: 0;
-     min-height: 100vh;
+     height: 100vh;
+     overflow: hidden;
      display: flex;
      flex-direction: column;
     }
