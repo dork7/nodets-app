@@ -866,8 +866,10 @@
     streamingEnabled: true,
     isStreaming: false,
     isConnected: false,
-    currentIsRelated: false,
-    combinedContent: '',
+     currentIsRelated: false,
+     combinedContent: '',
+     streamStartTime: 0,
+     lastTokensPerSecond: 0,
     socket: null,
     pendingImage: null,
     sessionId: localStorage.getItem('chatSessionId') || `sess-${Math.random().toString(36).substr(2, 9)}`,
@@ -1137,9 +1139,13 @@
      const completionTokens = tokenUsage?.completion_tokens || 0;
      const totalTokens = tokenUsage?.total_tokens || 0;
 
-     // Always show token usage section for AI messages
-     usageSection.innerHTML = `
+      // Always show token usage section for AI messages
+      usageSection.innerHTML = `
                     <div class="token-usage">
+                        <div class="token-usage-item">
+                            <span class="token-usage-label">Speed:</span>
+                            <span class="token-usage-value">${state.lastTokensPerSecond > 0 ? `${state.lastTokensPerSecond.toFixed(1)} tok/s` : '—'}</span>
+                        </div>
                         <div class="token-usage-item">
                             <span class="token-usage-label">Prompt:</span>
                             <span class="token-usage-value">${promptTokens.toLocaleString()}</span>
@@ -1178,42 +1184,54 @@
 
    // ===== Stream Processing =====
    const streamProcessor = {
-    process(data) {
-     if (data.type === 'stream_start') {
-      state.isStreaming = true;
-      state.combinedContent = '';
-      utils.setStopButtonEnabled(true);
-      return utils.getLoadingMessage();
-     }
-
-     if (data.type === 'stream_continue' && state.isStreaming) {
-      if (data.aiResponse?.content) {
-       state.combinedContent += data.aiResponse.content;
+     process(data) {
+      if (data.type === 'stream_start') {
+       state.isStreaming = true;
+       state.combinedContent = '';
+       state.streamStartTime = Date.now();
+       state.lastTokensPerSecond = 0;
+       utils.setStopButtonEnabled(true);
+       return utils.getLoadingMessage();
       }
-      return state.combinedContent;
-     }
 
-     if (data.type === 'stream_end' && state.isStreaming) {
-      state.isStreaming = false;
-      utils.setStopButtonEnabled(false);
-      return state.combinedContent;
-     }
+      if (data.type === 'stream_continue' && state.isStreaming) {
+       if (data.aiResponse?.content) {
+        state.combinedContent += data.aiResponse.content;
+       }
+       return state.combinedContent;
+      }
 
-     if (data.type === 'stream_stopped') {
-      state.isStreaming = false;
-      utils.setStopButtonEnabled(false);
-      return state.combinedContent || 'Stopped.';
-     }
+      if (data.type === 'stream_end' && state.isStreaming) {
+       state.isStreaming = false;
+       utils.setStopButtonEnabled(false);
+       this.recordTokensPerSecond(data.tokenUsage);
+       return state.combinedContent;
+      }
 
-     if (data.type === 'stream_error' || data.type === 'error') {
-      state.isStreaming = false;
-      utils.setStopButtonEnabled(false);
-      return `Error: ${data.error || 'Something went wrong while streaming.'}`;
-     }
+      if (data.type === 'stream_stopped') {
+       state.isStreaming = false;
+       utils.setStopButtonEnabled(false);
+       this.recordTokensPerSecond(data.tokenUsage);
+       return state.combinedContent || 'Stopped.';
+      }
 
-     return '';
-    },
-   };
+      if (data.type === 'stream_error' || data.type === 'error') {
+       state.isStreaming = false;
+       utils.setStopButtonEnabled(false);
+       return `Error: ${data.error || 'Something went wrong while streaming.'}`;
+      }
+
+      return '';
+     },
+
+     recordTokensPerSecond(tokenUsage) {
+      const completionTokens = tokenUsage?.completion_tokens || 0;
+      const elapsedSeconds = (Date.now() - state.streamStartTime) / 1000;
+      if (elapsedSeconds > 0 && completionTokens > 0) {
+       state.lastTokensPerSecond = completionTokens / elapsedSeconds;
+      }
+     },
+    };
 
    // ===== WebSocket Management =====
    const websocketManager = {
