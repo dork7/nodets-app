@@ -37,14 +37,14 @@ export async function loadHandlers() {
   const { name, handler } = getHandlerExports(module);
 
   if (!name || typeof handler !== 'function') {
-   throw new Error(`Invalid MCP handler module: ${modulePath}`);
+   throw new Error(`Invalid server handler module: ${modulePath}`);
   }
 
   registerMethod(name, handler);
-  logger.info(`🔌 Registered MCP method: ${name}`);
- }
+logger.info(`🔌 Registered server method: ${name}`);
+  }
 
- logger.info(`✅ Available MCP methods:  ${listMethods()}`);
+  logger.info(`✅ Available server methods:  ${listMethods()}`);
 }
 
 export { getMethod, listMethods };

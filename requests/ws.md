@@ -1,6 +1,6 @@
 To connet with websocket
 
-ws://localhost:2020/ws/mcp?type=mcp
+ws://localhost:2020/ws/server
 
 payload
 {

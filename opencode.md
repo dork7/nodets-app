@@ -15,7 +15,7 @@ Express + TypeScript backend (Express TypeScript Boilerplate 2024). A REST API, 
 - Logging: pino (+ `pino-pretty` in dev)
 - Storage: MinIO (S3-compatible), Redis, MongoDB (Mongoose)
 - Messaging: Kafka (KafkaJS), STOMP
-- WebSocket: `ws` (paths `/ws/chatAI`, `/ws/stream`, `/ws/mcp`)
+- WebSocket: `ws` (paths `/ws/chatAI`, `/ws/stream`, `/ws/server`)
 - LLM: OpenAI SDK pointed at LocalAI (`baseURL: http://localhost:8080/v1`), Tesseract OCR
 - AI container stack: `docker compose -f ai-docker-compose.yml up` (LocalAI :8080, ChromaDB :8000, Redis)
 - Infra: `docker compose up` (Mongo, MinIO, Kafka, Zookeeper, Redis, mongo-express, kafka-ui)
@@ -36,7 +36,7 @@ yarn test               # vitest run
 Notes:
 - The server runs on port 2020 (see `.env` / `envConfig`).
 - `tsx watch --watch-path=src` reloads on any change under `src/`.
-- Pre-existing typecheck errors exist (deprecated `baseUrl`/`node10` tsconfig options, and errors in `server.ts`, `services/minio.ts`, `services/redisStore.ts`, `src/ws/mcpServer/index.ts` missing `@types/ws`, and kafka/orders/minio test/model files). Do not treat those as regressions; fix only what your change introduces. Run `yarn tsc --noEmit -p tsconfig.json --ignoreDeprecations "6.0"` to filter them if needed.
+- Pre-existing typecheck errors exist (deprecated `baseUrl`/`node10` tsconfig options, and errors in `server.ts`, `services/minio.ts`, `services/redisStore.ts`, `src/ws/server/index.ts` missing `@types/ws`, and kafka/orders/minio test/model files). Do not treat those as regressions; fix only what your change introduces. Run `yarn tsc --noEmit -p tsconfig.json --ignoreDeprecations "6.0"` to filter them if needed.
 
 ## Project Structure
 
@@ -58,7 +58,7 @@ src/
   openai/         # OpenAI client + callAI (LocalAI), webSearch, isRelatedConversation
   public/         # server-rendered views (chatAI.ejs, dashboard.ejs)
   services/       # minio client + bucket init, redis store
-  ws/mcpServer/   # WebSocket server + chatAI handler
+  ws/server/   # WebSocket server + chatAI handler
   index.ts        # entry point (starts HTTP + WS)
   server.ts       # express app, middleware, routes, /chatModels, /chatAI
 ```
@@ -84,7 +84,7 @@ All API responses use the `ServiceResponse` shape: `{ success, message, response
 
 1. Browser connects to `ws://localhost:2020/ws/chatAI`.
 2. Sends `{ sender:'User', type:'request', id, method:'chatAI', stream, model, params:{ prompt, imageId? } }`.
-3. `src/ws/mcpServer/handlers/chatAI.ts` resolves optional `imageId` to a base64 data URL via `getImageDataUrl()` (fetches from MinIO), builds OpenAI messages (image attached to last user message as `image_url`), and calls `callAI()` → LocalAI.
+3. `src/ws/server/handlers/chatAI.ts` resolves optional `imageId` to a base64 data URL via `getImageDataUrl()` (fetches from MinIO), builds OpenAI messages (image attached to last user message as `image_url`), and calls `callAI()` → LocalAI.
 4. Streaming chunks are relayed back over WS (`stream_start` → `stream_continue` → `stream_end`).
 5. Conversation history and token usage are persisted in Redis.
 

@@ -1,8 +1,8 @@
 import { env } from '@/common/utils/envConfig';
 import { app, logger } from '@/server';
 
-import { startWebSocketServer } from './ws/mcpServer';
-import { loadHandlers } from './ws/mcpServer/methods';
+import { startWebSocketServer } from './ws/server';
+import { loadHandlers } from './ws/server/methods';
 
 const server = app.listen(env.PORT, async () => {
  const { NODE_ENV, HOST, PORT } = env;

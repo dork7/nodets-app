@@ -20,7 +20,7 @@ export const startWebSocketServer = async (httpServer: any) => {
   const urlParts = parse(request.url, true); // true = parse query string
   const params: any = urlParts.query;
 
-  if (url.includes('/ws/mcp')) {
+  if (url.includes('/ws/server')) {
    ws.on('message', async (message: any) => {
     logger.info(`Received WebSocket message:   ${message.toString()}`);
 
