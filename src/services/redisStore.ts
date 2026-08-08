@@ -3,9 +3,8 @@ import { redisClient } from '@/config/redisStore';
 
 export const redis = {
  setValue: async (key: string, value: any, ttl: number = 3600): Promise<number | undefined> => {
-  return redisClient.set(key, JSON.stringify(value), {
-   EX: ttl,
-  });
+  const options = ttl > 0 ? { EX: ttl } : {};
+  return redisClient.set(key, JSON.stringify(value), options);
  },
  getValue: async (key: string): Promise<IRedis | null> => {
   return JSON.parse((await redisClient.get(key)) as string);

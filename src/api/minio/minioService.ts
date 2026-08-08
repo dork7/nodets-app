@@ -7,6 +7,7 @@ import { minioRepository } from '@/api/minio/minioRepository';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { logger } from '@/server';
 import { MINIO_BUCKET, minioClient, publicReadPolicy } from '@/services/minio';
+import { redis } from '@/services/redisStore';
 
 export type MinioUploadResult = { id: string; url: string; name: string };
 
@@ -43,6 +44,7 @@ const saveReference = async (
 ): Promise<void> => {
  const reference: FileReference = { id, name, url, bucket, size, mimetype, createdAt: new Date() };
  await minioRepository.addAsync(reference);
+ await redis.setValue(`fileReference:${id}`, reference, 0);
 };
 
 export const minioService = {
@@ -58,7 +60,7 @@ export const minioService = {
    });
 
    const fileUrl = buildFileUrl(targetBucket, filename);
-   await saveReference(id, filename, fileUrl, targetBucket, file.size, file.mimetype);
+saveReference(id, filename, fileUrl, targetBucket, file.size, file.mimetype);
 
    return new ServiceResponse<MinioUploadResult>(
     ResponseStatus.Success,
