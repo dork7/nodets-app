@@ -19,14 +19,11 @@ import { cacheHandler } from './common/middleware/cacheHandler';
 import { proxyHandler } from './common/middleware/proxy';
 import { reqLoggerKafka } from './common/middleware/reqLoggerKafka';
 import { readFileData } from './common/utils/fileUtils';
-import { getLLMModels } from './common/utils/getDockerLLMS';
+import { getLocalAILLMs } from './common/utils/getLocalAILLMs';
 import { sendSlackNotification } from './common/utils/slack';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
-import { initKafka } from './config/kafka';
-import { initMinio } from './services/minio';
-import mongoDB from './config/mongoose';
 import { redisClient } from './config/redisStore';
-import { getLocalAILLMs } from './common/utils/getLocalAILLMs';
+import { initMinio } from './services/minio';
 const loggerOriginal = pino({ name: 'server start' });
 
 const logger = new Proxy(loggerOriginal, {

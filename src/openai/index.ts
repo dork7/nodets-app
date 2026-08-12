@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 
 import { env } from '@/common/utils/envConfig';
+import type { OpenAITool } from '@/openai/tools';
 
 /*
 const openai = new OpenAI({
@@ -16,12 +17,18 @@ export async function callAI(params: string, streamMode = true) {
  });
  return completion;
 } */
-const openai = new OpenAI({
+export const openai = new OpenAI({
  baseURL: 'http://localhost:8080/v1',
  apiKey: env.OPENAI_API_KEY || '',
 });
 
-export async function callAI(params: any[], streamMode = true, aiModel: string, signal?: AbortSignal) {
+export async function callAI(
+ params: any[],
+ streamMode = true,
+ aiModel: string,
+ signal?: AbortSignal,
+ tools?: OpenAITool[]
+) {
  const completion = await openai.chat.completions.create(
   {
    model: aiModel, // or any model listed on OpenRouter
@@ -30,42 +37,13 @@ export async function callAI(params: any[], streamMode = true, aiModel: string, 
    // Ask the server to include usage in the final streaming chunk so token
    // counts are available to the WebSocket client.
    ...(streamMode ? { stream_options: { include_usage: true } } : {}),
+   // Function calling: give the model descriptions of tools it may call.
+   ...(tools ? { tools } : {}),
   },
   { signal }
  );
  return completion;
 }
-
-export async function isRelatedConversation(previousMessage: string, currentMessage: string, aiModel: string) {
- const checkPrompt = `
-Conversation so far: "${previousMessage}"
-User's new message: "${currentMessage}"
-
-Does the new message continue the same topic, or start a new one?
-Respond with only "related" or "unrelated".
-`;
-
- const completion = await openai.chat.completions.create({
-  model: aiModel, // or any model listed on OpenRouter
-  messages: [{ role: 'user', content: checkPrompt }],
- });
- return completion.choices[0].message.content === 'related';
-}
-
-export async function getSummeriseHistory(previousMessage: string, currentMessage: string, aiModel: string) {
-    const systmePrompt = `
-   Conversation so far: "${previousMessage}"
-   User's new message: "${currentMessage}"
-   Summarize the conversation so far.
-   `;
-   
-   
-    const completion = await openai.chat.completions.create({
-     model: aiModel, // or any model listed on OpenRouter
-     messages: [{ role: 'user', content: systmePrompt }],
-    });
-    return completion.choices[0].message.content;
-   }
 
 // Function to fetch data from the web
 export const webSearch = async (query: any) => {

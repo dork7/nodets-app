@@ -68,6 +68,18 @@ const GetTotalTokenUsageSchema = z.object({
  }),
 });
 
+const TextToSpeechSchema = z.object({
+ body: z.object({
+  text: z.string().min(1, 'Text is required'),
+  voice: z.string().optional(),
+ }),
+});
+
+const TextToSpeechResponseSchema = z.object({
+ audio: z.string(),
+ contentType: z.string(),
+});
+
 aiUtilsRegistry.register('ChatHistory', ChatHistoryResponseSchema);
 aiUtilsRegistry.register('TokenUsage', TokenUsageResponseSchema);
 aiUtilsRegistry.register('UnloadModels', UnloadModelsResponseSchema);
@@ -102,6 +114,20 @@ export const aiUtilsRouter: Router = (() => {
  router.get('/chat-history/:userId', validateRequest(GetChatHistorySchema), async (req: Request, res: Response) => {
   const userId = req.params.userId;
   const serviceResponse = await aiUtilsService.getChatHistory(userId);
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ aiUtilsRegistry.registerPath({
+  method: 'delete',
+  path: '/chat-history/{userId}',
+  tags: ['AI Utils'],
+  request: { params: GetChatHistorySchema.shape.params },
+  responses: createApiResponse(z.object({ cleared: z.boolean() }), 'Success'),
+ });
+
+ router.delete('/chat-history/:userId', validateRequest(GetChatHistorySchema), async (req: Request, res: Response) => {
+  const userId = req.params.userId;
+  const serviceResponse = await aiUtilsService.clearChatHistory(userId);
   handleServiceResponse(serviceResponse, res);
  });
 
@@ -157,6 +183,24 @@ export const aiUtilsRouter: Router = (() => {
  router.post('/unload-model', validateRequest(UnloadModelSchema), async (req: Request, res: Response) => {
   const { model } = req.body;
   const serviceResponse = await aiUtilsService.unloadModel(model);
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ aiUtilsRegistry.register('TextToSpeech', TextToSpeechResponseSchema);
+
+ aiUtilsRegistry.registerPath({
+  method: 'post',
+  path: '/text-to-speech',
+  tags: ['AI Utils'],
+  request: {
+   body: { content: { 'application/json': { schema: TextToSpeechSchema.shape.body } } },
+  },
+  responses: createApiResponse(TextToSpeechResponseSchema, 'Success'),
+ });
+
+ router.post('/text-to-speech', validateRequest(TextToSpeechSchema), async (req: Request, res: Response) => {
+  const { text, voice } = req.body;
+  const serviceResponse = await aiUtilsService.textToSpeech(text, voice);
   handleServiceResponse(serviceResponse, res);
  });
 
