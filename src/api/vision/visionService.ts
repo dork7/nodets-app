@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { ImageAnalysisMessage, ImageDetails } from '@/api/vision/visionModel';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { env } from '@/common/utils/envConfig';
-import { openai } from '@/openai';
+import { visionOpenAI } from '@/openai/vision';
 import { logger } from '@/server';
 
 const FALLBACK_MESSAGE = 'No readable text detected in the provided image.';
@@ -28,7 +28,7 @@ const extractJson = (content: string): unknown | string => {
  }
 };
 export const getDefaultVisionModel = (): string => {
- return env.IMAGE_ANALYSIS_MODEL ?? 'gemma-4-26b-a4b-it-apex-i-quality';
+ return env.IMAGE_ANALYSIS_MODEL ?? 'google/gemma-4-26b-a4b-it:free';
 };
 
 export const visionService = {
@@ -49,7 +49,7 @@ export const visionService = {
    const imageDataUrl = `data:${file.mimetype || 'image/png'};base64,${file.buffer.toString('base64')}`;
    const aiModel = getDefaultVisionModel();
 
-   const completion = await openai.chat.completions.create({
+   const completion = await visionOpenAI.chat.completions.create({
     model: aiModel,
     messages: [
      {
