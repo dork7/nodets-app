@@ -28,4 +28,7 @@ export const env = cleanEnv(process.env, {
  OPENAI_API_KEY: str(),
  ENABLE_FILE_LOGGING: bool({ default: false }),
 AI_MODELS: str({ default: 'ai/gemma3', desc: 'Comma-separated list of AI models' }),
+EMBDED_MODEL: str({ default: 'nemotron-3-embed-1b-q4', desc: 'Embedding model' }),
+SUMMARY_MODEL: str({ default: 'lfm2.5-1.2b-instruct', desc: 'Summary model' }),
+RELEVANCE_MODEL: str({ default: 'lfm2.5-1.2b-instruct', desc: 'History check model' }),
 });
