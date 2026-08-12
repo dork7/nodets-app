@@ -6,6 +6,7 @@ import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse
 import { getLLMModels } from '@/common/utils/getDockerLLMS';
 import { LOCALAI_URL } from '@/common/utils/getLocalAILLMs';
 import { redisClient } from '@/config/redisStore';
+import { openai } from '@/openai';
 import { logger } from '@/server';
 import { redis } from '@/services/redisStore';
 
@@ -37,6 +38,13 @@ interface LoadedModel {
 }
 
 const TOKEN_USAGE_KEY_PREFIX = 'token_usage_';
+const DEFAULT_TTS_MODEL = 'tts-1';
+const DEFAULT_TTS_VOICE = 'alloy';
+
+interface TTSResponse {
+ audio: string;
+ contentType: string;
+}
 
 const fetchLocalAI = async <T>(path: string, init?: RequestInit): Promise<T> => {
  const controller = new AbortController();
@@ -86,6 +94,28 @@ export const aiUtilsService = {
   }
  },
 
+ async clearChatHistory(userId: string): Promise<ServiceResponse<{ cleared: boolean } | null>> {
+  try {
+   const historyKey = `chat_history_${userId}`;
+   const usageKey = `${TOKEN_USAGE_KEY_PREFIX}${userId}`;
+
+   await redis.deleteValue(historyKey);
+   await redis.deleteValue(usageKey);
+
+   logger.info(`Cleared chat history and token usage for user ${userId}`);
+   return new ServiceResponse(
+    ResponseStatus.Success,
+    'Chat history cleared successfully',
+    { cleared: true },
+    StatusCodes.OK
+   );
+  } catch (ex) {
+   const errorMessage = `Error clearing chat history for user ${userId}: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
+
  async getTokenUsage(userId: string): Promise<ServiceResponse<TokenUsage | null>> {
   try {
    const usageKey = `${TOKEN_USAGE_KEY_PREFIX}${userId}`;
@@ -111,60 +141,60 @@ export const aiUtilsService = {
     },
     StatusCodes.OK
    );
-   } catch (ex) {
-    const errorMessage = `Error retrieving token usage for user ${userId}: ${(ex as Error).message}`;
-    logger.error(errorMessage);
-    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
-   }
-  },
+  } catch (ex) {
+   const errorMessage = `Error retrieving token usage for user ${userId}: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
 
-  async getTotalTokenUsage(sessionId?: string): Promise<ServiceResponse<TokenUsage | null>> {
-   try {
-    // If a session id is provided, return that session's accumulated usage only
-    if (sessionId) {
-     const key = `${TOKEN_USAGE_KEY_PREFIX}${sessionId}`;
-     const raw = await redisClient.get(key);
-     const usage = raw ? (JSON.parse(raw) as TokenUsage) : null;
+ async getTotalTokenUsage(sessionId?: string): Promise<ServiceResponse<TokenUsage | null>> {
+  try {
+   // If a session id is provided, return that session's accumulated usage only
+   if (sessionId) {
+    const key = `${TOKEN_USAGE_KEY_PREFIX}${sessionId}`;
+    const raw = await redisClient.get(key);
+    const usage = raw ? (JSON.parse(raw) as TokenUsage) : null;
 
-     const totals: TokenUsage = {
-      prompt_tokens: usage?.prompt_tokens || 0,
-      completion_tokens: usage?.completion_tokens || 0,
-      total_tokens: usage?.total_tokens || 0,
-     };
-
-     return new ServiceResponse<TokenUsage>(
-      ResponseStatus.Success,
-      'Session token usage retrieved successfully',
-      totals,
-      StatusCodes.OK
-     );
-    }
-
-    const totals: TokenUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
-
-    for await (const key of redisClient.scanIterator({ MATCH: `${TOKEN_USAGE_KEY_PREFIX}*` })) {
-     const raw = await redisClient.get(key);
-     if (!raw) {
-      continue;
-     }
-     const usage = JSON.parse(raw) as TokenUsage;
-     totals.prompt_tokens = (totals.prompt_tokens || 0) + (usage.prompt_tokens || 0);
-     totals.completion_tokens = (totals.completion_tokens || 0) + (usage.completion_tokens || 0);
-     totals.total_tokens = (totals.total_tokens || 0) + (usage.total_tokens || 0);
-    }
+    const totals: TokenUsage = {
+     prompt_tokens: usage?.prompt_tokens || 0,
+     completion_tokens: usage?.completion_tokens || 0,
+     total_tokens: usage?.total_tokens || 0,
+    };
 
     return new ServiceResponse<TokenUsage>(
      ResponseStatus.Success,
-     'Total token usage retrieved successfully',
+     'Session token usage retrieved successfully',
      totals,
      StatusCodes.OK
     );
-   } catch (ex) {
-    const errorMessage = `Error retrieving total token usage: ${(ex as Error).message}`;
-    logger.error(errorMessage);
-    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
    }
-  },
+
+   const totals: TokenUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+
+   for await (const key of redisClient.scanIterator({ MATCH: `${TOKEN_USAGE_KEY_PREFIX}*` })) {
+    const raw = await redisClient.get(key);
+    if (!raw) {
+     continue;
+    }
+    const usage = JSON.parse(raw) as TokenUsage;
+    totals.prompt_tokens = (totals.prompt_tokens || 0) + (usage.prompt_tokens || 0);
+    totals.completion_tokens = (totals.completion_tokens || 0) + (usage.completion_tokens || 0);
+    totals.total_tokens = (totals.total_tokens || 0) + (usage.total_tokens || 0);
+   }
+
+   return new ServiceResponse<TokenUsage>(
+    ResponseStatus.Success,
+    'Total token usage retrieved successfully',
+    totals,
+    StatusCodes.OK
+   );
+  } catch (ex) {
+   const errorMessage = `Error retrieving total token usage: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
 
  async unloadLLMModels(): Promise<ServiceResponse<UnloadModelsResponse | null>> {
   try {
@@ -277,6 +307,30 @@ export const aiUtilsService = {
    );
   } catch (ex) {
    const errorMessage = `Error unloading model ${model}: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
+
+ async textToSpeech(text: string, voice?: string): Promise<ServiceResponse<TTSResponse | null>> {
+  try {
+   const response = await openai.audio.speech.create({
+    model: DEFAULT_TTS_MODEL,
+    input: text,
+    voice: (voice || DEFAULT_TTS_VOICE) as any,
+    response_format: 'mp3',
+   });
+   const arrayBuffer = await response.arrayBuffer();
+   const audio = Buffer.from(arrayBuffer).toString('base64');
+
+   return new ServiceResponse<TTSResponse>(
+    ResponseStatus.Success,
+    'Text-to-speech generated successfully',
+    { audio, contentType: 'audio/mpeg' },
+    StatusCodes.OK
+   );
+  } catch (ex) {
+   const errorMessage = `Error generating text-to-speech: ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
   }
