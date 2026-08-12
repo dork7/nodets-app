@@ -1,51 +1,35 @@
 import { StatusCodes } from 'http-status-codes';
-import Tesseract from 'tesseract.js';
 
-import { ImageDetails } from '@/api/vision/visionModel';
+import { ImageAnalysisMessage, ImageDetails } from '@/api/vision/visionModel';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
+import { env } from '@/common/utils/envConfig';
+import { openai } from '@/openai';
 import { logger } from '@/server';
 
 const FALLBACK_MESSAGE = 'No readable text detected in the provided image.';
-const OCR_LANGUAGE = 'eng';
-const SUMMARY_LINE_LIMIT = 20;
-const KEYWORD_MIN_CHARS = 3;
+const DEFAULT_PROMPT =
+ 'Analyze this image and describe what you see in detail, including any text present in it. Return the calories and other nutritional information if present.';
 
-const sanitizeLines = (text: string) =>
- text
-  .split(/\r?\n/)
-  .map((line) => line.trim())
-  .filter((line) => line.length > 0);
+const extractJson = (content: string): unknown | string => {
+ const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/i);
+ const candidate = codeBlockMatch ? codeBlockMatch[1] : content;
 
-const extractKeywords = (prompt?: string) =>
- prompt
-  ?.toLowerCase()
-  .split(/[^a-z0-9]+/)
-  .filter((word) => word.length >= KEYWORD_MIN_CHARS) ?? [];
+ const start = candidate.indexOf('{');
+ const end = candidate.lastIndexOf('}');
 
-const emphasizePromptMatches = (lines: string[], prompt?: string) => {
- const keywords = extractKeywords(prompt);
-
- if (!keywords.length) {
-  return null;
+ if (start === -1 || end === -1 || end <= start) {
+  return content;
  }
 
- const matches = lines.filter((line) => {
-  const lowerLine = line.toLowerCase();
-  return keywords.some((keyword) => lowerLine.includes(keyword));
- });
-
- if (!matches.length) {
-  return null;
+ try {
+  return JSON.parse(candidate.slice(start, end + 1));
+ } catch {
+  return content;
  }
-
- return matches.slice(0, SUMMARY_LINE_LIMIT);
 };
-
-const formatLines = (lines: string[]) =>
- lines
-  .slice(0, SUMMARY_LINE_LIMIT)
-  .map((line, idx) => `${idx + 1}. ${line}`)
-  .join('\n');
+export const getDefaultVisionModel = (): string => {
+ return env.IMAGE_ANALYSIS_MODEL ?? 'gemma-4-26b-a4b-it-apex-i-quality';
+};
 
 export const visionService = {
  extractImageDetails: async (
@@ -62,20 +46,36 @@ export const visionService = {
   }
 
   try {
-   const { data } = await Tesseract.recognize(file.buffer, OCR_LANGUAGE, {
-    logger: (message) => logger.debug({ source: 'tesseract', message }),
+   const imageDataUrl = `data:${file.mimetype || 'image/png'};base64,${file.buffer.toString('base64')}`;
+   const aiModel = getDefaultVisionModel();
+
+   const completion = await openai.chat.completions.create({
+    model: aiModel,
+    messages: [
+     {
+      role: 'user',
+      content: [
+       {
+        type: 'text',
+        text:
+         `If user is asking about food image and calroies, you must answer based on your best possible knowledge. Give a stucture response in object format with calories and other nutritional information if present. ${prompt?.trim()}` ||
+         DEFAULT_PROMPT,
+       },
+       { type: 'image_url', image_url: { url: imageDataUrl } },
+      ],
+     },
+    ],
    });
 
-   const rawText = data.text?.trim() ?? '';
-   const normalizedLines = sanitizeLines(rawText);
-   const emphasizedLines = emphasizePromptMatches(normalizedLines, prompt);
-   const details =
-    (emphasizedLines && emphasizedLines.length ? formatLines(emphasizedLines) : formatLines(normalizedLines)) ||
-    FALLBACK_MESSAGE;
+   const message = completion.choices[0]?.message as ImageAnalysisMessage | undefined;
+   const rawText = message?.content?.trim() || FALLBACK_MESSAGE;
+   const reasoning = message?.reasoning?.trim() || undefined;
+   const details = extractJson(rawText);
 
    const responsePayload: ImageDetails = {
     details,
-    rawText: rawText || FALLBACK_MESSAGE,
+    rawText,
+    ...(reasoning ? { reasoning } : {}),
    };
 
    return new ServiceResponse<ImageDetails>(
@@ -85,7 +85,7 @@ export const visionService = {
     StatusCodes.OK
    );
   } catch (error) {
-   const errorMessage = `Failed to extract details from the image: ${(error as Error).message}`;
+   const errorMessage = `Failed to process the image with AI: ${(error as Error).message}`;
    logger.error(errorMessage, error);
 
    return new ServiceResponse<ImageDetails | null>(
@@ -98,4 +98,3 @@ export const visionService = {
   }
  },
 };
-
