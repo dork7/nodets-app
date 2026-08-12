@@ -8,8 +8,9 @@ import { kafkaRouter } from '@/api/kafka/kafkaRouter';
 import { minioRouter } from '@/api/minio/minioRouter';
 import { redisRouter } from '@/api/redis/redisRouter';
 import { userRouter } from '@/api/user/userRouter';
-import { readFileData } from '@/common/utils/fileUtils';
+import { nutritionRouter } from '@/api/vision/nutritionRouter';
 import { visionRouter } from '@/api/vision/visionRouter';
+import { readFileData } from '@/common/utils/fileUtils';
 
 import { ordersRouter } from './orders/ordersRouter';
 
@@ -23,6 +24,7 @@ router.use('/kafka', kafkaRouter);
 router.use('/catalogue', catalogueRouter);
 router.use('/orders', ordersRouter);
 router.use('/vision', visionRouter);
+router.use('/nutrition', nutritionRouter);
 router.use('/minio', minioRouter);
 
 router.use('/dashboard', async (req, res) => {
