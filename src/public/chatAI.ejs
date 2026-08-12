@@ -128,6 +128,7 @@
      padding: 0 24px 24px;
      display: grid;
      grid-template-columns: 260px minmax(0, 1fr) 260px;
+     grid-template-rows: minmax(0, 1fr);
      gap: 16px;
     }
 
@@ -147,6 +148,8 @@
     /* ===== Side Panel ===== */
     #history-panel {
      min-width: 0;
+     min-height: 0;
+     overflow: hidden;
      background: var(--bg-raised);
      border-radius: var(--radius);
      border: 1px solid var(--border);
@@ -163,24 +166,48 @@
      align-items: center;
     }
 
-    #history-panel-title {
-     font-family: var(--font-mono);
-     font-size: 11px;
-     font-weight: 500;
-     text-transform: uppercase;
-     letter-spacing: 0.08em;
-     color: var(--fg-faint);
-     margin: 0;
-    }
+#history-panel-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--fg);
+      margin: 0;
+     }
 
     #history-panel-title::before {
-     content: '01 · ';
-     color: var(--accent);
-     font-weight: 600;
+     content: none;
     }
 
     #close-history-btn {
      display: none;
+    }
+
+    #clear-history-btn {
+     background: transparent;
+     color: var(--fg-faint);
+     border: 1px solid var(--border);
+     border-radius: var(--radius-sm);
+     padding: 3px 10px;
+     font-size: 0.72em;
+     cursor: pointer;
+     transition: all 0.2s;
+     font-family: var(--font-mono);
+     text-transform: uppercase;
+     letter-spacing: 0.06em;
+     white-space: nowrap;
+    }
+
+    #clear-history-btn:hover {
+     background: var(--bg-deep);
+     color: var(--danger);
+     border-color: var(--danger);
+    }
+
+    #clear-history-btn:disabled {
+     opacity: 0.45;
+     cursor: not-allowed;
     }
 
     #history-content {
@@ -610,6 +637,47 @@
      font-variant-numeric: tabular-nums;
     }
 
+    .timing-section {
+     margin-top: 8px;
+     padding-top: 8px;
+     border-top: 1px dashed var(--border);
+     display: flex;
+     justify-content: flex-end;
+     font-size: 0.68em;
+     color: var(--fg-muted);
+    }
+
+    .timing {
+     display: inline-flex;
+     align-items: center;
+     gap: 12px;
+     font-variant-numeric: tabular-nums;
+    }
+
+    .timing-item {
+     display: inline-flex;
+     align-items: center;
+     gap: 4px;
+    }
+
+    .timing-label {
+     color: var(--fg-faint);
+     text-transform: uppercase;
+     letter-spacing: 0.06em;
+     font-size: 10px;
+    }
+
+    .timing-value {
+     color: var(--fg);
+     font-weight: 500;
+    }
+
+    .timing-with-token-usage {
+     margin-top: 4px;
+     padding-top: 4px;
+     border-top: none;
+    }
+
     /* ===== Drop Overlay ===== */
     #drop-overlay {
      position: absolute;
@@ -635,6 +703,7 @@
     /* ===== Model / Loaded Panels ===== */
     #models-panel {
      min-width: 0;
+     min-height: 0;
      background: var(--bg-raised);
      border-radius: var(--radius);
      border: 1px solid var(--border);
@@ -645,8 +714,7 @@
      overflow-y: auto;
     }
 
-    #model-selector-container,
-    #loaded-models-container {
+    #model-selector-container {
      display: flex;
      flex-direction: column;
      align-items: flex-start;
@@ -658,7 +726,7 @@
     }
 
     .model-selector-label {
-     color: var(--fg-faint);
+     color: var(--fg);
      font-size: 11px;
      text-transform: uppercase;
      letter-spacing: 0.12em;
@@ -666,16 +734,96 @@
     }
 
     .model-selector-label .label-index {
-     color: var(--accent);
-     margin-right: 6px;
-     font-weight: 600;
+     display: none;
     }
 
-    #model-selector {
-     display: flex;
-     flex-wrap: wrap;
-     gap: 8px;
+#model-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+     }
+
+.model-row {
+     display: inline-flex;
+     flex-direction: column;
+     align-items: stretch;
+     gap: 6px;
+     padding: 6px 8px;
+     background: var(--bg);
+     border: 1px solid var(--border);
+     border-radius: var(--radius-sm);
     }
+
+    .model-row-top {
+     display: flex;
+     align-items: center;
+     gap: 10px;
+    }
+
+     .model-row:hover {
+      border-color: var(--border-strong);
+     }
+
+     .model-default-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+     }
+
+     .model-default-toggle input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+     }
+
+     .model-default-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      background: var(--bg-inset);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      flex-shrink: 0;
+      transition: all 0.2s;
+     }
+
+     .model-default-box::after {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--on-accent);
+      border-radius: 1px;
+      opacity: 0;
+      transform: scale(0.4);
+      transition: all 0.15s ease;
+     }
+
+     .model-default-toggle input:checked + .model-default-box {
+      background: var(--accent);
+      border-color: var(--accent);
+     }
+
+     .model-default-toggle input:checked + .model-default-box::after {
+      opacity: 1;
+      transform: scale(1);
+     }
+
+     .model-default-toggle input:focus-visible + .model-default-box {
+      box-shadow: 0 0 0 1px var(--accent);
+     }
+
+     .model-default-label {
+      color: var(--fg-faint);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+     }
 
     .model-btn {
      background: transparent;
@@ -709,70 +857,50 @@
     }
 
     #loaded-models {
-     display: flex;
-     flex-direction: column;
-     gap: 8px;
-     width: 100%;
+     display: none;
     }
 
-    .loaded-models-empty {
-     color: var(--fg-faint);
-     font-size: 11px;
-     text-transform: uppercase;
-     letter-spacing: 0.08em;
-     margin: 0;
+    .model-row.loaded {
+     background: var(--bg-inset);
+     border-color: var(--border-strong);
+     border-left: 2px solid var(--accent);
     }
 
-    .loaded-model-item {
-     display: flex;
-     align-items: center;
-     justify-content: space-between;
-     gap: 12px;
-     padding: 7px 10px;
-     background: var(--bg);
-     border: 1px solid var(--border);
-     border-radius: var(--radius-sm);
-     border-left: 2px solid var(--border);
-    }
-
-    .loaded-model-name {
+    .model-row.loaded .model-btn {
      color: var(--fg);
-     font-weight: 500;
-     font-size: 0.82em;
-     word-break: break-all;
+     border-color: var(--border-strong);
+     background: var(--bg-deep);
     }
 
-    .loaded-model-meta {
-     color: var(--fg-faint);
-     font-size: 0.7em;
-     margin-left: auto;
-     text-transform: uppercase;
-     letter-spacing: 0.06em;
-     white-space: nowrap;
-     font-variant-numeric: tabular-nums;
-    }
-
-    .unload-model-btn {
+    .model-unload-btn {
+     display: none;
+     width: 100%;
+     align-items: center;
+     justify-content: center;
+     padding: 3px 10px;
      background: transparent;
      color: var(--fg-muted);
      border: 1px solid var(--border);
      border-radius: var(--radius-sm);
-     padding: 3px 10px;
-     font-size: 0.72em;
      cursor: pointer;
-     transition: all 0.2s;
+     font-size: 0.72em;
      font-family: var(--font-mono);
      text-transform: uppercase;
      letter-spacing: 0.06em;
+     transition: all 0.2s;
     }
 
-    .unload-model-btn:hover:not(:disabled) {
-     background: var(--bg-deep);
+    .model-row.loaded .model-unload-btn {
+     display: flex;
+    }
+
+    .model-unload-btn:hover:not(:disabled) {
      color: var(--danger);
      border-color: var(--danger);
+     background: var(--bg-deep);
     }
 
-    .unload-model-btn:disabled {
+    .model-unload-btn:disabled {
      opacity: 0.45;
      cursor: not-allowed;
     }
@@ -796,10 +924,114 @@
      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    .input-shell:focus-within {
-     border-color: var(--border-strong);
-     box-shadow: inset 0 0 0 1px var(--accent);
-    }
+     .input-shell:focus-within {
+      border-color: var(--border-strong);
+      box-shadow: inset 0 0 0 1px var(--accent);
+     }
+
+     #input-attachments {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+     }
+
+     #input-attachments:empty {
+      display: none;
+     }
+
+     .attachment-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 6px 4px 4px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.76em;
+      max-width: 220px;
+     }
+
+     .attachment-chip-preview {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--bg-inset);
+     }
+
+     .attachment-chip-preview.file {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7em;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fg-muted);
+     }
+
+     .attachment-chip-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+     }
+
+     .attachment-chip-name {
+      color: var(--fg);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+     }
+
+     .attachment-chip-remove {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      background: transparent;
+      color: var(--fg-muted);
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 1em;
+      line-height: 1;
+      flex-shrink: 0;
+      transition: all 0.2s;
+     }
+
+     .attachment-chip-remove:hover {
+      color: var(--danger);
+      background: var(--bg-deep);
+      border-color: var(--border);
+     }
+
+     .attachment-chip.uploading {
+      border-color: var(--accent-soft);
+     }
+
+     .attachment-chip.error {
+      border-color: var(--danger);
+      color: var(--danger);
+     }
+
+     .attachment-chip-status {
+      font-size: 0.72em;
+      color: var(--fg-muted);
+      white-space: nowrap;
+     }
+
+     .attachment-chip-status.uploading::before {
+      content: '⏳ ';
+     }
+
+     .attachment-chip-status.error {
+      color: var(--danger);
+     }
 
     .prompt-marker {
      color: var(--accent);
@@ -822,6 +1054,56 @@
     #input::placeholder {
      color: var(--fg-muted);
      opacity: 0.7;
+    }
+
+    .speak-btn {
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+     width: 30px;
+     height: 30px;
+     padding: 0;
+     flex-shrink: 0;
+     background: transparent;
+     color: var(--fg-muted);
+     border: 1px solid transparent;
+     border-radius: var(--radius-sm);
+     cursor: pointer;
+     transition: all 0.2s;
+    }
+
+    .speak-btn:hover:not(:disabled) {
+     color: var(--fg);
+     background: var(--bg-deep);
+     border-color: var(--border);
+    }
+
+    .speak-btn:disabled {
+     opacity: 0.45;
+     cursor: not-allowed;
+    }
+
+    .speak-btn svg {
+     width: 16px;
+     height: 16px;
+     pointer-events: none;
+    }
+
+    .speak-btn .icon-stop {
+     display: none;
+    }
+
+    .speak-btn.playing {
+     color: var(--danger);
+     border-color: var(--border);
+    }
+
+    .speak-btn.playing .icon-speak {
+     display: none;
+    }
+
+    .speak-btn.playing .icon-stop {
+     display: block;
     }
 
     .input-controls {
@@ -954,11 +1236,120 @@
     }
 
     /* ===== History Button ===== */
-    #history-btn {
-     display: none;
-    }
-   </style>
- </head>
+#history-btn {
+      display: none;
+     }
+
+     /* ===== Confirmation Modal ===== */
+     .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.6);
+      animation: modal-fade-in 0.15s ease-out;
+     }
+
+     .modal-overlay[hidden] {
+      display: none;
+     }
+
+     .modal-dialog {
+      width: min(420px, calc(100vw - 48px));
+      background: var(--bg-raised);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+     }
+
+     .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+     }
+
+     .modal-title {
+      font-size: 0.85em;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+     }
+
+     .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--fg-muted);
+      font-size: 1.1em;
+      line-height: 1;
+      padding: 4px;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+     }
+
+     .modal-close:hover {
+      color: var(--fg);
+      background: var(--bg-inset);
+     }
+
+     .modal-body {
+      padding: 18px 16px;
+      font-size: 0.85em;
+      line-height: 1.5;
+      color: var(--fg);
+     }
+
+     .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+     }
+
+     .modal-btn {
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      font-size: 0.78em;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.2s;
+     }
+
+     .modal-btn:hover {
+      background: var(--bg-inset);
+      border-color: var(--fg-muted);
+     }
+
+     .modal-btn.danger {
+      border-color: var(--danger);
+      color: var(--danger);
+     }
+
+     .modal-btn.danger:hover {
+      background: var(--danger);
+      color: var(--on-accent);
+     }
+
+     @keyframes modal-fade-in {
+      from {
+       opacity: 0;
+      }
+      to {
+       opacity: 1;
+      }
+     }
+    </style>
+  </head>
  <body>
    <header class="app-header">
     <div class="app-header-inner">
@@ -969,10 +1360,24 @@
      <div class="app-header-meta">ws://localhost:2020/ws/chatAI</div>
     </div>
    </header>
+   <div id="confirm-modal" class="modal-overlay" hidden>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+     <div class="modal-header">
+      <span class="modal-title" id="confirm-modal-title">Clear Chat History</span>
+      <button type="button" class="modal-close" id="confirm-modal-close" aria-label="Close">×</button>
+     </div>
+     <div class="modal-body">Clear all chat history for this session?</div>
+     <div class="modal-actions">
+      <button type="button" class="modal-btn" id="confirm-modal-no">No</button>
+      <button type="button" class="modal-btn danger" id="confirm-modal-yes">Yes, Clear</button>
+     </div>
+    </div>
+   </div>
    <div id="main-container">
     <div id="history-panel">
      <div id="history-panel-header">
       <h3 id="history-panel-title">Chat History</h3>
+      <button id="clear-history-btn" type="button" aria-label="Clear chat history">Clear</button>
       <button id="close-history-btn" type="button" aria-label="Close history">×</button>
      </div>
      <div id="history-content"></div>
@@ -984,16 +1389,27 @@
      </div>
      <div id="drop-overlay">Drop files to upload</div>
      <div id="messages"></div>
-     <form id="input-form">
-      <div class="input-shell">
-       <span class="prompt-marker">❯</span>
-       <input
-        id="input"
-        autocomplete="off"
-        placeholder="Type your message..."
-       />
-      </div>
-      <div class="input-controls">
+      <form id="input-form">
+       <div class="input-shell">
+        <span class="prompt-marker">❯</span>
+        <input
+         id="input"
+         autocomplete="off"
+         placeholder="Type your message..."
+        />
+        <button type="button" id="speak-btn" class="speak-btn" title="Speak the message" aria-label="Speak the message">
+         <svg class="icon-speak" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+         </svg>
+         <svg class="icon-stop" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+         </svg>
+        </button>
+       </div>
+       <div id="input-attachments"></div>
+       <div class="input-controls">
        <div class="streaming-toggle-container">
         <label class="streaming-toggle-label">
          <span id="streaming-label">Streaming</span>
@@ -1010,7 +1426,8 @@
        <input
         id="file-input"
         type="file"
-        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp,.svg,.bmp,.ico,.tiff,.tif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*"
+        multiple
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.gif,.webp,.svg,.bmp,.ico,.tiff,.tif,.js,.jsx,.mjs,.cjs,.ts,.tsx,.py,.cpp,.cc,.cxx,.hpp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,image/*,text/javascript,application/javascript,text/x-javascript,text/typescript,text/x-python,text/x-c++src,text/x-c++"
         hidden
        />
        <button type="button" id="history-btn">Show History</button>
@@ -1020,14 +1437,8 @@
     </div>
     <div id="models-panel">
      <div id="model-selector-container">
-      <div class="model-selector-label"><span class="label-index">01</span>AI Model</div>
+      <div class="model-selector-label">AI Model</div>
       <div id="model-selector"></div>
-     </div>
-     <div id="loaded-models-container">
-      <div class="model-selector-label"><span class="label-index">02</span>Loaded Models (RAM)</div>
-      <div id="loaded-models">
-       <p class="loaded-models-empty">No models loaded in memory.</p>
-      </div>
      </div>
     </div>
    </div>
@@ -1040,8 +1451,10 @@
     TOTAL_TOKEN_USAGE_API_URL: 'http://localhost:2020/v1/aiUtils/total-token-usage',
     LOADED_MODELS_API_URL: 'http://localhost:2020/v1/aiUtils/loaded-models',
     UNLOAD_MODEL_API_URL: 'http://localhost:2020/v1/aiUtils/unload-model',
+   TTS_API_URL: 'http://localhost:2020/v1/aiUtils/text-to-speech',
     UPLOAD_API_URL: 'http://localhost:2020/v1/minio/upload',
     MAX_FILE_SIZE: 10 * 1024 * 1024,
+    MAX_FILES: 6,
     RECONNECT_DELAY: 5000,
     DEFAULT_MODEL_INDEX: 1,
     DEFAULT_MODEL: 'lfm2.5-1.2b-instruct',
@@ -1075,16 +1488,21 @@
 
    // ===== State Management =====
    const state = {
-    selectedModel: '',
-    streamingEnabled: true,
+    selectedModel: localStorage.getItem('chatSelectedModel') || '',
+    defaultModel: localStorage.getItem('chatDefaultModel') || '',
+    streamingEnabled: localStorage.getItem('chatStreaming') !== 'false',
     isStreaming: false,
     isConnected: false,
-     currentIsRelated: false,
-     combinedContent: '',
-     streamStartTime: 0,
-     lastTokensPerSecond: 0,
+currentIsRelated: false,
+      combinedContent: '',
+      streamStartTime: 0,
+      requestStartTime: null,
+      requestEndTime: null,
+      lastTokensPerSecond: 0,
+     streamMessageCount: 0,
     socket: null,
-    pendingImage: null,
+    pendingFiles: [],
+    loadedModelsByName: {},
     sessionId: localStorage.getItem('chatSessionId') || `sess-${Math.random().toString(36).substr(2, 9)}`,
    };
 
@@ -1094,20 +1512,26 @@
     tokenUsageHeaderValues: document.getElementById('token-usage-header-values'),
     form: document.getElementById('input-form'),
     input: document.getElementById('input'),
+    speakBtn: document.getElementById('speak-btn'),
     stopBtn: document.getElementById('stop-stream'),
     streamToggle: document.getElementById('stream-toggle'),
     streamingLabel: document.getElementById('streaming-label'),
     modelSelector: document.getElementById('model-selector'),
-    loadedModels: document.getElementById('loaded-models'),
     uploadBtn: document.getElementById('upload-btn'),
     fileInput: document.getElementById('file-input'),
+    inputAttachments: document.getElementById('input-attachments'),
     dropOverlay: document.getElementById('drop-overlay'),
     chatContainer: document.getElementById('chat-container'),
     historyBtn: document.getElementById('history-btn'),
     historyPanel: document.getElementById('history-panel'),
     historyContent: document.getElementById('history-content'),
     closeHistoryBtn: document.getElementById('close-history-btn'),
+    clearHistoryBtn: document.getElementById('clear-history-btn'),
     newChatBtn: document.getElementById('new-chat-btn'),
+    confirmModal: document.getElementById('confirm-modal'),
+    confirmModalClose: document.getElementById('confirm-modal-close'),
+    confirmModalYes: document.getElementById('confirm-modal-yes'),
+    confirmModalNo: document.getElementById('confirm-modal-no'),
    };
 
    // ===== Utility Functions =====
@@ -1128,6 +1552,17 @@
      if (force || distanceFromBottom < 80) {
       el.scrollTop = el.scrollHeight;
      }
+    },
+
+    formatClockTime(timestamp) {
+     if (!timestamp) return '—';
+     return new Date(timestamp).toLocaleTimeString('en-US', { hour12: false });
+    },
+
+    formatDuration(ms) {
+     if (!ms && ms !== 0) return '—';
+     if (ms < 1000) return `${ms}ms`;
+     return `${(ms / 1000).toFixed(2)}s`;
     },
 
     getLoadingMessage() {
@@ -1381,6 +1816,42 @@
     },
    };
 
+   // ===== Request Timing Management =====
+   const timingManager = {
+    update(messageElement, requestStartTime, requestEndTime) {
+     if (!messageElement) return;
+
+     let timingSection = messageElement.querySelector('.timing-section');
+     if (!timingSection) {
+      timingSection = document.createElement('div');
+      timingSection.className = 'timing-section';
+      messageElement.appendChild(timingSection);
+     }
+
+     const start = requestStartTime || null;
+     const end = requestEndTime || Date.now();
+     const lastTokenUsage = messageElement.querySelector('.token-usage-section');
+     timingSection.classList.toggle('timing-with-token-usage', Boolean(lastTokenUsage));
+
+     timingSection.innerHTML = `
+                    <div class="timing">
+                        <div class="timing-item">
+                            <span class="timing-label">Start:</span>
+                            <span class="timing-value">${utils.formatClockTime(start)}</span>
+                        </div>
+                        <div class="timing-item">
+                            <span class="timing-label">End:</span>
+                            <span class="timing-value">${utils.formatClockTime(end)}</span>
+                        </div>
+                        <div class="timing-item">
+                            <span class="timing-label">Duration:</span>
+                            <span class="timing-value">${utils.formatDuration(start ? end - start : null)}</span>
+                        </div>
+                    </div>
+                `;
+    },
+   };
+
    // ===== Total Token Usage Management =====
    const totalTokenUsageManager = {
     async load() {
@@ -1406,6 +1877,9 @@
        state.isStreaming = true;
        state.combinedContent = '';
        state.streamStartTime = Date.now();
+       state.requestStartTime = data.requestStartTime || Date.now();
+       state.requestEndTime = null;
+       state.streamMessageCount = 0;
        state.lastTokensPerSecond = 0;
        utils.setStopButtonEnabled(true);
        return utils.getLoadingMessage();
@@ -1501,7 +1975,7 @@
       }
      }
 
-     // Reload history after response completion
+// Reload history and scroll to bottom on completion
      if (
       data.type === 'stream_end' ||
       data.type === 'stream_stopped' ||
@@ -1512,9 +1986,24 @@
        if (lastMsg) {
         // Show token usage returned by the WebSocket API
         tokenUsageManager.add(lastMsg, data.tokenUsage || {});
+        // Show request start / end / duration
+        timingManager.update(
+         lastMsg,
+         data.requestStartTime || state.requestStartTime,
+         data.requestEndTime || state.requestEndTime
+        );
        }
        totalTokenUsageManager.load();
        historyManager.loadHistory();
+       utils.scrollToBottom(true);
+     }
+
+     // Scroll every 4th streaming chunk so the view tracks long responses
+     if (data.type === 'stream_continue' && state.isStreaming) {
+      state.streamMessageCount += 1;
+      if (state.streamMessageCount % 4 === 0) {
+       utils.scrollToBottom(true);
+      }
      }
     },
 
@@ -1547,10 +2036,11 @@
 
       if (Array.isArray(models) && models.length > 0) {
        console.log('Fetched models:', models);
-       const defaultIndex = models.findIndex((m) => m.value === CONFIG.DEFAULT_MODEL);
-       const selectedIndex = defaultIndex >= 0 ? defaultIndex : CONFIG.DEFAULT_MODEL_INDEX;
+       const persistedSelected = models.findIndex((m) => m.value === state.selectedModel);
+       const selectedIndex = persistedSelected >= 0 ? persistedSelected : CONFIG.DEFAULT_MODEL_INDEX;
        this.renderModels(models, selectedIndex);
        state.selectedModel = models[selectedIndex]?.value || models[0].value;
+       localStorage.setItem('chatSelectedModel', state.selectedModel);
       }
      } catch (error) {
       console.error('Error fetching models:', error);
@@ -1558,18 +2048,41 @@
     },
 
     renderModels(models, selectedIndex = CONFIG.DEFAULT_MODEL_INDEX) {
+     const defaultModelValue = state.defaultModel || CONFIG.DEFAULT_MODEL;
+
      elements.modelSelector.innerHTML = models
       .map(
-       (model, index) => `
-                        <button
-                            type="button"
-                            class="model-btn"
-                            data-model="${model.value}"
-                            aria-pressed="${index === selectedIndex ? 'true' : 'false'}"
-                        >
-                            ${model.label}
-                        </button>
-                    `
+       (model, index) => {
+        const isLoaded = Boolean(state.loadedModelsByName[model.value]);
+        return `
+                        <div class="model-row${isLoaded ? ' loaded' : ''}">
+                            <div class="model-row-top">
+                                <label class="model-default-toggle" title="Set as default model">
+                                    <input type="checkbox" class="model-default-check" data-model="${model.value}" ${
+                                      model.value === defaultModelValue ? 'checked' : ''
+                                    } />
+<span class="model-default-box"></span>
+                                </label>
+                                <button
+                                    type="button"
+                                    class="model-btn"
+                                    data-model="${model.value}"
+                                    aria-pressed="${index === selectedIndex ? 'true' : 'false'}"
+                                >
+                                    ${model.label}
+                                </button>
+                            </div>
+                            <button
+                                type="button"
+                                class="model-unload-btn"
+                                data-model="${model.value}"
+                                title="Unload from RAM"
+                                aria-label="Unload ${model.value}"
+                                ${isLoaded ? '' : 'disabled'}
+                            >Unload</button>
+                        </div>
+                    `;
+       }
       )
       .join('');
 
@@ -1579,6 +2092,35 @@
        modelBtns.forEach((b) => b.setAttribute('aria-pressed', 'false'));
        btn.setAttribute('aria-pressed', 'true');
        state.selectedModel = btn.getAttribute('data-model');
+       localStorage.setItem('chatSelectedModel', state.selectedModel);
+      });
+     });
+
+     const defaultChecks = elements.modelSelector.querySelectorAll('.model-default-check');
+     defaultChecks.forEach((check) => {
+      check.addEventListener('change', () => {
+       const checkedValue = check.getAttribute('data-model');
+       if (check.checked) {
+        state.defaultModel = checkedValue;
+        localStorage.setItem('chatDefaultModel', checkedValue);
+        defaultChecks.forEach((c) => {
+         c.checked = c.getAttribute('data-model') === checkedValue;
+        });
+        state.selectedModel = checkedValue;
+        localStorage.setItem('chatSelectedModel', checkedValue);
+        modelBtns.forEach((b) => {
+         b.setAttribute('aria-pressed', b.getAttribute('data-model') === checkedValue ? 'true' : 'false');
+        });
+       } else {
+        check.checked = true;
+       }
+      });
+     });
+
+     const unloadBtns = elements.modelSelector.querySelectorAll('.model-unload-btn');
+     unloadBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+       this.unloadSingleModel(btn.getAttribute('data-model'), btn);
       });
      });
     },
@@ -1587,36 +2129,34 @@
      try {
       const res = await fetch(CONFIG.LOADED_MODELS_API_URL);
       const result = await res.json();
-      const models = result.responseObject;
-      this.renderLoadedModels(models);
+      const models = Array.isArray(result.responseObject) ? result.responseObject : [];
+      this.updateLoadedModels(models);
      } catch (error) {
       console.error('Error fetching loaded models:', error);
-      elements.loadedModels.innerHTML = '<p class="loaded-models-empty">Failed to load models.</p>';
      }
     },
 
-    renderLoadedModels(models) {
-     if (!Array.isArray(models) || models.length === 0) {
-      elements.loadedModels.innerHTML = '<p class="loaded-models-empty">No models loaded in memory.</p>';
-      return;
-     }
+    updateLoadedModels(models) {
+     const loadedByName = {};
+     models.forEach((model) => {
+      if (model && model.model) {
+       loadedByName[model.model] = true;
+      }
+     });
+     state.loadedModelsByName = loadedByName;
 
-     elements.loadedModels.innerHTML = models
-      .map(
-       (model) => `
-                        <div class="loaded-model-item">
-                            <span class="loaded-model-name">${model.model}</span>
-                            <span class="loaded-model-meta">${model.backend || ''}${model.in_memory ? ' · in memory' : ''}</span>
-                            <button type="button" class="unload-model-btn" data-model="${model.model}">Unload</button>
-                        </div>
-                    `
-      )
-      .join('');
+     const rows = elements.modelSelector.querySelectorAll('.model-row');
+     rows.forEach((row) => {
+      const btn = row.querySelector('.model-btn');
+      const unloadBtn = row.querySelector('.model-unload-btn');
+      if (!btn) return;
+      const modelValue = btn.getAttribute('data-model');
+      const isLoaded = Boolean(loadedByName[modelValue]);
 
-     elements.loadedModels.querySelectorAll('.unload-model-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-       this.unloadSingleModel(btn.getAttribute('data-model'), btn);
-      });
+      row.classList.toggle('loaded', isLoaded);
+      if (unloadBtn) {
+       unloadBtn.disabled = !isLoaded;
+      }
      });
     },
 
@@ -1626,8 +2166,7 @@
      }
 
      btn.disabled = true;
-     const originalText = btn.textContent;
-     btn.textContent = 'Unloading...';
+     btn.textContent = 'Unloading…';
      messageManager.append('System', `Unloading model ${model}...`, 'system');
 
      try {
@@ -1643,7 +2182,7 @@
       messageManager.append('System', `Error unloading model ${model}.`, 'system');
      } finally {
       btn.disabled = false;
-      btn.textContent = originalText;
+      btn.textContent = 'Unload';
       this.loadLoadedModels();
      }
     },
@@ -1652,8 +2191,10 @@
    // ===== Streaming Toggle Management =====
    const streamingToggle = {
     init() {
+     elements.streamToggle.checked = state.streamingEnabled;
      elements.streamToggle.addEventListener('change', () => {
       state.streamingEnabled = elements.streamToggle.checked;
+      localStorage.setItem('chatStreaming', String(state.streamingEnabled));
       this.updateLabel();
      });
      this.updateLabel();
@@ -1664,15 +2205,101 @@
     },
    };
 
+   // ===== Text-to-Speech Management =====
+   const ttsManager = {
+    audio: null,
+
+    init() {
+     elements.speakBtn.addEventListener('click', () => this.toggle());
+    },
+
+    toggle() {
+     if (this.audio) {
+      this.stop();
+      return;
+     }
+     const text = elements.input.value.trim();
+     if (!text) {
+      elements.input.focus();
+      return;
+     }
+     this.speak(text);
+    },
+
+    async speak(text) {
+     elements.speakBtn.disabled = true;
+     try {
+      const res = await fetch(CONFIG.TTS_API_URL, {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ text }),
+      });
+      const result = await res.json();
+      if (result.success && result.responseObject) {
+       const { audio, contentType } = result.responseObject;
+       const binary = atob(audio);
+       const bytes = new Uint8Array(binary.length);
+       for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+       }
+       const blob = new Blob([bytes], { type: contentType || 'audio/mpeg' });
+       const url = URL.createObjectURL(blob);
+       this.audio = new Audio(url);
+       this.audio.addEventListener('ended', () => this.reset());
+       this.audio.addEventListener('error', () => {
+        this.reset();
+        messageManager.append('System', 'Unable to play the generated audio.', 'system');
+       });
+       await this.audio.play();
+       elements.speakBtn.classList.add('playing');
+       elements.speakBtn.title = 'Stop';
+      } else {
+       messageManager.append('System', `Text-to-speech failed: ${result.message || 'Unknown error'}`, 'system');
+      }
+     } catch (error) {
+      console.error('Text-to-speech request error:', error);
+      messageManager.append('System', 'Text-to-speech request failed.', 'system');
+     } finally {
+      elements.speakBtn.disabled = false;
+     }
+    },
+
+    stop() {
+     if (this.audio) {
+      this.audio.pause();
+      this.audio.src = '';
+      this.audio = null;
+     }
+     this.reset();
+    },
+
+    reset() {
+     elements.speakBtn.classList.remove('playing');
+     elements.speakBtn.title = 'Speak the message';
+    },
+   };
+
    // ===== Form Handling =====
    const formHandler = {
     init() {
-     elements.form.addEventListener('submit', (e) => {
+     elements.form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const message = elements.input.value.trim();
+      const hasFiles = state.pendingFiles.length > 0;
 
-      if (message && state.socket) {
-       websocketManager.send({
+      if ((!message && !hasFiles) || !state.socket) {
+       return;
+      }
+
+      await uploadManager.waitForUploads();
+
+      const uploaded = state.pendingFiles.filter((f) => f.status === 'uploaded');
+      const images = uploaded.filter((f) => f.isImage);
+      const files = uploaded.filter((f) => !f.isImage);
+      const imageIds = images.map((f) => f.id);
+      const fileIds = files.map((f) => f.id);
+
+      websocketManager.send({
         sender: 'User',
         type: 'request',
         id: state.sessionId,
@@ -1680,15 +2307,23 @@
         stream: state.streamingEnabled,
         model: state.selectedModel,
         params: {
-         prompt: message,
-         imageId: state.pendingImage ? state.pendingImage.id : undefined,
+          prompt: message || (hasFiles ? 'Analyze the attached files.' : ''),
+          imageIds: imageIds.length > 0 ? imageIds : undefined,
+          imageId: imageIds.length === 1 ? imageIds[0] : undefined,
+          fileIds: fileIds.length > 0 ? fileIds : undefined,
         },
-       });
+      });
 
-       messageManager.append('You', message, 'user');
-       state.pendingImage = null;
-       elements.input.value = '';
-      }
+      messageManager.append('You', message || (hasFiles ? '(attachment)' : ''), 'user');
+      images.forEach((img) =>
+       messageManager.appendImage('You', {
+        url: img.url,
+        name: img.file.name,
+       })
+      );
+
+      uploadManager.clearAll();
+      elements.input.value = '';
      });
 
      elements.stopBtn.addEventListener('click', () => {
@@ -1712,6 +2347,9 @@
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/csv',
     'image/png',
     'image/jpeg',
     'image/gif',
@@ -1720,12 +2358,22 @@
     'image/bmp',
     'image/x-icon',
     'image/tiff',
+    'text/javascript',
+    'application/javascript',
+    'text/x-javascript',
+    'text/typescript',
+    'text/x-python',
+    'text/x-c++src',
+    'text/x-c++',
    ];
 
    const ACCEPTED_UPLOAD_EXTENSIONS = [
     '.pdf',
     '.doc',
     '.docx',
+    '.xls',
+    '.xlsx',
+    '.csv',
     '.png',
     '.jpg',
     '.jpeg',
@@ -1736,6 +2384,17 @@
     '.ico',
     '.tiff',
     '.tif',
+    '.js',
+    '.jsx',
+    '.mjs',
+    '.cjs',
+    '.ts',
+    '.tsx',
+    '.py',
+    '.cpp',
+    '.cc',
+    '.cxx',
+    '.hpp',
    ];
 
    const uploadManager = {
@@ -1747,7 +2406,7 @@
 
      elements.fileInput.addEventListener('change', () => {
       if (elements.fileInput.files && elements.fileInput.files.length > 0) {
-       this.uploadFiles(Array.from(elements.fileInput.files));
+       this.addFiles(Array.from(elements.fileInput.files));
       }
       elements.fileInput.value = '';
      });
@@ -1770,23 +2429,35 @@
       e.preventDefault();
       const files = e.dataTransfer && e.dataTransfer.files ? Array.from(e.dataTransfer.files) : [];
       if (files.length > 0) {
-       this.uploadFiles(files);
+       this.addFiles(files);
       }
      });
     },
 
-    uploadFiles(files) {
-     files.forEach((file) => this.uploadFile(file));
+    addFiles(files) {
+     const acceptedFiles = files.filter((file) => this.canAddFile(file));
+     const remainingSlots = CONFIG.MAX_FILES - state.pendingFiles.length;
+     if (remainingSlots <= 0 || acceptedFiles.length === 0) {
+      return;
+     }
+     acceptedFiles.slice(0, remainingSlots).forEach((file) => this.addFile(file));
+     if (acceptedFiles.length > remainingSlots) {
+      messageManager.append(
+       'System',
+       `Only ${CONFIG.MAX_FILES} files are allowed per message. ${acceptedFiles.length - remainingSlots} file(s) skipped.`,
+       'system'
+      );
+     }
     },
 
-    uploadFile(file) {
+    canAddFile(file) {
      if (file.size > CONFIG.MAX_FILE_SIZE) {
       messageManager.append(
        'System',
        `File "${file.name}" exceeds the ${Math.round(CONFIG.MAX_FILE_SIZE / 1024 / 1024)} MB size limit.`,
        'system'
       );
-      return;
+      return false;
      }
 
      const lowerName = file.name.toLowerCase();
@@ -1796,18 +2467,151 @@
      if (!hasAcceptedType && !hasAcceptedExtension) {
       messageManager.append(
        'System',
-       `"${file.name}" is not a supported file. Only PDF, Word, and image files are allowed.`,
+       `"${file.name}" is not a supported file. Only PDF, Word, Excel, image, and code files (JS, TS, Python, C++) are allowed.`,
        'system'
       );
+      return false;
+     }
+
+     return true;
+    },
+
+    addFile(file) {
+     if (state.pendingFiles.length >= CONFIG.MAX_FILES) {
+      messageManager.append('System', `Only ${CONFIG.MAX_FILES} files are allowed per message.`, 'system');
       return;
      }
 
-     messageManager.append('System', `Uploading "${file.name}"...`, 'system');
+     const entry = {
+      file,
+      name: file.name,
+      isImage: file.type.startsWith('image/'),
+      status: 'uploading',
+      id: null,
+      url: null,
+      xhr: null,
+     };
 
+     state.pendingFiles.push(entry);
+     this.renderChip(entry);
+     this.uploadFile(entry);
+    },
+
+    renderChip(entry) {
+     const chip = document.createElement('div');
+     chip.className = 'attachment-chip uploading';
+
+     const preview = document.createElement('div');
+     preview.className = `attachment-chip-preview${entry.isImage ? '' : ' file'}`;
+
+if (entry.isImage) {
+      const base = this.imageDataSrc(entry.file);
+      this.setPreviewImage(preview, base);
+     } else {
+      const ext = (entry.name.split('.').pop() || 'FILE').slice(0, 4).toUpperCase();
+      preview.textContent = ext;
+     }
+     chip.appendChild(preview);
+
+     const name = document.createElement('span');
+     name.className = 'attachment-chip-name';
+     name.textContent = entry.name;
+     name.title = entry.name;
+     chip.appendChild(name);
+
+     const status = document.createElement('span');
+     status.className = 'attachment-chip-status uploading';
+     status.textContent = 'Uploading';
+     chip.appendChild(status);
+
+     const removeBtn = document.createElement('button');
+     removeBtn.type = 'button';
+     removeBtn.className = 'attachment-chip-remove';
+     removeBtn.title = 'Remove';
+     removeBtn.textContent = '×';
+     removeBtn.addEventListener('click', () => this.removeFile(entry));
+     chip.appendChild(removeBtn);
+
+     entry.chip = chip;
+     entry.statusEl = status;
+     elements.inputAttachments.appendChild(chip);
+     return chip;
+    },
+
+imageDataSrc(file) {
+      try {
+       return URL.createObjectURL(file);
+      } catch (e) {
+       return '';
+      }
+     },
+
+     setPreviewImage(preview, url) {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = '';
+      img.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+      preview.appendChild(img);
+     },
+
+    updateFile(entry) {
+     if (!entry.chip) return;
+     entry.chip.classList.remove('uploading', 'error');
+     if (entry.status === 'error') entry.chip.classList.add('error');
+     if (entry.statusEl) {
+      entry.statusEl.className = `attachment-chip-status${entry.status === 'error' ? ' error' : ''}`;
+      entry.statusEl.textContent = entry.status === 'error' ? 'Failed' : 'Attached';
+     }
+    },
+
+    removeFile(entry) {
+     if (entry.xhr) {
+      entry.xhr.abort();
+     }
+     entry._onSettled?.();
+     entry.chip?.remove();
+     const index = state.pendingFiles.indexOf(entry);
+     if (index !== -1) {
+      state.pendingFiles.splice(index, 1);
+     }
+    },
+
+    clearAll() {
+     state.pendingFiles.forEach((entry) => {
+      entry.xhr?.abort();
+      entry.chip?.remove();
+     });
+     state.pendingFiles = [];
+     if (elements.inputAttachments) {
+      elements.inputAttachments.innerHTML = '';
+     }
+    },
+
+    async waitForUploads() {
+     const inFlight = state.pendingFiles.filter((f) => f.status === 'uploading');
+     if (inFlight.length === 0) {
+      return;
+     }
+
+     const settle = (entry) =>
+      new Promise((resolve) => {
+       const check = () => resolve();
+       if (entry.status !== 'uploading') {
+        check();
+       } else {
+        entry._onSettled = check;
+       }
+      });
+
+     await Promise.all(inFlight.map(settle));
+    },
+
+    uploadFile(entry) {
      const formData = new FormData();
-     formData.append('file', file);
+     formData.append('file', entry.file);
 
      const xhr = new XMLHttpRequest();
+     entry.xhr = xhr;
      xhr.open('POST', CONFIG.UPLOAD_API_URL);
 
      xhr.onload = () => {
@@ -1815,29 +2619,30 @@
        const result = JSON.parse(xhr.responseText);
        if (xhr.status >= 200 && xhr.status < 300 && result.success && result.responseObject) {
         const uploaded = result.responseObject;
-
-        if (file.type.startsWith('image/')) {
-         state.pendingImage = { id: uploaded.id, url: uploaded.url, name: uploaded.name };
-         messageManager.appendImage('You', {
-          url: uploaded.url,
-          name: file.name,
-         });
-         messageManager.append('System', `Image "${file.name}" attached. Send a message to analyze it.`, 'system');
-        } else {
-         messageManager.append('System', `Uploaded "${file.name}"`, 'system');
-        }
+        entry.id = uploaded.id;
+        entry.url = uploaded.url;
+        entry.status = 'uploaded';
+        this.updateFile(entry);
         messageManager.append('System', `File URL: ${uploaded.url}`, 'system');
        } else {
+        entry.status = 'error';
+        this.updateFile(entry);
         messageManager.append('System', `Upload failed: ${result.message || `HTTP ${xhr.status}`}`, 'system');
        }
       } catch (error) {
        console.error('Error parsing upload response:', error);
+       entry.status = 'error';
+       this.updateFile(entry);
        messageManager.append('System', `Upload failed: unexpected server response.`, 'system');
       }
+      entry._onSettled?.();
      };
 
      xhr.onerror = () => {
-      messageManager.append('System', `Upload failed: network error for "${file.name}".`, 'system');
+      entry.status = 'error';
+      this.updateFile(entry);
+      messageManager.append('System', `Upload failed: network error for "${entry.name}".`, 'system');
+      entry._onSettled?.();
      };
 
      xhr.send(formData);
@@ -1894,21 +2699,89 @@
      }
     },
 
-    init() {
-     // Load history on page load
-     this.loadHistory();
-    },
-   };
+init() {
+      // Load history on page load
+      this.loadHistory();
+
+      elements.clearHistoryBtn?.addEventListener('click', () => {
+       this.openConfirmModal();
+      });
+     },
+
+     openConfirmModal() {
+      if (!elements.confirmModal) {
+       return;
+      }
+      elements.confirmModal.hidden = false;
+     },
+
+     closeConfirmModal() {
+      if (!elements.confirmModal) {
+       return;
+      }
+      elements.confirmModal.hidden = true;
+     },
+
+     initConfirmModal() {
+      if (!elements.confirmModal) {
+       return;
+      }
+
+      elements.confirmModalClose?.addEventListener('click', () => this.closeConfirmModal());
+      elements.confirmModalNo?.addEventListener('click', () => this.closeConfirmModal());
+      elements.confirmModalYes?.addEventListener('click', () => {
+       this.closeConfirmModal();
+       this.clearHistory();
+      });
+
+      elements.confirmModal.addEventListener('click', (e) => {
+       if (e.target === elements.confirmModal) {
+        this.closeConfirmModal();
+       }
+      });
+
+      document.addEventListener('keydown', (e) => {
+       if (e.key === 'Escape' && elements.confirmModal && !elements.confirmModal.hidden) {
+        this.closeConfirmModal();
+       }
+      });
+     },
+
+     async clearHistory() {
+      elements.clearHistoryBtn.disabled = true;
+      const originalText = elements.clearHistoryBtn.textContent;
+      elements.clearHistoryBtn.textContent = 'Clearing...';
+
+      try {
+       const res = await fetch(`${CONFIG.HISTORY_API_URL}/${state.sessionId}`, { method: 'DELETE' });
+       const data = await res.json();
+       if (data.success) {
+        elements.historyContent.innerHTML =
+         '<div class="history-item"><div class="history-item-content">No chat history found.</div></div>';
+        elements.messages.innerHTML = '';
+        elements.input.value = '';
+        totalTokenUsageManager.load();
+       } else {
+        console.error('Failed to clear history:', data.message);
+       }
+      } catch (error) {
+       console.error('Error clearing history:', error);
+      } finally {
+       elements.clearHistoryBtn.disabled = false;
+       elements.clearHistoryBtn.textContent = originalText;
+      }
+     },
+    };
 
    // ===== New Chat Management =====
    const newChatManager = {
     resetSession() {
      state.sessionId = `sess-${Math.random().toString(36).substr(2, 9)}`;
      localStorage.setItem('chatSessionId', state.sessionId);
-     elements.messages.innerHTML = '';
-     elements.input.value = '';
-     state.pendingImage = null;
-     state.combinedContent = '';
+elements.messages.innerHTML = '';
+      elements.input.value = '';
+      uploadManager.clearAll();
+      state.combinedContent = '';
      document.title = `ChatAI Session | ${state.sessionId}`;
      totalTokenUsageManager.load();
      historyManager.loadHistory();
@@ -1928,8 +2801,10 @@
 
     streamingToggle.init();
     formHandler.init();
+    ttsManager.init();
     uploadManager.init();
     historyManager.init();
+    historyManager.initConfirmModal();
     modelManager.init();
     modelManager.loadModels();
     totalTokenUsageManager.load();
