@@ -1,9 +1,11 @@
 import { StatusCodes } from 'http-status-codes';
+import { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/chat/completions';
 
 import { ImageAnalysisMessage, ImageDetails } from '@/api/vision/visionModel';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { env } from '@/common/utils/envConfig';
-import { visionOpenAI } from '@/openai/vision';
+import { openai } from '@/openai';
+import { openRouterAIInstance } from '@/openai/openRouterAI';
 import { logger } from '@/server';
 
 const FALLBACK_MESSAGE = 'No readable text detected in the provided image.';
@@ -27,14 +29,19 @@ const extractJson = (content: string): unknown | string => {
   return content;
  }
 };
-export const getDefaultVisionModel = (): string => {
- return env.IMAGE_ANALYSIS_MODEL ?? 'google/gemma-4-26b-a4b-it:free';
+export const getDefaultVisionModel = (useOpenRouter = false): string => {
+ if (useOpenRouter) {
+  return env.OPENROUTER_VISION_MODEL;
+ }
+ return env.LOCALAI_IMAGE_ANALYSIS_MODEL;
 };
 
 export const visionService = {
  extractImageDetails: async (
   file: Express.Multer.File | undefined,
-  prompt?: string
+  prompt?: string,
+  useOpenRouter = false,
+  model?: string
  ): Promise<ServiceResponse<ImageDetails | null>> => {
   if (!file) {
    return new ServiceResponse<ImageDetails | null>(
@@ -47,9 +54,9 @@ export const visionService = {
 
   try {
    const imageDataUrl = `data:${file.mimetype || 'image/png'};base64,${file.buffer.toString('base64')}`;
-   const aiModel = getDefaultVisionModel();
+   const aiModel = model ?? getDefaultVisionModel(useOpenRouter);
 
-   const completion = await visionOpenAI.chat.completions.create({
+   const modelArgs = {
     model: aiModel,
     messages: [
      {
@@ -65,7 +72,12 @@ export const visionService = {
       ],
      },
     ],
-   });
+   };
+   const completion = model
+    ? await openai.chat.completions.create(modelArgs as ChatCompletionCreateParamsNonStreaming & { stream: false })
+    : await openRouterAIInstance.chat.completions.create(
+       modelArgs as ChatCompletionCreateParamsNonStreaming & { stream: false }
+      );
 
    const message = completion.choices[0]?.message as ImageAnalysisMessage | undefined;
    const rawText = message?.content?.trim() || FALLBACK_MESSAGE;

@@ -64,7 +64,9 @@ export const visionRouter: Router = (() => {
 
    const serviceResponse = await visionService.extractImageDetails(
     req.file as Express.Multer.File | undefined,
-    (req.body?.prompt as string | undefined) ?? undefined
+    (req.body?.prompt as string | undefined) ?? undefined,
+    (req.body?.useOpenRouter as boolean | undefined) ?? false,
+    (req.body?.model as string | undefined) ?? undefined
    );
 
    handleServiceResponse(serviceResponse, res);
