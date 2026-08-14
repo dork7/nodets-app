@@ -1378,6 +1378,46 @@
       word-break: break-word;
      }
 
+     .rag-file-item {
+      position: relative;
+      padding-right: 26px;
+     }
+
+     .rag-delete-btn {
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      color: var(--fg-faint);
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      line-height: 1;
+      padding: 2px 5px;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.15s;
+     }
+
+     .rag-file-item:hover .rag-delete-btn {
+      opacity: 1;
+      color: var(--fg-muted);
+     }
+
+     .rag-delete-btn:hover {
+      color: var(--danger);
+      border-color: var(--danger);
+      background: color-mix(in srgb, var(--danger) 12%, transparent);
+      opacity: 1;
+     }
+
+     .rag-delete-btn:focus-visible {
+      opacity: 1;
+      outline: 1px solid var(--accent);
+      outline-offset: 1px;
+     }
+
      .modal-count {
       margin-left: auto;
       color: var(--fg-faint);
@@ -3486,7 +3526,7 @@ elements.messages.innerHTML = '';
 
     createItem(file) {
      const item = document.createElement('div');
-     item.className = 'history-item';
+     item.className = 'history-item rag-file-item';
      item.title = file.url || '';
 
      const content = document.createElement('div');
@@ -3498,6 +3538,18 @@ elements.messages.innerHTML = '';
      time.className = 'history-item-time';
      time.textContent = utils.formatFileSize(file.size);
      item.appendChild(time);
+
+     const del = document.createElement('button');
+     del.type = 'button';
+     del.className = 'rag-delete-btn';
+     del.title = 'Delete file from RAG';
+     del.setAttribute('aria-label', `Delete ${this.displayName(file)}`);
+     del.textContent = '×';
+     del.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.deleteFile(file);
+     });
+     item.appendChild(del);
 
      item.addEventListener('click', () => {
       if (file.url) window.open(file.url, '_blank');
@@ -3611,6 +3663,25 @@ elements.messages.innerHTML = '';
      if (!files || files.length === 0) return;
      await this.uploadFiles(files);
      elements.ragFileInput.value = '';
+    },
+
+    async deleteFile(file) {
+     try {
+      const apiBase = CONFIG.RAG_FILES_API_URL.replace(/\/files$/, '');
+      const res = await fetch(
+       `${apiBase}/${encodeURIComponent(file.id)}?bucket=${encodeURIComponent(CONFIG.RAG_BUCKET)}`,
+       { method: 'DELETE' }
+      );
+      const result = await res.json();
+      if (result.success) {
+       messageManager.append('System', `Deleted "${this.displayName(file)}" from RAG knowledge base.`, 'system');
+       await this.loadFiles();
+      } else {
+       console.error('RAG delete failed:', result.message);
+      }
+     } catch (error) {
+      console.error('RAG delete error:', error);
+     }
     },
 
     bindDragDrop(element, highlightEl) {

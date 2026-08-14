@@ -144,7 +144,10 @@ export const minioService = {
  deleteFile: async (id: string, bucket?: string): Promise<ServiceResponse<boolean>> => {
   try {
    const targetBucket = bucket || MINIO_BUCKET;
-   const files = await minioClient.listObjects(targetBucket, undefined, true);
+   const files: any[] = [];
+   for await (const obj of minioClient.listObjects(targetBucket, undefined, true)) {
+    files.push(obj);
+   }
    const file = files.find((f) => f.name.startsWith(`${id}-`));
 
    if (!file) {
@@ -152,6 +155,8 @@ export const minioService = {
    }
 
    await minioClient.removeObject(targetBucket, file.name);
+
+   await minioRepository.deleteByIdAsync(id);
 
    return new ServiceResponse<boolean>(ResponseStatus.Success, 'File deleted successfully', true, StatusCodes.OK);
   } catch (ex) {
