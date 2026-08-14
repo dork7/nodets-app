@@ -1,12 +1,12 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import express, { Request, Response, Router } from 'express';
-import multer from 'multer';
 import { StatusCodes } from 'http-status-codes';
+import multer from 'multer';
 import { z } from 'zod';
 
-import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
-import { ImageDetailsSchema } from '@/api/vision/visionModel';
+import { ImageAnalysisResponseSchema } from '@/api/vision/visionModel';
 import { visionService } from '@/api/vision/visionService';
+import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { handleServiceResponse } from '@/common/utils/httpHandlers';
 
@@ -41,7 +41,7 @@ visionRegistry.registerPath({
    },
   },
  },
- responses: createApiResponse(ImageDetailsSchema, 'Image details extracted successfully.'),
+ responses: createApiResponse(ImageAnalysisResponseSchema, 'Image details extracted successfully.'),
 });
 
 export const visionRouter: Router = (() => {
@@ -51,27 +51,22 @@ export const visionRouter: Router = (() => {
  router.post('/analyze', (req: Request, res: Response) => {
   singleUpload(req, res, async (err: unknown) => {
    if (err) {
-    const errorMessage =
-     err instanceof multer.MulterError ? err.message : 'Unable to process the uploaded image.';
+    const errorMessage = err instanceof multer.MulterError ? err.message : 'Unable to process the uploaded image.';
     const statusCode =
      err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE'
-      ? StatusCodes.PAYLOAD_TOO_LARGE
+      ? StatusCodes.REQUEST_TOO_LONG
       : StatusCodes.BAD_REQUEST;
 
-    const serviceResponse = new ServiceResponse(
-     ResponseStatus.Failed,
-     errorMessage,
-     null,
-     statusCode,
-     err
-    );
+    const serviceResponse = new ServiceResponse(ResponseStatus.Failed, errorMessage, null, statusCode, err);
 
     return handleServiceResponse(serviceResponse, res);
    }
 
    const serviceResponse = await visionService.extractImageDetails(
     req.file as Express.Multer.File | undefined,
-    (req.body?.prompt as string | undefined) ?? undefined
+    (req.body?.prompt as string | undefined) ?? undefined,
+    (req.body?.useOpenRouter as boolean | undefined) ?? false,
+    (req.body?.model as string | undefined) ?? undefined
    );
 
    handleServiceResponse(serviceResponse, res);
@@ -80,4 +75,3 @@ export const visionRouter: Router = (() => {
 
  return router;
 })();
-
