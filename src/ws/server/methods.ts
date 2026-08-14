@@ -41,7 +41,7 @@ export async function loadHandlers() {
   }
 
   registerMethod(name, handler);
-logger.info(`🔌 Registered server method: ${name}`);
+  logger.info(`🔌 Registered server method: ${name}`);
   }
 
   logger.info(`✅ Available server methods:  ${listMethods()}`);
