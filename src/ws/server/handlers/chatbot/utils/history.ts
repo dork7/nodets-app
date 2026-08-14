@@ -1,7 +1,7 @@
 import { env } from '@/common/utils/envConfig';
-import { openai } from '@/openai';
+import { callAI, openai } from '@/openai';
 
-import { ChatMessage } from '../../chatAI';
+import { ChatMessage } from '..';
 
 export const buildConversationHistory = (
  userInput: string,
@@ -18,9 +18,11 @@ export const buildConversationHistory = (
 };
 
 export const getSummeriseHistory = async (history: ChatMessage[]): Promise<string> => {
- const summary = await openai.chat.completions.create({
-  model: env.LOCALAI_SUMMARY_MODEL as string,
-  messages: history.map((m) => ({ role: m.role, content: m.content })),
- });
+//  const summary = await openai.chat.completions.create({
+//   model: env.LOCALAI_SUMMARY_MODEL as string,
+//   messages: history.map((m) => ({ role: m.role, content: m.content })),
+//  });
+ const model = env.LOCALAI_SUMMARY_MODEL as string;
+ const summary: any = await callAI(model, [{ role: 'user', content: history.map((m) => ({ role: m.role, content: m.content })).join('\n') }], {stream: false});
  return summary.choices[0].message.content as string;
 };

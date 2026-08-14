@@ -16,15 +16,20 @@ const extractJson = (content: string): unknown | string => {
  const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/i);
  const candidate = codeBlockMatch ? codeBlockMatch[1] : content;
 
- const start = candidate.indexOf('{');
- const end = candidate.lastIndexOf('}');
+ const trimmed = candidate.trim();
+ const startIdx = trimmed.indexOf('[');
+ const endIdx = trimmed.lastIndexOf(']');
+ const canParseArray = startIdx !== -1 && endIdx !== -1 && endIdx > startIdx;
+
+ const start = canParseArray ? startIdx : trimmed.indexOf('{');
+ const end = canParseArray ? endIdx : trimmed.lastIndexOf('}');
 
  if (start === -1 || end === -1 || end <= start) {
   return content;
  }
 
  try {
-  return JSON.parse(candidate.slice(start, end + 1));
+  return JSON.parse(trimmed.slice(start, end + 1));
  } catch {
   return content;
  }
@@ -65,8 +70,35 @@ export const visionService = {
        {
         type: 'text',
         text:
-         `If user is asking about food image and calroies, you must answer based on your best possible knowledge. Give a stucture response in object format with calories and other nutritional information if present. ${prompt?.trim()}` ||
-         DEFAULT_PROMPT,
+         `If user is asking about food image and calroies, you must answer based on your best possible knowledge. Give a stucture response in object format with calories and other nutritional information if present. Always returnt he response in Array of objects for each food item. alway returnt he nutriaital details in this format {
+	"details": [
+		{
+			"food_item": "Paneer (Spiced/Pan-fried)",
+			"estimated_quantity": "150g",
+			"calories": 420,
+			"protein_g": 27,
+			"fat_g": 33,
+			"carbohydrates_g": 5,
+			"fiber_g": 0
+		},
+		{
+			"food_item": "Cooking Oil & Spices",
+			"estimated_quantity": "1 tbsp",
+			"calories": 90,
+			"protein_g": 0,
+			"fat_g": 10,
+			"carbohydrates_g": 2,
+			"fiber_g": 0
+		},
+		{
+			"total_dish_estimate": "Entire Bowl",
+			"total_calories": 537,
+			"total_protein_g": 28,
+			"total_fat_g": 43,
+			"total_carbs_g": 13
+		}
+	]
+}${prompt?.trim()}` || DEFAULT_PROMPT,
        },
        { type: 'image_url', image_url: { url: imageDataUrl } },
       ],
@@ -82,7 +114,7 @@ export const visionService = {
    const message = completion.choices[0]?.message as ImageAnalysisMessage | undefined;
    const rawText = message?.content?.trim() || FALLBACK_MESSAGE;
    const reasoning = message?.reasoning?.trim() || undefined;
-   const details = extractJson(rawText);
+   const details = extractJson(rawText) as ImageDetails['details'];
 
    const responsePayload: ImageDetails = {
     details,

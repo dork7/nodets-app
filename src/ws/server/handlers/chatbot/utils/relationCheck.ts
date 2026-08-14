@@ -1,6 +1,6 @@
 import { env } from 'process';
 
-import { openai } from '@/openai';
+import { callAI, openai } from '@/openai';
 
 export async function isRelatedConversation(
  previousMessage: string,
@@ -17,12 +17,12 @@ export async function isRelatedConversation(
  ].join('\n');
 
  try {
-  const completion = await openai.chat.completions.create({
-   model: model || (env.LOCALAI_RELEVANCE_MODEL as string), // or any model listed on OpenRouter
-   messages: [{ role: 'user', content: prompt }],
-   temperature: 0,
-   max_tokens: 2,
-  });
+  const model = env.LOCALAI_RELEVANCE_MODEL as string;
+  const completion: any = await callAI(
+   model,
+   [{ role: 'user', content: prompt }],
+   { stream: false, temperature: 0, max_tokens: 2 }
+  );
 
   const answer = completion.choices[0]?.message?.content?.trim().toLowerCase() ?? '';
   return answer.startsWith('yes');

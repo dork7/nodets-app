@@ -5,6 +5,7 @@ import { env } from '@/common/utils/envConfig';
 import { genCorrelationId } from '@/common/utils/helpers';
 import { logger } from '@/server';
 
+import { chatbotHandler } from './handlers/chatbot';
 import { getMethod } from './methods';
 
 const { HOST } = env;
@@ -102,7 +103,7 @@ export const startWebSocketServer = async (httpServer: any) => {
     } catch {
      parsedMessage = { content: message.toString() };
     }
-    const handler = getMethod(parsedMessage.method);
+    const handler = chatbotHandler; //getMethod(parsedMessage.method);
 
     if (!handler) {
      return ws.send(
