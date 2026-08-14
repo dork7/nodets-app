@@ -335,7 +335,7 @@ export const handler = async (ws: any, message: WebSocketMessage): Promise<void>
    }
 
    // Get AI response (tools are offered every round so it can keep asking)
-   const aiResponse = await callAI(aiMessages, isStreaming, aiModel, abortController.signal, toOpenAITools());
+   const aiResponse = await callAI(aiModel, aiMessages, { stream: isStreaming, tools: toOpenAITools() }, abortController.signal as AbortSignal);
 
    // Handle response based on streaming mode and get token usage
    let toolCalls: ToolCallRequest[];
