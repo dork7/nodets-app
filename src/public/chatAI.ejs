@@ -2836,7 +2836,11 @@ currentIsRelated: false,
 
     async loadModels() {
      try {
-      const res = await fetch(CONFIG.MODELS_API_URL);
+      const url = new URL(CONFIG.MODELS_API_URL);
+      if (state.selectedProvider) {
+       url.searchParams.set('provider', state.selectedProvider);
+      }
+      const res = await fetch(url);
       const { models } = await res.json();
 
       if (Array.isArray(models) && models.length > 0) {
@@ -3054,6 +3058,8 @@ currentIsRelated: false,
      if (!value) return;
      state.selectedProvider = value;
      localStorage.setItem('chatSelectedProvider', value);
+     modelManager.loadModels();
+     modelManager.loadLoadedModels();
     },
 
     async loadProviders() {
