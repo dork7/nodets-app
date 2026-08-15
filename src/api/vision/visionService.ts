@@ -5,7 +5,7 @@ import { ImageAnalysisMessage, ImageDetails } from '@/api/vision/visionModel';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { env } from '@/common/utils/envConfig';
 import { openai } from '@/openai';
-import { openRouterAIInstance } from '@/openai/openRouterAI';
+import { openRouterAIInstance } from '@/openai/providers/openRouterAI';
 import { logger } from '@/server';
 
 const FALLBACK_MESSAGE = 'No readable text detected in the provided image.';

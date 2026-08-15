@@ -119,6 +119,64 @@
      font-variant-numeric: tabular-nums;
     }
 
+    .app-provider-tab {
+     display: flex;
+     align-items: center;
+     gap: 10px;
+     background: var(--bg-raised);
+     border: 1px solid var(--border);
+     border-radius: var(--radius);
+     padding: 7px 12px;
+     margin-left: 16px;
+    }
+
+    .app-provider-label {
+     color: var(--fg);
+     font-size: 11px;
+     text-transform: uppercase;
+     letter-spacing: 0.12em;
+     font-weight: 500;
+     user-select: none;
+     white-space: nowrap;
+    }
+
+    .app-provider-select {
+     appearance: none;
+     -webkit-appearance: none;
+     background: var(--bg-inset);
+     border: 1px solid var(--border);
+     border-radius: var(--radius-sm);
+     color: var(--fg);
+     font-family: var(--font-mono);
+     font-size: 0.78em;
+     font-weight: 500;
+     cursor: pointer;
+     outline: none;
+     padding: 5px 26px 5px 10px;
+     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3e%3cpath fill='%23ededed' d='M0 0l5 6 5-6z'/%3e%3c/svg%3e");
+     background-repeat: no-repeat;
+     background-position: right 9px center;
+     background-size: 10px 6px;
+     transition: all 0.2s;
+    }
+
+    .app-provider-select:hover {
+     color: var(--fg);
+     border-color: var(--border-strong);
+     background-color: var(--bg-deep);
+    }
+
+    .app-provider-select:focus-visible {
+     outline: 1px solid var(--accent);
+     outline-offset: 2px;
+     border-radius: var(--radius-sm);
+    }
+
+    .app-provider-select option {
+     background: var(--bg-raised);
+     color: var(--fg);
+    }
+
     /* ===== Main ===== */
     #main-container {
      flex: 1;
@@ -127,7 +185,40 @@
      margin: 16px auto 0;
      padding: 0 24px 24px;
      display: flex;
+     flex-direction: row;
+     align-items: stretch;
+     gap: 14px;
+    }
+
+    #main-column {
+     flex: 1;
+     min-width: 0;
+     min-height: 0;
+     display: flex;
      flex-direction: column;
+     gap: 14px;
+    }
+
+    #left-sidebar,
+    #right-sidebar {
+     flex-shrink: 0;
+     width: 250px;
+     min-height: 0;
+     display: flex;
+     flex-direction: column;
+     gap: 14px;
+    }
+
+    #left-sidebar {
+     order: -1;
+    }
+
+    #main-column {
+     order: 0;
+    }
+
+    #right-sidebar {
+     order: 1;
     }
 
     /* ===== Chat Container ===== */
@@ -155,7 +246,7 @@
      display: flex;
      align-items: center;
      gap: 16px;
-     margin: 0 24px 14px;
+     margin: 0;
      padding: 10px 16px;
     }
 
@@ -205,17 +296,18 @@
 
     /* ===== RAG Panel ===== */
     #rag-panel {
-     flex-shrink: 0;
-     min-width: 0;
+     flex: 1;
+     min-height: 0;
      overflow: hidden;
      background: var(--bg-raised);
      border-radius: var(--radius);
      border: 1px solid var(--border);
      display: flex;
-     align-items: center;
-     gap: 16px;
-     margin: 0 24px 14px;
-     padding: 10px 16px;
+     flex-direction: column;
+     align-items: stretch;
+     gap: 12px;
+     margin: 0;
+     padding: 14px;
     }
 
     #rag-panel-header {
@@ -237,11 +329,24 @@
 
     #rag-content {
      display: flex;
-     align-items: center;
+     flex-direction: column;
+     align-items: stretch;
      gap: 8px;
      flex: 1;
-     min-width: 0;
-     overflow: hidden;
+     min-height: 0;
+     overflow-y: auto;
+    }
+
+    #rag-actions {
+     display: flex;
+     flex-direction: column;
+     gap: 8px;
+     flex-shrink: 0;
+    }
+
+    #rag-actions button {
+     width: 100%;
+     text-align: center;
     }
 
     #rag-panel:hover {
@@ -254,21 +359,20 @@
     }
 
     #rag-view-all-btn {
-     background: transparent;
-     color: var(--fg-muted);
-     border: 1px solid var(--border);
-     border-radius: var(--radius-sm);
-     padding: 3px 10px;
-     font-size: 0.72em;
-     font-family: var(--font-mono);
-     text-transform: uppercase;
-     letter-spacing: 0.06em;
-     cursor: pointer;
-     transition: all 0.2s;
-     flex-shrink: 0;
-     margin-left: auto;
-     white-space: nowrap;
-    }
+      background: transparent;
+      color: var(--fg-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 0.72em;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      white-space: nowrap;
+     }
 
     #rag-view-all-btn:hover {
      color: var(--fg);
@@ -811,16 +915,17 @@
 
     /* ===== Model / Loaded Panels ===== */
     #models-panel {
-     flex-shrink: 0;
-     min-width: 0;
+     flex: 1;
+     min-height: 0;
      background: var(--bg-raised);
      border-radius: var(--radius);
      border: 1px solid var(--border);
      display: flex;
-     align-items: center;
-     gap: 14px;
-     margin: 0 24px 14px;
-     padding: 10px 16px;
+     flex-direction: column;
+     align-items: stretch;
+     gap: 12px;
+     margin: 0;
+     padding: 14px;
      overflow: hidden;
     }
 
@@ -840,11 +945,13 @@
 
     #model-selector {
      display: flex;
-     align-items: center;
+     flex-direction: column;
+     align-items: stretch;
      gap: 8px;
      flex: 1;
      min-width: 0;
-     overflow: hidden;
+     min-height: 0;
+     overflow-y: auto;
     }
 
     #model-view-all-btn {
@@ -1333,6 +1440,32 @@
      }
 
      #rag-files-upload-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+     }
+
+     #rag-files-delete-all-btn {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 0.72em;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      white-space: nowrap;
+     }
+
+     #rag-files-delete-all-btn:hover {
+      background: var(--danger);
+      color: #fff;
+     }
+
+     #rag-files-delete-all-btn:disabled {
       opacity: 0.45;
       cursor: not-allowed;
      }
@@ -1961,18 +2094,22 @@
       <span class="app-sub">session console</span>
      </div>
      <div class="app-header-meta">ws://localhost:2020/ws/chatAI</div>
+     <div class="app-provider-tab">
+      <label class="app-provider-label" for="provider-selector">Provider</label>
+      <select id="provider-selector" class="app-provider-select" aria-label="AI provider"></select>
+     </div>
     </div>
    </header>
    <div id="confirm-modal" class="modal-overlay" hidden>
     <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
      <div class="modal-header">
-      <span class="modal-title" id="confirm-modal-title">Clear Chat History</span>
+      <span class="modal-title" id="confirm-modal-title">Confirm</span>
       <button type="button" class="modal-close" id="confirm-modal-close" aria-label="Close">×</button>
      </div>
-     <div class="modal-body">Clear all chat history for this session?</div>
+     <div class="modal-body" id="confirm-modal-body">Are you sure?</div>
      <div class="modal-actions">
       <button type="button" class="modal-btn" id="confirm-modal-no">No</button>
-      <button type="button" class="modal-btn danger" id="confirm-modal-yes">Yes, Clear</button>
+      <button type="button" class="modal-btn danger" id="confirm-modal-yes">Yes</button>
       </div>
 </div>
      </div>
@@ -1994,6 +2131,7 @@
       </div>
      </div>
      <div id="main-container">
+     <div id="main-column">
     <div id="chat-container">
      <div id="token-usage-header">
       <span class="token-usage-header-label">Total Token Usage</span>
@@ -2047,26 +2185,34 @@
       </div>
       </form>
      </div>
-    </div>
-<div id="history-panel">
-      <div id="history-panel-header">
-       <h3 id="history-panel-title">Chat History</h3>
-       <button id="clear-history-btn" type="button" aria-label="Clear chat history">Clear</button>
+      <div id="history-panel">
+       <div id="history-panel-header">
+        <h3 id="history-panel-title">Chat History</h3>
+        <button id="clear-history-btn" type="button" aria-label="Clear chat history">Clear</button>
+       </div>
+       <div id="history-content"></div>
+       <button id="history-view-all-btn" type="button" title="View all chat history">View All</button>
       </div>
-      <div id="history-content"></div>
-      <button id="history-view-all-btn" type="button" title="View all chat history">View All</button>
      </div>
+    <div id="left-sidebar">
      <div id="rag-panel">
       <div id="rag-panel-header">
        <h3 id="rag-panel-title">RAG System Files</h3>
       </div>
       <div id="rag-content"></div>
-      <button id="rag-view-all-btn" type="button" title="View all RAG files">View All</button>
+      <div id="rag-actions">
+       <button id="rag-files-delete-all-btn" type="button" title="Delete all RAG files">Delete All</button>
+       <button id="rag-view-all-btn" type="button" title="View all RAG files">View All</button>
+      </div>
      </div>
-    <div id="models-panel">
-     <span class="model-selector-label">AI Model</span>
-     <div id="model-selector"></div>
-     <button type="button" id="model-view-all-btn" title="Show all models">View all</button>
+    </div>
+    <div id="right-sidebar">
+     <div id="models-panel">
+      <span class="model-selector-label">AI Model</span>
+      <div id="model-selector"></div>
+      <button type="button" id="model-view-all-btn" title="Show all models">View all</button>
+     </div>
+    </div>
     </div>
     <div id="model-sheet-overlay" hidden>
     <div class="model-sheet" role="dialog" aria-modal="true" aria-labelledby="model-sheet-title">
@@ -2094,6 +2240,7 @@
    const CONFIG = {
     WS_URL: 'ws://localhost:2020/ws/chatAI',
     MODELS_API_URL: 'http://localhost:2020/chatModels',
+    PROVIDERS_API_URL: 'http://localhost:2020/v1/aiProviders',
     HISTORY_API_URL: 'http://localhost:2020/v1/aiUtils/chat-history',
     RAG_FILES_API_URL: 'http://localhost:2020/v1/minio/files',
     RAG_BUCKET: 'rag-files',
@@ -2125,6 +2272,7 @@
    // ===== State Management =====
    const state = {
     selectedModel: localStorage.getItem('chatSelectedModel') || '',
+    selectedProvider: localStorage.getItem('chatSelectedProvider') || '',
     defaultModel: localStorage.getItem('chatDefaultModel') || '',
     streamingEnabled: localStorage.getItem('chatStreaming') !== 'false',
     isStreaming: false,
@@ -2155,6 +2303,7 @@ currentIsRelated: false,
     streamToggle: document.getElementById('stream-toggle'),
     streamingLabel: document.getElementById('streaming-label'),
     modelSelector: document.getElementById('model-selector'),
+    providerSelector: document.getElementById('provider-selector'),
     uploadBtn: document.getElementById('upload-btn'),
     fileInput: document.getElementById('file-input'),
     inputAttachments: document.getElementById('input-attachments'),
@@ -2179,9 +2328,12 @@ currentIsRelated: false,
     ragFilesModalCount: document.getElementById('rag-files-modal-count'),
     ragFileInput: document.getElementById('rag-file-input'),
     ragFilesUploadBtn: document.getElementById('rag-files-upload-btn'),
+    ragFilesDeleteAllBtn: document.getElementById('rag-files-delete-all-btn'),
     ragFilesList: document.getElementById('rag-files-list'),
     newChatBtn: document.getElementById('new-chat-btn'),
     confirmModal: document.getElementById('confirm-modal'),
+    confirmModalTitle: document.getElementById('confirm-modal-title'),
+    confirmModalBody: document.getElementById('confirm-modal-body'),
     confirmModalClose: document.getElementById('confirm-modal-close'),
     confirmModalYes: document.getElementById('confirm-modal-yes'),
     confirmModalNo: document.getElementById('confirm-modal-no'),
@@ -2727,7 +2879,11 @@ currentIsRelated: false,
 
     async loadModels() {
      try {
-      const res = await fetch(CONFIG.MODELS_API_URL);
+      const url = new URL(CONFIG.MODELS_API_URL);
+      if (state.selectedProvider) {
+       url.searchParams.set('provider', state.selectedProvider);
+      }
+      const res = await fetch(url);
       const { models } = await res.json();
 
       if (Array.isArray(models) && models.length > 0) {
@@ -2933,6 +3089,48 @@ currentIsRelated: false,
     },
    };
 
+   // ===== Provider Management =====
+   const providerManager = {
+    init() {
+     elements.providerSelector.addEventListener('change', () => {
+      this.selectProvider(elements.providerSelector.value);
+     });
+    },
+
+    selectProvider(value) {
+     if (!value) return;
+     state.selectedProvider = value;
+     localStorage.setItem('chatSelectedProvider', value);
+     modelManager.loadModels();
+     modelManager.loadLoadedModels();
+    },
+
+    async loadProviders() {
+     try {
+      const res = await fetch(CONFIG.PROVIDERS_API_URL);
+      const result = await res.json();
+      const providers = Array.isArray(result.responseObject) ? result.responseObject : [];
+
+      if (providers.length === 0) {
+       elements.providerSelector.innerHTML = '<option value="">No providers</option>';
+       return;
+      }
+
+      elements.providerSelector.innerHTML = providers
+       .map((p) => `<option value="${p.name}">${p.name}</option>`)
+       .join('');
+
+      const persisted = providers.find((p) => p.name === state.selectedProvider);
+      const selected = persisted ? persisted.name : providers[0].name;
+      this.selectProvider(selected);
+      elements.providerSelector.value = selected;
+     } catch (error) {
+      console.error('Error fetching providers:', error);
+      elements.providerSelector.innerHTML = '<option value="">Providers unavailable</option>';
+     }
+    },
+   };
+
    // ===== Streaming Toggle Management =====
    const streamingToggle = {
     init() {
@@ -3030,6 +3228,12 @@ currentIsRelated: false,
      elements.form.addEventListener('submit', async (e) => {
       e.preventDefault();
       let message = elements.input.value.trim();
+
+      if (message === '/new') {
+       newChatManager.resetSession();
+       return;
+      }
+
       if (state.pastedCodeList.length > 0) {
        const pasted = state.pastedCodeList.join('\n\n');
        message = message ? `${message}\n\n${pasted}` : pasted;
@@ -3055,6 +3259,7 @@ currentIsRelated: false,
         method: 'chatAI',
         stream: state.streamingEnabled,
         model: state.selectedModel,
+        provider: state.selectedProvider,
         params: {
           prompt: message || (hasFiles ? 'Analyze the attached files.' : ''),
           imageIds: imageIds.length > 0 ? imageIds : undefined,
@@ -3556,11 +3761,21 @@ imageDataSrc(file) {
      this.bindSheet();
 
      elements.clearHistoryBtn?.addEventListener('click', () => {
-      this.openConfirmModal();
+      this.openConfirmModal({
+       title: 'Clear Chat History',
+       body: 'Clear all chat history for this session?',
+       confirmLabel: 'Yes, Clear',
+       onConfirm: () => this.clearHistory(),
+      });
      });
 
      elements.historySheetClearBtn?.addEventListener('click', () => {
-      this.openConfirmModal();
+      this.openConfirmModal({
+       title: 'Clear Chat History',
+       body: 'Clear all chat history for this session?',
+       confirmLabel: 'Yes, Clear',
+       onConfirm: () => this.clearHistory(),
+      });
      });
     },
 
@@ -3597,10 +3812,14 @@ imageDataSrc(file) {
      }, 250);
     },
 
-    openConfirmModal() {
+    openConfirmModal({ title = 'Confirm', body = 'Are you sure?', confirmLabel = 'Yes', onConfirm = null } = {}) {
       if (!elements.confirmModal) {
        return;
       }
+      elements.confirmModalTitle.textContent = title;
+      elements.confirmModalBody.textContent = body;
+      elements.confirmModalYes.textContent = confirmLabel;
+      this.confirmCallback = onConfirm;
       elements.confirmModal.hidden = false;
      },
 
@@ -3609,6 +3828,7 @@ imageDataSrc(file) {
        return;
       }
       elements.confirmModal.hidden = true;
+      this.confirmCallback = null;
      },
 
      initConfirmModal() {
@@ -3619,8 +3839,11 @@ imageDataSrc(file) {
       elements.confirmModalClose?.addEventListener('click', () => this.closeConfirmModal());
       elements.confirmModalNo?.addEventListener('click', () => this.closeConfirmModal());
       elements.confirmModalYes?.addEventListener('click', () => {
+       const callback = this.confirmCallback;
        this.closeConfirmModal();
-       this.clearHistory();
+       if (typeof callback === 'function') {
+        callback();
+       }
       });
 
       elements.confirmModal.addEventListener('click', (e) => {
@@ -3866,6 +4089,46 @@ elements.messages.innerHTML = '';
      }
     },
 
+    async deleteAllFiles() {
+     historyManager.openConfirmModal({
+      title: 'Delete All RAG Files',
+      body: `Delete all ${this.files.length} file${this.files.length === 1 ? '' : 's'} from the RAG knowledge base? This cannot be undone.`,
+      confirmLabel: 'Yes, Delete All',
+      onConfirm: () => this.performDeleteAll(),
+     });
+    },
+
+    async performDeleteAll() {
+     if (!elements.ragFilesDeleteAllBtn) return;
+     const btnWasDisabled = elements.ragFilesDeleteAllBtn.disabled;
+     elements.ragFilesDeleteAllBtn.disabled = true;
+     const originalText = elements.ragFilesDeleteAllBtn.textContent;
+     elements.ragFilesDeleteAllBtn.textContent = 'Deleting...';
+
+     try {
+      const apiBase = CONFIG.RAG_FILES_API_URL.replace(/\/files$/, '');
+      const res = await fetch(`${apiBase}/all?bucket=${encodeURIComponent(CONFIG.RAG_BUCKET)}`, {
+       method: 'DELETE',
+      });
+      const result = await res.json();
+      if (result.success) {
+       messageManager.append(
+        'System',
+        `Deleted all ${result.responseObject} file${result.responseObject === 1 ? '' : 's'} from RAG knowledge base.`,
+        'system'
+       );
+       await this.loadFiles();
+      } else {
+       console.error('RAG delete-all failed:', result.message);
+      }
+     } catch (error) {
+      console.error('RAG delete-all error:', error);
+     } finally {
+      elements.ragFilesDeleteAllBtn.disabled = btnWasDisabled;
+      elements.ragFilesDeleteAllBtn.textContent = originalText;
+     }
+    },
+
     bindDragDrop(element, highlightEl) {
      if (!element || !highlightEl) return;
      let depth = 0;
@@ -3918,6 +4181,8 @@ elements.messages.innerHTML = '';
 
      elements.ragFilesUploadBtn?.addEventListener('click', () => this.uploadSelected());
 
+     elements.ragFilesDeleteAllBtn?.addEventListener('click', () => this.deleteAllFiles());
+
      this.bindDragDrop(elements.ragFilesModal, elements.ragFilesDialog);
      this.bindDragDrop(elements.ragPanel, elements.ragPanel);
 
@@ -3931,6 +4196,8 @@ elements.messages.innerHTML = '';
     document.title = `ChatAI Session | ${state.sessionId}`;
 
     streamingToggle.init();
+    providerManager.init();
+    providerManager.loadProviders();
     formHandler.init();
     ttsManager.init();
     uploadManager.init();

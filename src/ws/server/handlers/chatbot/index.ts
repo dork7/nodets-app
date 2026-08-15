@@ -19,6 +19,7 @@ interface WebSocketMessage {
  method?: string;
  type?: string;
  model?: string;
+ provider?: string;
  stream?: boolean | string;
  params?: {
   prompt?: string;
@@ -283,10 +284,11 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
   const fileIds = message.params?.fileIds || [];
   const globalModels = (global as { aiModels?: string[] })?.aiModels;
   const aiModel = message?.model || globalModels?.[0] || '';
+  const provider = message?.provider || 'localAI';
   const isStreaming = normalizeStreamParam(message?.stream);
 
   logger.info(
-   `[chatAI] Request start at ${formatRequestTime(requestStartTime)} for session ${message.id} (model: ${aiModel || 'default'})`
+   `[chatAI] Request start at ${formatRequestTime(requestStartTime)} for session ${message.id} (provider: ${provider}, model: ${aiModel || 'default'})`
   );
 
   // Resolve uploaded images to base64 data URLs (if any)
@@ -335,7 +337,12 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
    }
 
    // Get AI response (tools are offered every round so it can keep asking)
-   const aiResponse = await callAI(aiModel, aiMessages, { stream: isStreaming, tools: toOpenAITools() }, abortController.signal as AbortSignal);
+   const aiResponse = await callAI(
+    aiModel,
+    aiMessages,
+    { stream: isStreaming, tools: toOpenAITools(), provider },
+    abortController.signal as AbortSignal
+   );
 
    // Handle response based on streaming mode and get token usage
    let toolCalls: ToolCallRequest[];

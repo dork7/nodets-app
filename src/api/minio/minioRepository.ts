@@ -54,4 +54,20 @@ export const minioRepository = {
   }
   return deleted > 0;
  },
+
+ deleteAllAsync: async (): Promise<number> => {
+  try {
+   const ids = await redisClient.zRange(FILE_REFERENCE_INDEX, 0, -1, { REV: true });
+   if (ids.length === 0) {
+    return 0;
+   }
+   await redisClient.del(ids.map((id) => `${FILE_REFERENCE_PREFIX}${id}`));
+   await redisClient.del(FILE_REFERENCE_INDEX);
+   return ids.length;
+  } catch (ex) {
+   const errorMessage = `Cannot delete file references: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return 0;
+  }
+ },
 };

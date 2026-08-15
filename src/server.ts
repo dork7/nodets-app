@@ -21,6 +21,7 @@ import { reqLoggerKafka } from './common/middleware/reqLoggerKafka';
 import { readFileData } from './common/utils/fileUtils';
 import { getLocalAILLMs } from './common/utils/getLocalAILLMs';
 import { sendSlackNotification } from './common/utils/slack';
+import { OPENROUTER_FREE_MODELS } from './config/openRouterModels';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
 import { redisClient } from './config/redisStore';
 import { initMinio } from './services/minio';
@@ -109,13 +110,15 @@ app.get('/chatAI', async function (req, res) {
 });
 
 app.get('/chatModels', async function (req, res) {
- const dockerLLMS =await getLocalAILLMs();
-
- const configModels = dockerLLMS ?? env.AI_MODELS;
- const models = configModels.split(',').map((m) => {
-  const label = m.split('/')[2]; //.charAt(0).toUpperCase() + m.split('/')[1].slice(1);
-  return { value: m, label: m };
- });
+ const provider = String(req.query.provider || '');
+ const configModels =
+  provider === 'openRouterAI' ? OPENROUTER_FREE_MODELS.join(',') : (await getLocalAILLMs()) ?? [];
+ const models = String(configModels)
+  .split(',')
+  .map((m) => {
+   const label = m.split('/').pop(); //.charAt(0).toUpperCase() + m.split('/')[1].slice(1);
+   return { value: m, label: label || m };
+  });
  res.json({ models });
 });
 
