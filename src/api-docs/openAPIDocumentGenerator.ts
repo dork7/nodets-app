@@ -2,6 +2,7 @@ import { OpenApiGeneratorV3, OpenAPIRegistry } from '@asteasolutions/zod-to-open
 
 import { aiProvidersRegistry } from '@/api/aiProviders/aiProvidersRouter';
 import { aiUtilsRegistry } from '@/api/aiUtils/aiUtilsRouter';
+import { catalogueRegistery } from '@/api/catalogue/catalogueRouter';
 import { healthCheckRegistry } from '@/api/healthCheck/healthCheckRouter';
 import { kafkaRegistry } from '@/api/kafka/kafkaRouter';
 import { redisRegistry } from '@/api/redis/redisRouter';
@@ -11,6 +12,7 @@ export function generateOpenAPIDocument() {
  const registry = new OpenAPIRegistry([
   healthCheckRegistry,
   aiUtilsRegistry,
+  catalogueRegistery,
   redisRegistry,
   kafkaRegistry,
   aiProvidersRegistry,
