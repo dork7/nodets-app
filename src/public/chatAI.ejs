@@ -337,6 +337,18 @@
      overflow-y: auto;
     }
 
+    #rag-actions {
+     display: flex;
+     flex-direction: column;
+     gap: 8px;
+     flex-shrink: 0;
+    }
+
+    #rag-actions button {
+     width: 100%;
+     text-align: center;
+    }
+
     #rag-panel:hover {
      border-color: var(--border-strong);
     }
@@ -347,21 +359,20 @@
     }
 
     #rag-view-all-btn {
-     background: transparent;
-     color: var(--fg-muted);
-     border: 1px solid var(--border);
-     border-radius: var(--radius-sm);
-     padding: 3px 10px;
-     font-size: 0.72em;
-     font-family: var(--font-mono);
-     text-transform: uppercase;
-     letter-spacing: 0.06em;
-     cursor: pointer;
-     transition: all 0.2s;
-     flex-shrink: 0;
-     margin-left: auto;
-     white-space: nowrap;
-    }
+      background: transparent;
+      color: var(--fg-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 0.72em;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      white-space: nowrap;
+     }
 
     #rag-view-all-btn:hover {
      color: var(--fg);
@@ -1433,6 +1444,32 @@
       cursor: not-allowed;
      }
 
+     #rag-files-delete-all-btn {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 0.72em;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      white-space: nowrap;
+     }
+
+     #rag-files-delete-all-btn:hover {
+      background: var(--danger);
+      color: #fff;
+     }
+
+     #rag-files-delete-all-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+     }
+
      .rag-drop-hint {
       flex-basis: 100%;
       color: var(--fg-faint);
@@ -2066,13 +2103,13 @@
    <div id="confirm-modal" class="modal-overlay" hidden>
     <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
      <div class="modal-header">
-      <span class="modal-title" id="confirm-modal-title">Clear Chat History</span>
+      <span class="modal-title" id="confirm-modal-title">Confirm</span>
       <button type="button" class="modal-close" id="confirm-modal-close" aria-label="Close">×</button>
      </div>
-     <div class="modal-body">Clear all chat history for this session?</div>
+     <div class="modal-body" id="confirm-modal-body">Are you sure?</div>
      <div class="modal-actions">
       <button type="button" class="modal-btn" id="confirm-modal-no">No</button>
-      <button type="button" class="modal-btn danger" id="confirm-modal-yes">Yes, Clear</button>
+      <button type="button" class="modal-btn danger" id="confirm-modal-yes">Yes</button>
       </div>
 </div>
      </div>
@@ -2163,7 +2200,10 @@
        <h3 id="rag-panel-title">RAG System Files</h3>
       </div>
       <div id="rag-content"></div>
-      <button id="rag-view-all-btn" type="button" title="View all RAG files">View All</button>
+      <div id="rag-actions">
+       <button id="rag-files-delete-all-btn" type="button" title="Delete all RAG files">Delete All</button>
+       <button id="rag-view-all-btn" type="button" title="View all RAG files">View All</button>
+      </div>
      </div>
     </div>
     <div id="right-sidebar">
@@ -2288,9 +2328,12 @@ currentIsRelated: false,
     ragFilesModalCount: document.getElementById('rag-files-modal-count'),
     ragFileInput: document.getElementById('rag-file-input'),
     ragFilesUploadBtn: document.getElementById('rag-files-upload-btn'),
+    ragFilesDeleteAllBtn: document.getElementById('rag-files-delete-all-btn'),
     ragFilesList: document.getElementById('rag-files-list'),
     newChatBtn: document.getElementById('new-chat-btn'),
     confirmModal: document.getElementById('confirm-modal'),
+    confirmModalTitle: document.getElementById('confirm-modal-title'),
+    confirmModalBody: document.getElementById('confirm-modal-body'),
     confirmModalClose: document.getElementById('confirm-modal-close'),
     confirmModalYes: document.getElementById('confirm-modal-yes'),
     confirmModalNo: document.getElementById('confirm-modal-no'),
@@ -3718,11 +3761,21 @@ imageDataSrc(file) {
      this.bindSheet();
 
      elements.clearHistoryBtn?.addEventListener('click', () => {
-      this.openConfirmModal();
+      this.openConfirmModal({
+       title: 'Clear Chat History',
+       body: 'Clear all chat history for this session?',
+       confirmLabel: 'Yes, Clear',
+       onConfirm: () => this.clearHistory(),
+      });
      });
 
      elements.historySheetClearBtn?.addEventListener('click', () => {
-      this.openConfirmModal();
+      this.openConfirmModal({
+       title: 'Clear Chat History',
+       body: 'Clear all chat history for this session?',
+       confirmLabel: 'Yes, Clear',
+       onConfirm: () => this.clearHistory(),
+      });
      });
     },
 
@@ -3759,10 +3812,14 @@ imageDataSrc(file) {
      }, 250);
     },
 
-    openConfirmModal() {
+    openConfirmModal({ title = 'Confirm', body = 'Are you sure?', confirmLabel = 'Yes', onConfirm = null } = {}) {
       if (!elements.confirmModal) {
        return;
       }
+      elements.confirmModalTitle.textContent = title;
+      elements.confirmModalBody.textContent = body;
+      elements.confirmModalYes.textContent = confirmLabel;
+      this.confirmCallback = onConfirm;
       elements.confirmModal.hidden = false;
      },
 
@@ -3771,6 +3828,7 @@ imageDataSrc(file) {
        return;
       }
       elements.confirmModal.hidden = true;
+      this.confirmCallback = null;
      },
 
      initConfirmModal() {
@@ -3781,8 +3839,11 @@ imageDataSrc(file) {
       elements.confirmModalClose?.addEventListener('click', () => this.closeConfirmModal());
       elements.confirmModalNo?.addEventListener('click', () => this.closeConfirmModal());
       elements.confirmModalYes?.addEventListener('click', () => {
+       const callback = this.confirmCallback;
        this.closeConfirmModal();
-       this.clearHistory();
+       if (typeof callback === 'function') {
+        callback();
+       }
       });
 
       elements.confirmModal.addEventListener('click', (e) => {
@@ -4028,6 +4089,46 @@ elements.messages.innerHTML = '';
      }
     },
 
+    async deleteAllFiles() {
+     historyManager.openConfirmModal({
+      title: 'Delete All RAG Files',
+      body: `Delete all ${this.files.length} file${this.files.length === 1 ? '' : 's'} from the RAG knowledge base? This cannot be undone.`,
+      confirmLabel: 'Yes, Delete All',
+      onConfirm: () => this.performDeleteAll(),
+     });
+    },
+
+    async performDeleteAll() {
+     if (!elements.ragFilesDeleteAllBtn) return;
+     const btnWasDisabled = elements.ragFilesDeleteAllBtn.disabled;
+     elements.ragFilesDeleteAllBtn.disabled = true;
+     const originalText = elements.ragFilesDeleteAllBtn.textContent;
+     elements.ragFilesDeleteAllBtn.textContent = 'Deleting...';
+
+     try {
+      const apiBase = CONFIG.RAG_FILES_API_URL.replace(/\/files$/, '');
+      const res = await fetch(`${apiBase}/all?bucket=${encodeURIComponent(CONFIG.RAG_BUCKET)}`, {
+       method: 'DELETE',
+      });
+      const result = await res.json();
+      if (result.success) {
+       messageManager.append(
+        'System',
+        `Deleted all ${result.responseObject} file${result.responseObject === 1 ? '' : 's'} from RAG knowledge base.`,
+        'system'
+       );
+       await this.loadFiles();
+      } else {
+       console.error('RAG delete-all failed:', result.message);
+      }
+     } catch (error) {
+      console.error('RAG delete-all error:', error);
+     } finally {
+      elements.ragFilesDeleteAllBtn.disabled = btnWasDisabled;
+      elements.ragFilesDeleteAllBtn.textContent = originalText;
+     }
+    },
+
     bindDragDrop(element, highlightEl) {
      if (!element || !highlightEl) return;
      let depth = 0;
@@ -4079,6 +4180,8 @@ elements.messages.innerHTML = '';
      });
 
      elements.ragFilesUploadBtn?.addEventListener('click', () => this.uploadSelected());
+
+     elements.ragFilesDeleteAllBtn?.addEventListener('click', () => this.deleteAllFiles());
 
      this.bindDragDrop(elements.ragFilesModal, elements.ragFilesDialog);
      this.bindDragDrop(elements.ragPanel, elements.ragPanel);

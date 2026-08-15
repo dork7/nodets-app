@@ -1,5 +1,4 @@
 import { TTopicList } from '@/api/kafka/kafkaModel';
-import { updateOrderCountInUser } from '@/api/user/utils';
 import { logger } from '@/server';
 import { redis } from '@/services/redisStore';
 
@@ -54,22 +53,12 @@ export const TOPIC_LIST: TTopicList[] = [
    { name: 'local.retention.ms', value: '360000' }, // 1 hour
    { name: 'file.delete.delay.ms', value: '360000' },
   ],
-  readConfig: async ({ topic, partition, message, heartbeat, pause }: any) => {
-   logger.info({
-    value: message.value.toString(),
-    offset: message.offset,
-   });
-   redis.setValue('kafkaOrders-Offset', message.offset);
-   const parsedMessage = JSON.parse(message.value.toString());
-   switch (parsedMessage.action) {
-    case 'UPDATE_ORDER_COUNT':
-     logger.info('Update Order');
-     updateOrderCountInUser(JSON.parse(message.value.toString()));
-     break;
-    default:
-     logger.info('Default');
-     break;
-   }
-  },
+readConfig: async ({ topic, partition, message, heartbeat, pause }: any) => {
+    logger.info({
+     value: message.value.toString(),
+     offset: message.offset,
+    });
+    redis.setValue('kafkaOrders-Offset', message.offset);
+   },
  },
 ];

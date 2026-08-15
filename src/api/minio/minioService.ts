@@ -165,6 +165,43 @@ export const minioService = {
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
   }
  },
+
+ deleteAllFiles: async (bucket?: string): Promise<ServiceResponse<number>> => {
+  try {
+   const targetBucket = bucket || MINIO_BUCKET;
+   const files: any[] = [];
+   for await (const obj of minioClient.listObjects(targetBucket, undefined, true)) {
+    files.push(obj);
+   }
+
+   if (files.length > 0) {
+    await minioClient.removeObjects(
+     targetBucket,
+     files.map((f) => f.name)
+    );
+   }
+
+   const deletedRefs = await minioRepository.deleteAllAsync();
+
+   logger.info(`Deleted ${files.length} objects and ${deletedRefs} references from Minio bucket ${targetBucket}`);
+
+   return new ServiceResponse<number>(
+    ResponseStatus.Success,
+    'All files deleted successfully',
+    files.length,
+    StatusCodes.OK
+   );
+  } catch (ex) {
+   const errorMessage = `Failed to delete all files from Minio: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse<number>(
+    ResponseStatus.Failed,
+    errorMessage,
+    null as unknown as number,
+    StatusCodes.INTERNAL_SERVER_ERROR
+   );
+  }
+ },
 };
 
 export const minioUpload = {

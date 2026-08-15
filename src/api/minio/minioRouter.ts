@@ -15,143 +15,140 @@ const minioRegistry = new OpenAPIRegistry();
 minioRegistry.register('Minio', z.object({ id: z.string(), url: z.string(), name: z.string() }));
 
 export const minioRouter: Router = (() => {
-  const router = express.Router();
+ const router = express.Router();
 
-  minioRegistry.registerPath({
-    method: 'post',
-    path: '/minio/upload',
-    tags: ['Minio'],
-    requestBody: {
-      content: {
-        'multipart/form-data': {
-          schema: z.object({
-            file: z.string(),
-            bucket: z.string().optional(),
-          }),
-        },
-      },
-      description: 'Upload a file to Minio',
-      required: true,
+ minioRegistry.registerPath({
+  method: 'post',
+  path: '/minio/upload',
+  tags: ['Minio'],
+  requestBody: {
+   content: {
+    'multipart/form-data': {
+     schema: z.object({
+      file: z.string(),
+      bucket: z.string().optional(),
+     }),
     },
-    responses: createApiResponse(z.object({ id: z.string(), url: z.string(), name: z.string() }), 'Success'),
-  });
+   },
+   description: 'Upload a file to Minio',
+   required: true,
+  },
+  responses: createApiResponse(z.object({ id: z.string(), url: z.string(), name: z.string() }), 'Success'),
+ });
 
-  router.post('/upload', minioUpload.single, async (req: Request, res: Response) => {
-    if (!req.file) {
-      return handleServiceResponse(
-        new ServiceResponse(
-          ResponseStatus.Failed,
-          'No file provided',
-          null,
-          StatusCodes.BAD_REQUEST
-        ),
-        res
-      );
-    }
-    const bucket = req.body.bucket as string | undefined;
-    const serviceResponse = await minioService.uploadFile(req.file, bucket);
-    handleServiceResponse(serviceResponse, res);
-  });
+ router.post('/upload', minioUpload.single, async (req: Request, res: Response) => {
+  if (!req.file) {
+   return handleServiceResponse(
+    new ServiceResponse(ResponseStatus.Failed, 'No file provided', null, StatusCodes.BAD_REQUEST),
+    res
+   );
+  }
+  const bucket = req.body.bucket as string | undefined;
+  const serviceResponse = await minioService.uploadFile(req.file, bucket);
+  handleServiceResponse(serviceResponse, res);
+ });
 
-  minioRegistry.registerPath({
-    method: 'post',
-    path: '/minio/upload/multiple',
-    tags: ['Minio'],
-    requestBody: {
-      content: {
-        'multipart/form-data': {
-          schema: z.object({
-            files: z.array(z.string()),
-            bucket: z.string().optional(),
-          }),
-        },
-      },
-      description: 'Upload multiple files to Minio',
-      required: true,
+ minioRegistry.registerPath({
+  method: 'post',
+  path: '/minio/upload/multiple',
+  tags: ['Minio'],
+  requestBody: {
+   content: {
+    'multipart/form-data': {
+     schema: z.object({
+      files: z.array(z.string()),
+      bucket: z.string().optional(),
+     }),
     },
-    responses: createApiResponse(
-      z.array(z.object({ id: z.string(), url: z.string(), name: z.string() })),
-      'Success'
-    ),
-  });
+   },
+   description: 'Upload multiple files to Minio',
+   required: true,
+  },
+  responses: createApiResponse(z.array(z.object({ id: z.string(), url: z.string(), name: z.string() })), 'Success'),
+ });
 
-  router.post('/upload/multiple', minioUpload.multiple, async (req: Request, res: Response) => {
-    if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
-      return handleServiceResponse(
-        new ServiceResponse(
-          ResponseStatus.Failed,
-          'No files provided',
-          null,
-          StatusCodes.BAD_REQUEST
-        ),
-        res
-      );
-    }
-    const bucket = req.body.bucket as string | undefined;
-    const serviceResponse = await minioService.uploadMultipleFiles(req.files as Express.Multer.File[], bucket);
-    handleServiceResponse(serviceResponse, res);
-  });
+ router.post('/upload/multiple', minioUpload.multiple, async (req: Request, res: Response) => {
+  if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
+   return handleServiceResponse(
+    new ServiceResponse(ResponseStatus.Failed, 'No files provided', null, StatusCodes.BAD_REQUEST),
+    res
+   );
+  }
+  const bucket = req.body.bucket as string | undefined;
+  const serviceResponse = await minioService.uploadMultipleFiles(req.files as Express.Multer.File[], bucket);
+  handleServiceResponse(serviceResponse, res);
+ });
 
-  minioRegistry.registerPath({
-    method: 'get',
-    path: '/minio/files',
-    tags: ['Minio'],
-    responses: createApiResponse(
-      z.array(z.object({ id: z.string(), url: z.string(), name: z.string() })),
-      'Success'
-    ),
-  });
+ minioRegistry.registerPath({
+  method: 'get',
+  path: '/minio/files',
+  tags: ['Minio'],
+  responses: createApiResponse(z.array(z.object({ id: z.string(), url: z.string(), name: z.string() })), 'Success'),
+ });
 
-  router.get('/files', async (_req: Request, res: Response) => {
-    const serviceResponse = await minioService.listFiles();
-    handleServiceResponse(serviceResponse, res);
-  });
+ router.get('/files', async (_req: Request, res: Response) => {
+  const serviceResponse = await minioService.listFiles();
+  handleServiceResponse(serviceResponse, res);
+ });
 
-  minioRegistry.registerPath({
-    method: 'get',
-    path: '/minio/{id}',
-    tags: ['Minio'],
-    request: { params: z.object({ id: z.string() }) },
-    responses: {
-      200: createApiResponse(z.unknown(), 'Success'),
-      404: createApiResponse(z.unknown(), 'Not Found'),
-    },
-  });
+ minioRegistry.registerPath({
+  method: 'get',
+  path: '/minio/{id}',
+  tags: ['Minio'],
+  request: { params: z.object({ id: z.string() }) },
+  responses: {
+   200: createApiResponse(z.unknown(), 'Success'),
+   404: createApiResponse(z.unknown(), 'Not Found'),
+  },
+ });
 
-  router.get('/:id', async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const bucket = req.query.bucket as string | undefined;
-      
-      const stream = await minioService.getFile(id, bucket);
-      
-      if (!stream) {
-        res.status(404).json({ error: 'File not found' });
-        return;
-      }
-      
-      res.setHeader('Content-Type', 'application/octet-stream');
-      stream.pipe(res);
-    } catch (error) {
-      logger.error(`Error getting file: ${(error as Error).message}`);
-      res.status(500).json({ error: 'Failed to get file' });
-    }
-  });
+ router.get('/:id', async (req: Request, res: Response) => {
+  try {
+   const { id } = req.params;
+   const bucket = req.query.bucket as string | undefined;
 
-  minioRegistry.registerPath({
-    method: 'delete',
-    path: '/minio/{id}',
-    tags: ['Minio'],
-    request: { params: z.object({ id: z.string() }) },
-    responses: createApiResponse(z.boolean(), 'Success'),
-  });
+   const stream = await minioService.getFile(id, bucket);
 
-  router.delete('/:id', async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const bucket = req.query.bucket as string | undefined;
-    const serviceResponse = await minioService.deleteFile(id, bucket);
-    handleServiceResponse(serviceResponse, res);
-  });
+   if (!stream) {
+    res.status(404).json({ error: 'File not found' });
+    return;
+   }
 
-  return router;
+   res.setHeader('Content-Type', 'application/octet-stream');
+   stream.pipe(res);
+  } catch (error) {
+   logger.error(`Error getting file: ${(error as Error).message}`);
+   res.status(500).json({ error: 'Failed to get file' });
+  }
+ });
+
+ minioRegistry.registerPath({
+  method: 'delete',
+  path: '/minio/all',
+  tags: ['Minio'],
+  responses: createApiResponse(z.number(), 'All files deleted'),
+ });
+
+ router.delete('/all', async (req: Request, res: Response) => {
+  const bucket = req.query.bucket as string | undefined;
+  const serviceResponse = await minioService.deleteAllFiles(bucket);
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ minioRegistry.registerPath({
+  method: 'delete',
+  path: '/minio/{id}',
+  tags: ['Minio'],
+  request: { params: z.object({ id: z.string() }) },
+  responses: createApiResponse(z.boolean(), 'Success'),
+ });
+
+ router.delete('/:id', async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const bucket = req.query.bucket as string | undefined;
+  const serviceResponse = await minioService.deleteFile(id, bucket);
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ return router;
 })();
