@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 
+import { aiProvidersRouter } from '@/api/aiProviders/aiProvidersRouter';
 import { aiUtilsRouter } from '@/api/aiUtils/aiUtilsRouter';
 import { catalogueRouter } from '@/api/catalogue/catalogueRouter';
 import { healthCheckRouter } from '@/api/healthCheck/healthCheckRouter';
@@ -26,6 +27,7 @@ router.use('/orders', ordersRouter);
 router.use('/vision', visionRouter);
 router.use('/nutrition', nutritionRouter);
 router.use('/minio', minioRouter);
+router.use('/aiProviders', aiProvidersRouter);
 
 router.use('/dashboard', async (req, res) => {
  const fileContent = await readFileData('file.txt');

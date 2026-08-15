@@ -1,6 +1,7 @@
 import { env } from '@/common/utils/envConfig';
 import { app, logger } from '@/server';
 
+import { loadAIProviders } from './openai/loadAIProviders';
 import { startWebSocketServer } from './ws/server';
 import { loadHandlers } from './ws/server/methods';
 
@@ -13,6 +14,7 @@ const server = app.listen(env.PORT, async () => {
  logger.info(`Redis http://${HOST}:5540`);
  logger.info(`MONGODB UI http://${HOST}:8081`);
  await loadHandlers();
+ await loadAIProviders();
  startWebSocketServer(server);
 });
 
