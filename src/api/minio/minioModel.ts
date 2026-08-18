@@ -12,5 +12,6 @@ export const FileReferenceSchema = z.object({
   bucket: z.string(),
   size: z.number(),
   mimetype: z.string(),
+  ingested: z.boolean().optional(),
   createdAt: z.date(),
 });

@@ -43,9 +43,29 @@ export const minioRepository = {
   }
  },
 
- findByIdAsync: async (id: string): Promise<FileReference | null> => {
+findByIdAsync: async (id: string): Promise<FileReference | null> => {
   return parseReference(await redisClient.get(`${FILE_REFERENCE_PREFIX}${id}`));
  },
+
+  updateAsync: async (id: string, updates: Partial<FileReference>): Promise<FileReference | null> => {
+   try {
+    const existing = await parseReference(await redisClient.get(`${FILE_REFERENCE_PREFIX}${id}`));
+    if (!existing) {
+     return null;
+    }
+    const updated: FileReference = { ...existing, ...updates, createdAt: existing.createdAt };
+    await redisClient.set(`${FILE_REFERENCE_PREFIX}${id}`, JSON.stringify(updated));
+    return updated;
+   } catch (ex) {
+    const errorMessage = `Cannot update file reference: ${(ex as Error).message}`;
+    logger.error(errorMessage);
+    return null;
+   }
+  },
+
+  markIngestedAsync: async (id: string): Promise<FileReference | null> => {
+   return minioRepository.updateAsync(id, { ingested: true });
+  },
 
  deleteByIdAsync: async (id: string): Promise<boolean> => {
   const deleted = await redisClient.del(`${FILE_REFERENCE_PREFIX}${id}`);

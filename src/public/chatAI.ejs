@@ -1551,6 +1551,41 @@
       outline-offset: 1px;
      }
 
+     .rag-ingest-btn {
+      display: inline-block;
+      margin-top: 6px;
+      margin-right: 6px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--fg-muted);
+      font-family: var(--font-mono);
+      font-size: 0.7em;
+      line-height: 1;
+      padding: 3px 8px;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.15s;
+     }
+
+     .rag-file-item:hover .rag-ingest-btn {
+      opacity: 1;
+      color: var(--accent);
+     }
+
+     .rag-ingest-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      opacity: 1;
+     }
+
+     .rag-ingest-btn:focus-visible {
+      opacity: 1;
+      outline: 1px solid var(--accent);
+      outline-offset: 1px;
+     }
+
      .modal-count {
       margin-left: auto;
       color: var(--fg-faint);
@@ -2243,6 +2278,7 @@
     PROVIDERS_API_URL: 'http://localhost:2020/v1/aiProviders',
     HISTORY_API_URL: 'http://localhost:2020/v1/aiUtils/chat-history',
     RAG_FILES_API_URL: 'http://localhost:2020/v1/minio/files',
+    RAG_INGEST_API_URL: 'http://localhost:2020/v1/rag/ingest',
     RAG_BUCKET: 'rag-files',
     TOTAL_TOKEN_USAGE_API_URL: 'http://localhost:2020/v1/aiUtils/total-token-usage',
     LOADED_MODELS_API_URL: 'http://localhost:2020/v1/aiUtils/loaded-models',
@@ -3944,6 +3980,18 @@ elements.messages.innerHTML = '';
      time.textContent = utils.formatFileSize(file.size);
      item.appendChild(time);
 
+     const ingest = document.createElement('button');
+     ingest.type = 'button';
+     ingest.className = 'rag-ingest-btn';
+     ingest.title = 'Ingest file into RAG knowledge base';
+     ingest.setAttribute('aria-label', `Ingest ${this.displayName(file)}`);
+     ingest.textContent = 'Ingest';
+     ingest.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.ingestFile(file, ingest);
+     });
+     item.appendChild(ingest);
+
      const del = document.createElement('button');
      del.type = 'button';
      del.className = 'rag-delete-btn';
@@ -4068,6 +4116,44 @@ elements.messages.innerHTML = '';
      if (!files || files.length === 0) return;
      await this.uploadFiles(files);
      elements.ragFileInput.value = '';
+    },
+
+async ingestFile(file, btn) {
+     if (!btn) return;
+     const wasDisabled = btn.disabled;
+     const originalText = btn.textContent;
+     btn.disabled = true;
+     btn.textContent = 'Ingesting...';
+
+     try {
+      const res = await fetch(CONFIG.RAG_INGEST_API_URL, {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({
+        source: 'minio',
+        fileId: file.id,
+        bucket: CONFIG.RAG_BUCKET,
+        provider: state.selectedProvider || undefined,
+       }),
+      });
+      const result = await res.json();
+      if (result.success) {
+       messageManager.append(
+        'System',
+        `Ingested "${this.displayName(file)}" (${result.responseObject?.count ?? 0} chunks).`,
+        'system'
+       );
+      } else {
+       console.error('RAG ingest failed:', result.message);
+       messageManager.append('System', `Failed to ingest "${this.displayName(file)}": ${result.message}`, 'system');
+      }
+     } catch (error) {
+      console.error('RAG ingest error:', error);
+      messageManager.append('System', `Failed to ingest "${this.displayName(file)}".`, 'system');
+     } finally {
+      btn.disabled = wasDisabled;
+      btn.textContent = originalText;
+     }
     },
 
     async deleteFile(file) {
