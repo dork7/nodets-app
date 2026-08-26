@@ -66,8 +66,8 @@ if (env.ENV === 'local') {
 }
 
 // Middlewares
-// app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
-app.use(cors({ origin: '*' }));
+app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+// app.use(cors({ origin: '*' }));
 app.use(helmet());
 app.use(rateLimiter);
 

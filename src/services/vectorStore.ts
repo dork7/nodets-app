@@ -2,11 +2,7 @@ import { ChromaClient, type Collection, type Metadata } from 'chromadb';
 
 import { env } from '@/common/utils/envConfig';
 
-const client = new ChromaClient({
- host: env.CHROMA_URL.replace(/^https?:\/\//, '').split(':')[0] || 'localhost',
- port: env.CHROMA_URL.includes(':') ? parseInt(env.CHROMA_URL.split(':').pop() as string, 10) : 8000,
- ssl: env.CHROMA_URL.startsWith('https'),
-});
+const client = new ChromaClient({ path: env.CHROMA_URL });
 
 export interface VectorItem {
  id: string;
@@ -23,14 +19,24 @@ async function getCollection(): Promise<Collection> {
  }
 }
 
+const BATCH_SIZE = 4;
+
+async function upsertBatch(collection: Collection, items: VectorItem[], embeddings: number[][]): Promise<void> {
+	await collection.upsert({
+   ids: items.map((item) => item.id),
+   embeddings,
+   documents: items.map((item) => item.text),
+   metadatas: items.map((item) => item.metadata ?? {}),
+  });
+}
+
 export async function upsertMany(items: VectorItem[], embeddings: number[][]): Promise<void> {
- const collection = await getCollection();
- await collection.upsert({
-  ids: items.map((item) => item.id),
-  embeddings,
-  documents: items.map((item) => item.text),
-  metadatas: items.map((item) => item.metadata ?? {}),
- });
+	const collection = await getCollection();
+	for (let i = 0; i < items.length; i += BATCH_SIZE) {
+   const batchItems = items.slice(i, i + BATCH_SIZE);
+   const batchEmbeddings = embeddings.slice(i, i + BATCH_SIZE);
+   await upsertBatch(collection, batchItems, batchEmbeddings);
+  }
 }
 
 export async function queryCollection(

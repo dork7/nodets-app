@@ -55,3 +55,8 @@ export const StatsResponseSchema = z.object({
  count: z.number().int().describe('Number of indexed chunks'),
  collections: z.array(z.string()),
 });
+
+export const TestEmbeddingSchema = z.object({
+ text: z.string().min(1),
+ provider: z.string().optional(),
+});

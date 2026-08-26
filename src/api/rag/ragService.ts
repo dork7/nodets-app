@@ -119,19 +119,40 @@ export const ragService = {
   }
  },
 
- stats: async (): Promise<ServiceResponse<{ count: number; collections: string[] } | null>> => {
-  try {
-   const [count, collections] = await Promise.all([countCollection(), listCollections()]);
-   return new ServiceResponse<{ count: number; collections: string[] }>(
-    ResponseStatus.Success,
-    'Stats retrieved',
-    { count, collections },
-    StatusCodes.OK
-   );
-  } catch (ex) {
-   const errorMessage = `Failed to get stats: ${(ex as Error).message}`;
-   logger.error(errorMessage);
-   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
-  }
- },
+stats: async (): Promise<ServiceResponse<{ count: number; collections: string[] } | null>> => {
+   try {
+    const [count, collections] = await Promise.all([countCollection(), listCollections()]);
+    return new ServiceResponse<{ count: number; collections: string[] }>(
+     ResponseStatus.Success,
+     'Stats retrieved',
+     { count, collections },
+     StatusCodes.OK
+    );
+   } catch (ex) {
+    const errorMessage = `Failed to get stats: ${(ex as Error).message}`;
+    logger.error(errorMessage);
+    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   }
+  },
+
+  storeText: async (text: string, provider?: string): Promise<ServiceResponse<{ id: string } | null>> => {
+   try {
+    const [embedding] = await embedMany([text], { provider });
+    const id = `test_${Date.now()}`;
+    await upsertMany(
+     [{ id, text, metadata: { source: 'test', provider } as any }],
+     [embedding]
+    );
+    return new ServiceResponse<{ id: string }>(
+     ResponseStatus.Success,
+     'Text stored successfully',
+     { id },
+     StatusCodes.CREATED
+    );
+   } catch (ex) {
+    const errorMessage = `Failed to store text: ${(ex as Error).message}`;
+    logger.error(errorMessage);
+    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+   }
+  },
 };

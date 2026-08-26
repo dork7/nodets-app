@@ -4120,10 +4120,6 @@ elements.messages.innerHTML = '';
 
 async ingestFile(file, btn) {
      if (!btn) return;
-     const wasDisabled = btn.disabled;
-     const originalText = btn.textContent;
-     btn.disabled = true;
-     btn.textContent = 'Ingesting...';
 
      try {
       const res = await fetch(CONFIG.RAG_INGEST_API_URL, {
@@ -4144,16 +4140,22 @@ async ingestFile(file, btn) {
         'system'
        );
       } else {
-       console.error('RAG ingest failed:', result.message);
-       messageManager.append('System', `Failed to ingest "${this.displayName(file)}": ${result.message}`, 'system');
+       this.openErrorPopup(`Failed to ingest "${this.displayName(file)}": ${result.message}`);
       }
      } catch (error) {
-      console.error('RAG ingest error:', error);
-      messageManager.append('System', `Failed to ingest "${this.displayName(file)}".`, 'system');
-     } finally {
-      btn.disabled = wasDisabled;
-      btn.textContent = originalText;
+      this.openErrorPopup(`Failed to ingest "${this.displayName(file)}".`);
      }
+    },
+
+    openErrorPopup(message) {
+     if (!elements.confirmModal) return;
+     elements.confirmModalTitle.textContent = 'Error';
+     elements.confirmModalBody.textContent = message;
+     elements.confirmModalYes.textContent = 'OK';
+     elements.confirmModalNo.hidden = true;
+     elements.confirmModal.hidden = false;
+     elements.confirmModalYes.onclick = () => this.closeConfirmModal();
+     elements.confirmModalNo.onclick = () => this.closeConfirmModal();
     },
 
     async deleteFile(file) {

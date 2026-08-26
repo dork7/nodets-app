@@ -58,7 +58,8 @@ const fetchLocalAI = async <T>(path: string, init?: RequestInit): Promise<T> => 
   if (!res.ok) {
    throw new Error(`LocalAI returned status ${res.status}`);
   }
-  return (await res.json()) as T;
+  const lol = await res.json();
+  return lol as T;
  } finally {
   clearTimeout(timeout);
  }

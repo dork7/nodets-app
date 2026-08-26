@@ -9,6 +9,7 @@ import {
  SearchResponseSchema,
  SearchSchema,
  StatsResponseSchema,
+ TestEmbeddingSchema,
 } from '@/api/rag/ragModel';
 import { ragService } from '@/api/rag/ragService';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
@@ -36,6 +37,24 @@ export const ragRouter: Router = (() => {
   },
   responses: createApiResponse(IngestResponseSchema, 'Success'),
  });
+
+ ragRegistry.registerPath({
+  method: 'post',
+  path: '/rag/test-embed',
+  tags: ['RAG'],
+  request: {
+   body: {
+    content: { 'application/json': { schema: TestEmbeddingSchema.shape.body } },
+    description: 'Test storing text embedding in ChromaDB',
+   },
+  },
+  responses: createApiResponse(TestEmbeddingSchema, 'Success'),
+});
+
+router.post('/test-embed', validateRequest(TestEmbeddingSchema), async (req: Request, res: Response) => {
+  const serviceResponse = await ragService.storeText(req.body.text, req.body.provider);
+  handleServiceResponse(serviceResponse, res);
+});
 
  router.post('/ingest', validateRequest(IngestSchema), async (req: Request, res: Response) => {
   const serviceResponse = await ragService.ingest(req.body);

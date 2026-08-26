@@ -5,7 +5,7 @@ import { env } from '@/common/utils/envConfig';
 export const name = 'localAI';
 
 export const localAIInstance = new OpenAI({
- baseURL: 'http://localhost:8080/v1',
+ baseURL: env.LOCALAI_URL,
  apiKey: env.OPENAI_API_KEY || '',
 });
 
