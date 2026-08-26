@@ -2162,9 +2162,18 @@
          <span class="rag-drop-hint">or drag &amp; drop files anywhere in this window</span>
         </div>
         <div class="rag-files-list" id="rag-files-list"></div>
+       <div class="rag-streaming-toggle">
+        <label class="rag-streaming-toggle-label">
+         <span>Streaming</span>
+         <span class="rag-streaming-toggle-wrapper">
+<input type="checkbox" id="rag-stream-toggle" class="rag-streaming-toggle-input" ${
+            state.ragStreaming ? 'checked' : ''
+          } />
+          <span class="rag-streaming-toggle-thumb"></span>
+        </span>
+        </label>
        </div>
       </div>
-     </div>
      <div id="main-container">
      <div id="main-column">
     <div id="chat-container">
@@ -2313,6 +2322,7 @@
     streamingEnabled: localStorage.getItem('chatStreaming') !== 'false',
     isStreaming: false,
     isConnected: false,
+    ragStreaming: localStorage.getItem('chatRagStreaming') !== 'false',
 currentIsRelated: false,
       combinedContent: '',
       streamStartTime: 0,
@@ -2366,6 +2376,7 @@ currentIsRelated: false,
     ragFilesUploadBtn: document.getElementById('rag-files-upload-btn'),
     ragFilesDeleteAllBtn: document.getElementById('rag-files-delete-all-btn'),
     ragFilesList: document.getElementById('rag-files-list'),
+    ragStreamToggle: document.getElementById('rag-stream-toggle'),
     newChatBtn: document.getElementById('new-chat-btn'),
     confirmModal: document.getElementById('confirm-modal'),
     confirmModalTitle: document.getElementById('confirm-modal-title'),
@@ -3181,6 +3192,22 @@ currentIsRelated: false,
 
     updateLabel() {
      elements.streamingLabel.textContent = elements.streamToggle.checked ? 'Streaming' : 'No Streaming';
+    },
+   };
+
+   // ===== RAG Streaming Toggle Management =====
+   const ragStreamingToggle = {
+    init() {
+     elements.ragStreamToggle.checked = state.ragStreaming;
+     elements.ragStreamToggle.addEventListener('change', () => {
+      state.ragStreaming = elements.ragStreamToggle.checked;
+      localStorage.setItem('chatRagStreaming', String(state.ragStreaming));
+     });
+     this.updateLabel();
+    },
+
+    updateLabel() {
+     elements.ragStreamingLabel.textContent = elements.ragStreamToggle.checked ? 'Streaming' : 'No Streaming';
     },
    };
 
@@ -4119,19 +4146,20 @@ elements.messages.innerHTML = '';
     },
 
 async ingestFile(file, btn) {
-     if (!btn) return;
+      if (!btn) return;
 
-     try {
-      const res = await fetch(CONFIG.RAG_INGEST_API_URL, {
-       method: 'POST',
-       headers: { 'Content-Type': 'application/json' },
-       body: JSON.stringify({
-        source: 'minio',
-        fileId: file.id,
-        bucket: CONFIG.RAG_BUCKET,
-        provider: state.selectedProvider || undefined,
-       }),
-      });
+      try {
+       const res = await fetch(CONFIG.RAG_INGEST_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+         source: 'minio',
+         fileId: file.id,
+         bucket: CONFIG.RAG_BUCKET,
+         provider: state.selectedProvider || undefined,
+         stream: state.ragStreaming,
+        }),
+       });
       const result = await res.json();
       if (result.success) {
        messageManager.append(
@@ -4284,6 +4312,7 @@ async ingestFile(file, btn) {
     document.title = `ChatAI Session | ${state.sessionId}`;
 
     streamingToggle.init();
+    ragStreamingToggle.init();
     providerManager.init();
     providerManager.loadProviders();
     formHandler.init();
