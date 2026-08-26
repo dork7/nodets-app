@@ -18,6 +18,7 @@ export interface IngestOptions {
  url?: string;
  content?: string;
  provider?: string;
+ force?: boolean;
 }
 
 const toChunks = (documents: LoadedDocument[]) => {
@@ -63,6 +64,9 @@ export const ragService = {
    );
 
    if (options.source === 'minio' && options.fileId) {
+    if (options.force) {
+     await minioRepository.updateAsync(options.fileId, { ingested: false });
+    }
     await minioRepository.markIngestedAsync(options.fileId);
    }
 

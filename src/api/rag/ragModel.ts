@@ -14,6 +14,7 @@ export const IngestSchema = z.object({
    url: z.string().url().optional().describe('Document URL (source=url)'),
    content: z.string().optional().describe('Raw content (source=csv)'),
    provider: z.string().optional().describe('AI provider used for embeddings'),
+   force: z.boolean().optional().default(false).describe('Force re-ingest even if already ingested'),
   })
   .refine((data) => data.source !== 'minio' || Boolean(data.fileId), {
    message: 'fileId is required when source is minio',
