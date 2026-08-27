@@ -1,6 +1,6 @@
 import { createEmbeddings } from '@/openai';
 
-const BATCH_SIZE = 16;
+const BATCH_SIZE = 100;
 
 export interface EmbedOptions {
  provider?: string;

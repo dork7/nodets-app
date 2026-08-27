@@ -50,6 +50,7 @@ export async function callAI(
    // counts are available to the WebSocket client.
    ...(requestOptions.stream ? { stream_options: { include_usage: true } } : {}),
    ...(requestOptions ? requestOptions : {}),
+   tools: []
   },
   { signal }
  );

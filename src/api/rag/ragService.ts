@@ -3,11 +3,19 @@ import { StatusCodes } from 'http-status-codes';
 
 import { minioRepository } from '@/api/minio/minioRepository';
 import { chunkDocument } from '@/api/rag/chunker';
+import { UnsupportedFileTypeError } from '@/api/rag/extractText';
 import { LoadedDocument, loaders } from '@/api/rag/loaders';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { embedMany } from '@/openai/embeddings';
 import { logger } from '@/server';
-import { clearCollection, countCollection, listCollections, queryCollection, upsertMany } from '@/services/vectorStore';
+import {
+ clearCollection,
+ countCollection,
+ deleteByDocId,
+ listCollections,
+ queryCollection,
+ upsertMany,
+} from '@/services/vectorStore';
 
 export type RagSource = 'json' | 'minio' | 'csv' | 'url';
 
@@ -79,6 +87,10 @@ export const ragService = {
     StatusCodes.CREATED
    );
   } catch (ex) {
+   if (ex instanceof UnsupportedFileTypeError) {
+    logger.warn(ex.message);
+    return new ServiceResponse(ResponseStatus.Failed, ex.message, null, StatusCodes.UNSUPPORTED_MEDIA_TYPE);
+   }
    const errorMessage = `Failed to ingest: ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -112,9 +124,33 @@ export const ragService = {
   }
  },
 
+ /**
+  * Remove a single document's chunks from the vector store. For a MinIO-backed file
+  * (`docId` === the MinIO file id) the `ingested` flag is also flipped back so the UI
+  * reflects that it is no longer in the knowledge base.
+  */
+ deleteFile: async (docId: string): Promise<ServiceResponse<{ removed: number } | null>> => {
+  try {
+   const removed = await deleteByDocId(docId);
+   await minioRepository.updateAsync(docId, { ingested: false });
+   logger.info(`RAG: removed ${removed} chunk(s) from the vector store for docId ${docId}`);
+   return new ServiceResponse<{ removed: number }>(
+    ResponseStatus.Success,
+    `Removed ${removed} chunk(s) from the vector store`,
+    { removed },
+    StatusCodes.OK
+   );
+  } catch (ex) {
+   const errorMessage = `Failed to remove document from vector store: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
+
  clear: async (): Promise<ServiceResponse<boolean | null>> => {
   try {
    await clearCollection();
+   await minioRepository.resetIngestedFlagsAsync();
    return new ServiceResponse<boolean>(ResponseStatus.Success, 'Collection cleared', true, StatusCodes.OK);
   } catch (ex) {
    const errorMessage = `Failed to clear collection: ${(ex as Error).message}`;
