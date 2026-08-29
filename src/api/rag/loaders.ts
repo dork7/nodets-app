@@ -1,6 +1,7 @@
 import { readFile } from 'fs/promises';
 import path from 'path';
 
+import { extractText } from '@/api/rag/extractText';
 import { MINIO_BUCKET, minioClient } from '@/services/minio';
 
 export interface LoadedDocument {
@@ -12,7 +13,7 @@ export interface LoadedDocument {
 
 const MAX_FILE_CHARS = 50000;
 
-const readMinioObject = async (id: string, bucket: string): Promise<{ text: string; name: string } | null> => {
+const readMinioObject = async (id: string, bucket: string): Promise<{ buffer: Buffer; name: string } | null> => {
  const files: any[] = [];
  for await (const obj of minioClient.listObjects(bucket, `${id}-`, true)) {
   files.push(obj);
@@ -29,9 +30,8 @@ const readMinioObject = async (id: string, bucket: string): Promise<{ text: stri
   chunks.push(chunk);
  }
 
- const buffer = Buffer.concat(chunks);
  return {
-  text: buffer.toString('utf-8').slice(0, MAX_FILE_CHARS),
+  buffer: Buffer.concat(chunks),
   name: file.name.replace(`${id}-`, ''),
  };
 };
@@ -54,10 +54,16 @@ export const loaders = {
   if (!file) {
    throw new Error(`File ${fileId} not found in bucket ${targetBucket}`);
   }
+
+  const text = (await extractText(file.buffer, file.name)).slice(0, MAX_FILE_CHARS);
+  if (!text.trim()) {
+   throw new Error(`No extractable text found in "${file.name}".`);
+  }
+
   return [
    {
     id: fileId,
-    text: file.text,
+    text,
     source: 'minio',
     meta: { source: 'minio', filename: file.name, bucket: targetBucket },
    },

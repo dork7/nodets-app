@@ -67,6 +67,13 @@ findByIdAsync: async (id: string): Promise<FileReference | null> => {
    return minioRepository.updateAsync(id, { ingested: true });
   },
 
+  resetIngestedFlagsAsync: async (): Promise<number> => {
+   const files = await minioRepository.findAllAsync();
+   const ingested = files.filter((file) => file.ingested);
+   await Promise.all(ingested.map((file) => minioRepository.updateAsync(file.id, { ingested: false })));
+   return ingested.length;
+  },
+
  deleteByIdAsync: async (id: string): Promise<boolean> => {
   const deleted = await redisClient.del(`${FILE_REFERENCE_PREFIX}${id}`);
   if (deleted > 0) {

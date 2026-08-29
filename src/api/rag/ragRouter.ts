@@ -80,6 +80,21 @@ router.post('/test-embed', validateRequest(TestEmbeddingSchema), async (req: Req
 
  ragRegistry.registerPath({
   method: 'delete',
+  path: '/rag/file/{id}',
+  tags: ['RAG'],
+  request: {
+   params: z.object({ id: z.string().describe('Document id (MinIO file id, or the ingest id prefix)') }),
+  },
+  responses: createApiResponse(z.object({ removed: z.number().int() }), 'Removed'),
+ });
+
+ router.delete('/file/:id', async (req: Request, res: Response) => {
+  const serviceResponse = await ragService.deleteFile(String(req.params.id));
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ ragRegistry.registerPath({
+  method: 'delete',
   path: '/rag',
   tags: ['RAG'],
   responses: createApiResponse(z.boolean(), 'Cleared'),

@@ -5,6 +5,7 @@ import { redis } from '@/services/redisStore';
 
 import { buildConversationHistory, getSummeriseHistory } from './utils/history';
 import { addAttachmentsToLastMsg, getFileText, getImageDataUrl } from './utils/imageHandler';
+import { type RagChunk, retrieveRagContext } from './utils/ragContext';
 import { isRelatedConversation } from './utils/relationCheck';
 import { saveTokenUsage, TokenUsage } from './utils/tokenUsage';
 
@@ -21,6 +22,8 @@ interface WebSocketMessage {
  model?: string;
  provider?: string;
  stream?: boolean | string;
+ rag?: boolean;
+ ragDistance?: number;
  params?: {
   prompt?: string;
   imageId?: string;
@@ -315,6 +318,22 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
   // Save updated history (before AI response)
   await saveChatHistory(message.id, conversationHistory);
 
+  // Build OpenAI messages, attaching the images to the last user message if present
+  const aiMessages = addAttachmentsToLastMsg(conversationHistory, imageDataUrls, fileTexts);
+
+  // RAG: when enabled, retrieve context from the vector store and inject it as a system
+  // message. Injected into `aiMessages` only (never `conversationHistory`) so the context
+  // is not persisted to Redis and re-injected on later turns. Fails open.
+  let ragSources: RagChunk[] = [];
+  if (message.rag) {
+   const retrieval = await retrieveRagContext(userInput, message.ragDistance);
+   if (retrieval) {
+    aiMessages.unshift({ role: 'system', content: retrieval.systemPrompt });
+    ragSources = retrieval.sources;
+    logger.info(`[chatAI] RAG injected ${ragSources.length} chunk(s) for session ${message.id}`);
+   }
+  }
+
   // Send stream start notification
   sendWebSocketMessage(ws, {
    sender: 'AI',
@@ -322,10 +341,8 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
    id: message.id,
    isRelated,
    requestStartTime,
+   ragSources,
   });
-
-  // Build OpenAI messages, attaching the images to the last user message if present
-  const aiMessages = addAttachmentsToLastMsg(conversationHistory, imageDataUrls, fileTexts);
 
   // Allow the model a few rounds of tool calling before forcing an answer.
   const MAX_TOOL_ITERATIONS = 5;
@@ -404,6 +421,7 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
    id: message.id,
    isRelated,
    tokenUsage,
+   ragSources,
    requestStartTime,
    requestEndTime: Date.now(),
   });

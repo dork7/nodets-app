@@ -62,6 +62,22 @@ export async function queryCollection(
  }));
 }
 
+/**
+ * Delete every chunk that belongs to a single source document. Chunk ids are
+ * `${docId}#${index}` (see `chunkDocument`), so we match by id prefix — this also
+ * covers rows indexed before `docId` metadata existed.
+ */
+export async function deleteByDocId(docId: string): Promise<number> {
+ const collection = await getCollection();
+ const all = await collection.get({ include: [] as any });
+ const ids = (all.ids ?? []).filter((id) => id === docId || id.startsWith(`${docId}#`));
+ if (ids.length === 0) {
+  return 0;
+ }
+ await collection.delete({ ids });
+ return ids.length;
+}
+
 export async function clearCollection(): Promise<void> {
  const name = env.RAG_COLLECTION_NAME;
  try {

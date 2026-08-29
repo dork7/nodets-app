@@ -43,6 +43,6 @@ export function chunkDocument(text: string, idPrefix: string, source: string, me
   id: `${idPrefix}#${index}`,
   text,
   source,
-  meta: { ...meta, index },
+  meta: { ...meta, docId: idPrefix, index },
  }));
 }

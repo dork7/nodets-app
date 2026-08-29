@@ -6,13 +6,6 @@ Content-Type: application/json
   "source": "json"
 }
 
-### Ingest documents from data.json (curl)
-```bash
-curl -X POST 'http://localhost:2020/v1/rag/ingest' \
-  -H 'Content-Type: application/json' \
-  -d '{"source":"json"}'
-```
-
 ### Ingest a MinIO file by id
 POST http://localhost:2020/v1/rag/ingest
 Content-Type: application/json
@@ -23,13 +16,6 @@ Content-Type: application/json
   "bucket": "uploads"
 }
 
-### Ingest a MinIO file by id (curl)
-```bash
-curl -X POST 'http://localhost:2020/v1/rag/ingest' \
-  -H 'Content-Type: application/json' \
-  -d '{"source":"minio","fileId":"550e8400-e29b-41d4-a716-446655440000","bucket":"uploads"}'
-```
-
 ### Ingest CSV content
 POST http://localhost:2020/v1/rag/ingest
 Content-Type: application/json
@@ -38,13 +24,6 @@ Content-Type: application/json
   "source": "csv",
   "content": "name,age\nAlice,30\nBob,25"
 }
-
-### Ingest CSV content (curl)
-```bash
-curl -X POST 'http://localhost:2020/v1/rag/ingest' \
-  -H 'Content-Type: application/json' \
-  -d '{"source":"csv","content":"name,age\nAlice,30\nBob,25"}'
-```
 
 ### Ingest from a URL
 POST http://localhost:2020/v1/rag/ingest
@@ -55,33 +34,11 @@ Content-Type: application/json
   "url": "https://example.com"
 }
 
-### Ingest from a URL (curl)
-```bash
-curl -X POST 'http://localhost:2020/v1/rag/ingest' \
-  -H 'Content-Type: application/json' \
-  -d '{"source":"url","url":"https://example.com"}'
-```
-
 ### Search the knowledge base
-GET http://localhost:2020/v1/rag/search?q=delivery%20UAE&k=3
-
-### Search the knowledge base (curl)
-```bash
-curl -X GET 'http://localhost:2020/v1/rag/search?q=delivery%20UAE&k=3'
-```
+GET http://localhost:2020/v1/rag/search?q=flight
 
 ### Clear the collection
 DELETE http://localhost:2020/v1/rag
 
-### Clear the collection (curl)
-```bash
-curl -X DELETE 'http://localhost:2020/v1/rag'
-```
-
 ### Get RAG stats
 GET http://localhost:2020/v1/rag/stats
-
-### Get RAG stats (curl)
-```bash
-curl -X GET 'http://localhost:2020/v1/rag/stats'
-```

@@ -1,3 +1,4 @@
+import { extractText } from '@/api/rag/extractText';
 import { logger } from '@/server';
 import { MINIO_BUCKET, minioClient } from '@/services/minio';
 
@@ -54,7 +55,7 @@ export const getFileText = async (id: string): Promise<{ text: string; name: str
 
   const buffer = Buffer.concat(chunks);
   const name = file.name.replace(`${id}-`, '');
-  const text = buffer.toString('utf-8').slice(0, MAX_FILE_CHARS);
+  const text = (await extractText(buffer, name)).slice(0, MAX_FILE_CHARS);
 
   return {
    text,
