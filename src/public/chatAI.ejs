@@ -1652,7 +1652,6 @@
       font-weight: 600;
       word-break: break-word;
      }
-
      .rag-file-ingested-badge {
       display: inline-block;
       margin-left: 8px;
@@ -2383,6 +2382,24 @@
          <span class="rag-drop-hint">or drag &amp; drop files anywhere in this window</span>
         </div>
         <div class="rag-files-list" id="rag-files-list"></div>
+        <div class="rag-files-footer">
+         <button
+          type="button"
+          class="js-rag-ingest-all rag-ingest-all-btn"
+          title="Ingest every uploaded file that is not ingested yet"
+         >
+          Ingest All
+         </button>
+         <button
+          type="button"
+          id="rag-clear-ingestions-btn"
+          class="js-rag-clear-ingestions"
+          title="Remove all ingested data from the vector DB (uploaded files are kept)"
+         >
+          Delete All Ingestions
+         </button>
+        </div>
+       </div>
         <div class="rag-files-footer">
          <button
           type="button"
@@ -3520,7 +3537,6 @@ updateLabel() {
    elements.streamingLabel.textContent = elements.streamToggle.checked ? 'Streaming' : 'No Streaming';
   },
  };
-
 // ===== RAG Toggle Management =====
 const ragToggle = {
   init() {
@@ -3542,16 +3558,16 @@ const ragToggle = {
    this.updateDistanceVisibility();
   },
 
-updateLabel() {
-  elements.ragLabel.textContent = elements.ragToggle.checked ? 'RAG' : 'No RAG';
- },
+   updateLabel() {
+    elements.ragLabel.textContent = elements.ragToggle.checked ? 'RAG Query' : 'No RAG';
+   },
 
-updateDistanceVisibility() {
-  if (elements.ragDistanceContainer) {
-   elements.ragDistanceContainer.hidden = !elements.ragToggle.checked;
-  }
- },
-};
+   updateDistanceVisibility() {
+    if (elements.ragDistanceContainer) {
+     elements.ragDistanceContainer.hidden = !elements.ragToggle.checked;
+    }
+   },
+  };
 
    // ===== Text-to-Speech Management =====
    const ttsManager = {
