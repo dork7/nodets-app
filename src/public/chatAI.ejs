@@ -347,6 +347,7 @@
     #rag-actions button {
      width: 100%;
      text-align: center;
+     white-space: normal;
     }
 
     #rag-panel:hover {
@@ -978,10 +979,10 @@
     }
 
 .model-row {
-     display: inline-flex;
-     flex-direction: row;
-     align-items: center;
-     gap: 10px;
+     display: flex;
+     flex-direction: column;
+     align-items: stretch;
+     gap: 8px;
      padding: 6px 8px;
      background: var(--bg);
      border: 1px solid var(--border);
@@ -1107,7 +1108,7 @@
     }
 
     .model-unload-btn {
-     display: none;
+     display: flex;
      align-items: center;
      justify-content: center;
      padding: 3px 10px;
@@ -1470,6 +1471,64 @@
       cursor: not-allowed;
      }
 
+     .rag-files-footer {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+     }
+
+     #rag-clear-ingestions-btn,
+     .rag-clear-ingestions-btn {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 0.72em;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+     }
+
+     #rag-clear-ingestions-btn:hover,
+     .rag-clear-ingestions-btn:hover {
+      background: var(--danger);
+      color: #fff;
+     }
+
+     .rag-ingest-all-btn {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 0.72em;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+     }
+
+     .rag-ingest-all-btn:hover {
+      background: var(--accent);
+      color: var(--on-accent);
+     }
+
+     #rag-clear-ingestions-btn:disabled,
+     .rag-clear-ingestions-btn:disabled,
+     .rag-ingest-all-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+     }
+
      .rag-drop-hint {
       flex-basis: 100%;
       color: var(--fg-faint);
@@ -1503,7 +1562,12 @@
      .rag-files-list .history-item {
       width: 100%;
       max-width: none;
-      flex-shrink: 1;
+      flex-shrink: 0;
+      min-height: 48px;
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
      }
 
      .rag-files-list .history-item-content {
@@ -1523,18 +1587,17 @@
       background: transparent;
       border: 1px solid transparent;
       border-radius: var(--radius-sm);
-      color: var(--fg-faint);
+      color: var(--fg-muted);
       font-family: var(--font-mono);
       font-size: 0.85em;
       line-height: 1;
       padding: 2px 5px;
       cursor: pointer;
-      opacity: 0;
+      opacity: 1;
       transition: all 0.15s;
      }
 
      .rag-file-item:hover .rag-delete-btn {
-      opacity: 1;
       color: var(--fg-muted);
      }
 
@@ -1549,6 +1612,73 @@
       opacity: 1;
       outline: 1px solid var(--accent);
       outline-offset: 1px;
+     }
+
+     .rag-ingest-btn {
+      display: inline-block;
+      margin-top: 6px;
+      margin-right: 6px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--fg-muted);
+      font-family: var(--font-mono);
+      font-size: 0.7em;
+      line-height: 1;
+      padding: 3px 8px;
+      cursor: pointer;
+      opacity: 1;
+      transition: all 0.15s;
+     }
+
+     .rag-file-item:hover .rag-ingest-btn {
+      color: var(--accent);
+     }
+
+     .rag-ingest-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      opacity: 1;
+     }
+
+     .rag-ingest-btn:focus-visible {
+      opacity: 1;
+      outline: 1px solid var(--accent);
+      outline-offset: 1px;
+     }
+
+     .rag-file-name {
+      font-weight: 600;
+      word-break: break-word;
+     }
+     .rag-file-ingested-badge {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.62em;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      vertical-align: middle;
+     }
+
+     .rag-purge-btn {
+      color: var(--fg-muted);
+     }
+
+     .rag-file-item:hover .rag-purge-btn {
+      color: var(--danger);
+     }
+
+     .rag-purge-btn:hover {
+      color: var(--danger);
+      border-color: var(--danger);
+      background: color-mix(in srgb, var(--danger) 12%, transparent);
      }
 
      .modal-count {
@@ -1853,8 +1983,8 @@
     .input-controls {
      display: flex;
      flex-wrap: wrap;
-     align-items: center;
-     gap: 10px;
+     align-items: start;
+     gap: 1px;
     }
 
     /* ===== Buttons ===== */
@@ -1906,14 +2036,22 @@
      cursor: not-allowed;
     }
 
-    /* ===== Streaming Toggle ===== */
-    .streaming-toggle-container {
+    /* ===== Streaming & RAG Toggle ===== */
+    .toggle-group {
      display: flex;
      align-items: center;
+     gap: 12px;
      margin-right: auto;
     }
 
-    .streaming-toggle-label {
+    .streaming-toggle-container,
+    .rag-toggle-container {
+     display: flex;
+     align-items: center;
+    }
+
+    .streaming-toggle-label,
+    .rag-toggle-label {
      display: flex;
      align-items: center;
      gap: 8px;
@@ -1925,21 +2063,24 @@
      user-select: none;
     }
 
-    .streaming-toggle-wrapper {
+    .streaming-toggle-wrapper,
+    .rag-toggle-wrapper {
      position: relative;
      display: inline-block;
      width: 44px;
      height: 20px;
     }
 
-    .streaming-toggle-input {
+    .streaming-toggle-input,
+    .rag-toggle-input {
      opacity: 0;
      width: 0;
      height: 0;
      position: absolute;
     }
 
-    .streaming-toggle-track {
+    .streaming-toggle-track,
+    .rag-toggle-track {
      position: absolute;
      cursor: pointer;
      top: 0;
@@ -1952,7 +2093,8 @@
      transition: all 0.2s ease;
     }
 
-    .streaming-toggle-thumb {
+    .streaming-toggle-thumb,
+    .rag-toggle-thumb {
      position: absolute;
      left: 2px;
      top: 2px;
@@ -1963,8 +2105,16 @@
      transition: transform 0.2s ease, background 0.2s ease;
     }
 
-    .streaming-toggle-input:checked + .streaming-toggle-track {
+    .streaming-toggle-input:checked + .streaming-toggle-track,
+    .rag-toggle-input:checked + .rag-toggle-track {
      border-color: var(--accent);
+     background-color: var(--accent);
+    }
+
+    .streaming-toggle-input:checked + .streaming-toggle-track .streaming-toggle-thumb,
+    .rag-toggle-input:checked + .rag-toggle-track .rag-toggle-thumb {
+     transform: translateX(24px);
+     background: var(--on-accent);
     }
 
     .streaming-toggle-input:checked + .streaming-toggle-track + .streaming-toggle-thumb {
@@ -1974,6 +2124,111 @@
 
     .streaming-toggle-input:focus-visible + .streaming-toggle-track {
      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .rag-distance-container {
+     display: flex;
+     align-items: center;
+    }
+
+    .rag-distance-container[hidden] {
+     display: none;
+    }
+
+    .rag-distance-label {
+     display: flex;
+     align-items: center;
+     gap: 6px;
+     font-size: 0.76em;
+     color: var(--fg-muted);
+     text-transform: uppercase;
+     letter-spacing: 0.06em;
+     user-select: none;
+    }
+
+    .rag-distance-input {
+     width: 56px;
+     padding: 3px 6px;
+     font-size: 0.9em;
+     color: var(--fg);
+     background: var(--bg-deep);
+     border: 1px solid var(--border);
+     border-radius: 5px;
+    }
+
+    .rag-distance-input:focus-visible {
+     outline: none;
+     border-color: var(--accent);
+     box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .rag-sources-section {
+     margin-top: 8px;
+     padding-top: 6px;
+     border-top: 1px solid var(--border);
+     display: flex;
+     flex-direction: column;
+     gap: 5px;
+    }
+
+    .rag-sources-heading {
+     font-size: 0.7em;
+     color: var(--fg-muted);
+     text-transform: uppercase;
+     letter-spacing: 0.06em;
+     cursor: pointer;
+     user-select: none;
+     display: flex;
+     align-items: center;
+     gap: 5px;
+    }
+
+    .rag-sources-heading .rag-sources-caret {
+     display: inline-block;
+     transition: transform 0.15s ease;
+    }
+
+    .rag-sources-section.is-open .rag-sources-heading .rag-sources-caret {
+     transform: rotate(90deg);
+    }
+
+    .rag-sources-body {
+     display: none;
+     flex-direction: column;
+     gap: 5px;
+    }
+
+    .rag-sources-section.is-open .rag-sources-body {
+     display: flex;
+    }
+
+    .rag-source-item {
+     border-left: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+     background: var(--bg-deep);
+     border-radius: 0 4px 4px 0;
+     padding: 4px 8px;
+     cursor: pointer;
+    }
+
+    .rag-source-meta {
+     font-family: var(--font-mono);
+     font-size: 0.68em;
+     color: var(--fg-faint);
+     margin-bottom: 2px;
+    }
+
+    .rag-source-text {
+     font-size: 0.75em;
+     color: var(--fg-muted);
+     white-space: pre-wrap;
+     word-break: break-word;
+    }
+
+    .rag-source-text.is-clamped {
+     display: -webkit-box;
+     -webkit-line-clamp: 3;
+     -webkit-box-orient: vertical;
+     overflow: hidden;
     }
 
     /* ===== Confirmation Modal ===== */
@@ -2127,6 +2382,41 @@
          <span class="rag-drop-hint">or drag &amp; drop files anywhere in this window</span>
         </div>
         <div class="rag-files-list" id="rag-files-list"></div>
+        <div class="rag-files-footer">
+         <button
+          type="button"
+          class="js-rag-ingest-all rag-ingest-all-btn"
+          title="Ingest every uploaded file that is not ingested yet"
+         >
+          Ingest All
+         </button>
+         <button
+          type="button"
+          id="rag-clear-ingestions-btn"
+          class="js-rag-clear-ingestions"
+          title="Remove all ingested data from the vector DB (uploaded files are kept)"
+         >
+          Delete All Ingestions
+         </button>
+        </div>
+       </div>
+        <div class="rag-files-footer">
+         <button
+          type="button"
+          class="js-rag-ingest-all rag-ingest-all-btn"
+          title="Ingest every uploaded file that is not ingested yet"
+         >
+          Ingest All
+         </button>
+         <button
+          type="button"
+          id="rag-clear-ingestions-btn"
+          class="js-rag-clear-ingestions"
+          title="Remove all ingested data from the vector DB (uploaded files are kept)"
+         >
+          Delete All Ingestions
+         </button>
+        </div>
        </div>
       </div>
      </div>
@@ -2160,25 +2450,43 @@
         </button>
        </div>
        <div id="input-attachments"></div>
-       <div class="input-controls">
-       <div class="streaming-toggle-container">
-        <label class="streaming-toggle-label">
-         <span id="streaming-label">Streaming</span>
-         <span class="streaming-toggle-wrapper">
-          <input type="checkbox" id="stream-toggle" class="streaming-toggle-input" checked />
-          <span class="streaming-toggle-track"></span>
-          <span class="streaming-toggle-thumb"></span>
-         </span>
-        </label>
-       </div>
-       <button id="send" type="submit">Send</button>
+<div class="input-controls">
+     <div class="toggle-group">
+        <div class="streaming-toggle-container">
+            <label class="streaming-toggle-label">
+                <span id="streaming-label">Streaming</span>
+                <span class="streaming-toggle-wrapper">
+                    <input type="checkbox" id="stream-toggle" class="streaming-toggle-input" checked />
+                    <span class="streaming-toggle-track"></span>
+                    <span class="streaming-toggle-thumb"></span>
+                </span>
+            </label>
+        </div>
+        <div class="rag-toggle-container">
+            <label class="rag-toggle-label">
+                <span id="rag-label">RAG Query</span>
+                <span class="rag-toggle-wrapper">
+                    <input type="checkbox" id="rag-toggle" class="rag-toggle-input" />
+                    <span class="rag-toggle-track"></span>
+                    <span class="rag-toggle-thumb"></span>
+                </span>
+            </label>
+        </div>
+        <div class="rag-distance-container" id="rag-distance-container" hidden>
+            <label class="rag-distance-label">
+                <span>Max dist</span>
+                <input type="number" id="rag-distance" class="rag-distance-input" min="0" step="0.05" placeholder="off" />
+            </label>
+        </div>
+     </div>
+         <button id="send" type="submit">Send</button>
        <button id="stop-stream" type="button" disabled>Stop</button>
        <button type="button" id="upload-btn" title="Upload file">Upload</button>
        <input
         id="file-input"
         type="file"
         multiple
-        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.gif,.webp,.svg,.bmp,.ico,.tiff,.tif,.js,.jsx,.mjs,.cjs,.ts,.tsx,.py,.cpp,.cc,.cxx,.hpp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,image/*,text/javascript,application/javascript,text/x-javascript,text/typescript,text/x-python,text/x-c++src,text/x-c++"
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.gif,.webp,.svg,.bmp,.ico,.tiff,.tif,.js,.jsx,.mjs,.cjs,.ts,.tsx,.py,.cpp,.cc,.cxx,.hpp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain,text/markdown,image/*,text/javascript,application/javascript,text/x-javascript,text/typescript,text/x-python,text/x-c++src,text/x-c++"
         hidden
        />
        <button type="button" id="new-chat-btn" title="Start a new chat">New Chat</button>
@@ -2201,7 +2509,9 @@
       </div>
       <div id="rag-content"></div>
       <div id="rag-actions">
-       <button id="rag-files-delete-all-btn" type="button" title="Delete all RAG files">Delete All</button>
+       <button class="js-rag-ingest-all rag-ingest-all-btn" type="button" title="Ingest every uploaded file that is not ingested yet">Ingest All</button>
+       <button class="js-rag-clear-ingestions rag-clear-ingestions-btn" type="button" title="Remove all ingested data from the vector DB (uploaded files are kept)">Delete All Ingestions</button>
+       <button id="rag-files-delete-all-btn" type="button" title="Delete all uploaded RAG files">Delete All Files</button>
        <button id="rag-view-all-btn" type="button" title="View all RAG files">View All</button>
       </div>
      </div>
@@ -2243,11 +2553,13 @@
     PROVIDERS_API_URL: 'http://localhost:2020/v1/aiProviders',
     HISTORY_API_URL: 'http://localhost:2020/v1/aiUtils/chat-history',
     RAG_FILES_API_URL: 'http://localhost:2020/v1/minio/files',
+    RAG_INGEST_API_URL: 'http://localhost:2020/v1/rag/ingest',
+    RAG_API_URL: 'http://localhost:2020/v1/rag',
     RAG_BUCKET: 'rag-files',
     TOTAL_TOKEN_USAGE_API_URL: 'http://localhost:2020/v1/aiUtils/total-token-usage',
     LOADED_MODELS_API_URL: 'http://localhost:2020/v1/aiUtils/loaded-models',
     UNLOAD_MODEL_API_URL: 'http://localhost:2020/v1/aiUtils/unload-model',
-   TTS_API_URL: 'http://localhost:2020/v1/aiUtils/text-to-speech',
+    TTS_API_URL: 'http://localhost:2020/v1/aiUtils/text-to-speech',
     UPLOAD_API_URL: 'http://localhost:2020/v1/minio/upload',
     MAX_FILE_SIZE: 10 * 1024 * 1024,
     MAX_FILES: 6,
@@ -2269,28 +2581,32 @@
     ],
    };
 
-   // ===== State Management =====
-   const state = {
+// ===== State Management =====
+const state = {
     selectedModel: localStorage.getItem('chatSelectedModel') || '',
     selectedProvider: localStorage.getItem('chatSelectedProvider') || '',
     defaultModel: localStorage.getItem('chatDefaultModel') || '',
     streamingEnabled: localStorage.getItem('chatStreaming') !== 'false',
+    ragEnabled: localStorage.getItem('chatRAG') !== 'false',
+    ragDistance: localStorage.getItem('chatRAGDistance') || '',
     isStreaming: false,
     isConnected: false,
-currentIsRelated: false,
-      combinedContent: '',
-      streamStartTime: 0,
-      requestStartTime: null,
-      requestEndTime: null,
-      lastTokensPerSecond: 0,
-     streamMessageCount: 0,
+    ragStreaming: localStorage.getItem('chatRagStreaming') !== 'false',
+    currentIsRelated: false,
+    currentRagSources: [],
+    combinedContent: '',
+    streamStartTime: 0,
+    requestStartTime: null,
+    requestEndTime: null,
+    lastTokensPerSecond: 0,
+    streamMessageCount: 0,
     socket: null,
     pendingFiles: [],
     pastedCodeList: [],
     loadedModelsByName: {},
     allModels: [],
     sessionId: localStorage.getItem('chatSessionId') || `sess-${Math.random().toString(36).substr(2, 9)}`,
-   };
+};
 
    // ===== DOM Elements =====
    const elements = {
@@ -2302,6 +2618,10 @@ currentIsRelated: false,
     stopBtn: document.getElementById('stop-stream'),
     streamToggle: document.getElementById('stream-toggle'),
     streamingLabel: document.getElementById('streaming-label'),
+    ragToggle: document.getElementById('rag-toggle'),
+    ragLabel: document.getElementById('rag-label'),
+    ragDistance: document.getElementById('rag-distance'),
+    ragDistanceContainer: document.getElementById('rag-distance-container'),
     modelSelector: document.getElementById('model-selector'),
     providerSelector: document.getElementById('provider-selector'),
     uploadBtn: document.getElementById('upload-btn'),
@@ -2586,6 +2906,67 @@ currentIsRelated: false,
     },
    };
 
+   // ===== RAG Sources Management =====
+   const sourcesManager = {
+    add(messageElement, sources) {
+     if (!messageElement || !Array.isArray(sources) || sources.length === 0) return;
+
+     let section = messageElement.querySelector('.rag-sources-section');
+     if (!section) {
+      section = document.createElement('div');
+      section.className = 'rag-sources-section';
+      messageElement.appendChild(section);
+     }
+     const wasOpen = section.classList.contains('is-open');
+     section.innerHTML = '';
+     section.classList.toggle('is-open', wasOpen);
+
+     const heading = document.createElement('div');
+     heading.className = 'rag-sources-heading';
+     const caret = document.createElement('span');
+     caret.className = 'rag-sources-caret';
+     caret.textContent = '▸';
+     heading.appendChild(caret);
+     heading.appendChild(document.createTextNode(`Sources (${sources.length})`));
+     heading.addEventListener('click', (e) => {
+      e.stopPropagation();
+      section.classList.toggle('is-open');
+     });
+     section.appendChild(heading);
+
+     const body = document.createElement('div');
+     body.className = 'rag-sources-body';
+     section.appendChild(body);
+
+     sources.forEach((s) => {
+      const item = document.createElement('div');
+      item.className = 'rag-source-item';
+
+      const meta = document.createElement('div');
+      meta.className = 'rag-source-meta';
+      const score = typeof s.score === 'number' ? `match ${s.score.toFixed(2)}` : 'match';
+      meta.textContent = s.source ? `${score} · ${s.source}` : score;
+      item.appendChild(meta);
+
+      const text = document.createElement('div');
+      text.className = 'rag-source-text';
+      const chunk = typeof s.text === 'string' ? s.text : '';
+      text.textContent = chunk;
+      if (chunk.length > 300) {
+       text.classList.add('is-clamped');
+      }
+      item.appendChild(text);
+
+      item.addEventListener('click', (e) => {
+       e.stopPropagation();
+       text.classList.toggle('is-clamped');
+      });
+
+      body.appendChild(item);
+     });
+    },
+   };
+
    // ===== Token Usage Management =====
    const tokenUsageManager = {
     add(messageElement, tokenUsage) {
@@ -2693,6 +3074,7 @@ currentIsRelated: false,
       if (data.type === 'stream_start') {
        state.isStreaming = true;
        state.combinedContent = '';
+       state.currentRagSources = [];
        state.streamStartTime = Date.now();
        state.requestStartTime = data.requestStartTime || Date.now();
        state.requestEndTime = null;
@@ -2770,6 +3152,10 @@ currentIsRelated: false,
       state.currentIsRelated = data.isRelated;
      }
 
+     if (data.ragSources !== undefined && Array.isArray(data.ragSources) && data.ragSources.length > 0) {
+      state.currentRagSources = data.ragSources;
+     }
+
      const displayValue = streamProcessor.process(data);
      const messageType = data.sender === 'AI' ? 'ai' : 'user';
      const lastMsg = messageManager.updateLast(data.sender, displayValue, messageType);
@@ -2782,11 +3168,13 @@ currentIsRelated: false,
        } else {
         indicatorManager.add(lastMsg, state.currentIsRelated);
        }
+       sourcesManager.add(lastMsg, state.currentRagSources);
       }
      } else {
       const msgElement = messageManager.append(data.sender, displayValue, messageType);
       if (data.sender === 'AI') {
        indicatorManager.add(msgElement, state.currentIsRelated);
+       sourcesManager.add(msgElement, state.currentRagSources);
        // Initialize token usage section for AI messages
        tokenUsageManager.add(msgElement, {});
       }
@@ -2801,6 +3189,8 @@ currentIsRelated: false,
      ) {
        const lastMsg = elements.messages.lastElementChild;
        if (lastMsg) {
+        // Show retrieved RAG sources (if this turn used RAG)
+        sourcesManager.add(lastMsg, state.currentRagSources);
         // Show token usage returned by the WebSocket API
         tokenUsageManager.add(lastMsg, data.tokenUsage || {});
         // Show request start / end / duration
@@ -3131,22 +3521,53 @@ currentIsRelated: false,
     },
    };
 
-   // ===== Streaming Toggle Management =====
-   const streamingToggle = {
-    init() {
-     elements.streamToggle.checked = state.streamingEnabled;
-     elements.streamToggle.addEventListener('change', () => {
-      state.streamingEnabled = elements.streamToggle.checked;
-      localStorage.setItem('chatStreaming', String(state.streamingEnabled));
-      this.updateLabel();
-     });
-     this.updateLabel();
-    },
+// ===== Streaming Toggle Management =====
+const streamingToggle = {
+ init() {
+  elements.streamToggle.checked = state.streamingEnabled;
+  elements.streamToggle.addEventListener('change', () => {
+   state.streamingEnabled = elements.streamToggle.checked;
+   localStorage.setItem('chatStreaming', String(state.streamingEnabled));
+   this.updateLabel();
+  });
+  this.updateLabel();
+ },
 
-    updateLabel() {
-     elements.streamingLabel.textContent = elements.streamToggle.checked ? 'Streaming' : 'No Streaming';
-    },
-   };
+updateLabel() {
+   elements.streamingLabel.textContent = elements.streamToggle.checked ? 'Streaming' : 'No Streaming';
+  },
+ };
+// ===== RAG Toggle Management =====
+const ragToggle = {
+  init() {
+   elements.ragToggle.checked = state.ragEnabled;
+   if (elements.ragDistance) {
+    elements.ragDistance.value = state.ragDistance;
+    elements.ragDistance.addEventListener('input', () => {
+     state.ragDistance = elements.ragDistance.value.trim();
+     localStorage.setItem('chatRAGDistance', state.ragDistance);
+    });
+   }
+   elements.ragToggle.addEventListener('change', () => {
+    state.ragEnabled = elements.ragToggle.checked;
+    localStorage.setItem('chatRAG', String(state.ragEnabled));
+    this.updateLabel();
+    this.updateDistanceVisibility();
+   });
+   this.updateLabel();
+   this.updateDistanceVisibility();
+  },
+
+   updateLabel() {
+    elements.ragLabel.textContent = elements.ragToggle.checked ? 'RAG Query' : 'No RAG';
+   },
+
+   updateDistanceVisibility() {
+    if (elements.ragDistanceContainer) {
+     elements.ragDistanceContainer.hidden = !elements.ragToggle.checked;
+    }
+   },
+  };
 
    // ===== Text-to-Speech Management =====
    const ttsManager = {
@@ -3258,6 +3679,11 @@ currentIsRelated: false,
         id: state.sessionId,
         method: 'chatAI',
         stream: state.streamingEnabled,
+        rag: state.ragEnabled,
+        ragDistance:
+          state.ragEnabled && state.ragDistance !== '' && !Number.isNaN(Number(state.ragDistance))
+            ? Number(state.ragDistance)
+            : undefined,
         model: state.selectedModel,
         provider: state.selectedProvider,
         params: {
@@ -3266,7 +3692,7 @@ currentIsRelated: false,
           imageId: imageIds.length === 1 ? imageIds[0] : undefined,
           fileIds: fileIds.length > 0 ? fileIds : undefined,
         },
-      });
+       });
 
       messageManager.append('You', message || (hasFiles ? '(attachment)' : ''), 'user');
       images.forEach((img) =>
@@ -3389,6 +3815,8 @@ currentIsRelated: false,
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'text/csv',
+    'text/plain',
+    'text/markdown',
     'image/png',
     'image/jpeg',
     'image/gif',
@@ -3413,6 +3841,8 @@ currentIsRelated: false,
     '.xls',
     '.xlsx',
     '.csv',
+    '.txt',
+    '.md',
     '.png',
     '.jpg',
     '.jpeg',
@@ -3889,12 +4319,25 @@ imageDataSrc(file) {
    // ===== New Chat Management =====
    const newChatManager = {
     resetSession() {
+     // Abort any in-flight AI response for the current session before switching.
+     if (state.isStreaming && state.socket) {
+      websocketManager.send({
+       sender: 'User',
+       type: 'stop_stream',
+       id: state.sessionId,
+       method: 'chatAI',
+      });
+      state.isStreaming = false;
+      utils.setStopButtonEnabled(false);
+     }
+
      state.sessionId = `sess-${Math.random().toString(36).substr(2, 9)}`;
      localStorage.setItem('chatSessionId', state.sessionId);
 elements.messages.innerHTML = '';
       elements.input.value = '';
       uploadManager.clearAll();
       state.combinedContent = '';
+      state.currentRagSources = [];
      document.title = `ChatAI Session | ${state.sessionId}`;
      totalTokenUsageManager.load();
      historyManager.loadHistory();
@@ -3932,17 +4375,55 @@ elements.messages.innerHTML = '';
     createItem(file) {
      const item = document.createElement('div');
      item.className = 'history-item rag-file-item';
-     item.title = file.url || '';
+
+     const displayName = this.displayName(file);
+     item.title = displayName;
 
      const content = document.createElement('div');
      content.className = 'history-item-content';
-     content.textContent = this.displayName(file);
+     const nameEl = document.createElement('span');
+     nameEl.className = 'rag-file-name';
+     nameEl.textContent = displayName;
+     content.appendChild(nameEl);
+     if (file.ingested) {
+      const badge = document.createElement('span');
+      badge.className = 'rag-file-ingested-badge';
+      badge.textContent = 'Ingested';
+      badge.title = 'This file is in the vector DB';
+      content.appendChild(badge);
+     }
      item.appendChild(content);
 
      const time = document.createElement('div');
      time.className = 'history-item-time';
      time.textContent = utils.formatFileSize(file.size);
      item.appendChild(time);
+
+     const ingest = document.createElement('button');
+     ingest.type = 'button';
+     ingest.className = 'rag-ingest-btn';
+     ingest.title = file.ingested ? 'Re-ingest file into the vector DB' : 'Ingest file into the vector DB';
+     ingest.setAttribute('aria-label', `Ingest ${this.displayName(file)}`);
+     ingest.textContent = file.ingested ? 'Re-ingest' : 'Ingest';
+     ingest.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.ingestFile(file, ingest);
+     });
+     item.appendChild(ingest);
+
+     if (file.ingested) {
+      const purge = document.createElement('button');
+      purge.type = 'button';
+      purge.className = 'rag-ingest-btn rag-purge-btn';
+      purge.title = 'Remove this file data from the vector DB';
+      purge.setAttribute('aria-label', `Remove ${this.displayName(file)} from vector DB`);
+      purge.textContent = 'Remove from DB';
+      purge.addEventListener('click', (e) => {
+       e.stopPropagation();
+       this.purgeVectors(file, purge);
+      });
+      item.appendChild(purge);
+     }
 
      const del = document.createElement('button');
      del.type = 'button';
@@ -4022,12 +4503,14 @@ elements.messages.innerHTML = '';
      const btnWasDisabled = elements.ragFilesUploadBtn.disabled;
      elements.ragFilesUploadBtn.disabled = true;
      const originalText = elements.ragFilesUploadBtn.textContent;
-     elements.ragFilesUploadBtn.textContent = 'Uploading...';
 
      let uploaded = 0;
      let failed = 0;
 
-     for (const file of files) {
+     for (const [index, file] of files.entries()) {
+      elements.ragFilesUploadBtn.textContent =
+       files.length > 1 ? `Uploading ${index + 1}/${files.length}...` : 'Uploading...';
+
       const formData = new FormData();
       formData.append('file', file);
       formData.append('bucket', CONFIG.RAG_BUCKET);
@@ -4070,8 +4553,82 @@ elements.messages.innerHTML = '';
      elements.ragFileInput.value = '';
     },
 
+async ingestFile(file, btn) {
+      if (!btn) return;
+
+      try {
+       const res = await fetch(CONFIG.RAG_INGEST_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+         source: 'minio',
+         fileId: file.id,
+         bucket: CONFIG.RAG_BUCKET,
+         provider: state.selectedProvider || undefined,
+         stream: state.ragStreaming,
+        }),
+       });
+      const result = await res.json();
+      if (result.success) {
+       messageManager.append(
+        'System',
+        `Ingested "${this.displayName(file)}" (${result.responseObject?.count ?? 0} chunks).`,
+        'system'
+       );
+       await this.loadFiles();
+      } else {
+       this.openErrorPopup(`Failed to ingest "${this.displayName(file)}": ${result.message}`);
+      }
+     } catch (error) {
+      this.openErrorPopup(`Failed to ingest "${this.displayName(file)}".`);
+     }
+    },
+
+    async purgeVectors(file, btn) {
+     const originalText = btn ? btn.textContent : '';
+     if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Removing...';
+     }
+     try {
+      const res = await fetch(`${CONFIG.RAG_API_URL}/file/${encodeURIComponent(file.id)}`, { method: 'DELETE' });
+      const result = await res.json();
+      if (result.success) {
+       messageManager.append(
+        'System',
+        `Removed "${this.displayName(file)}" from the vector DB (${result.responseObject?.removed ?? 0} chunks).`,
+        'system'
+       );
+       await this.loadFiles();
+      } else {
+       this.openErrorPopup(`Failed to remove "${this.displayName(file)}" from the vector DB: ${result.message}`);
+      }
+     } catch (error) {
+      this.openErrorPopup(`Failed to remove "${this.displayName(file)}" from the vector DB.`);
+     } finally {
+      if (btn) {
+       btn.disabled = false;
+       btn.textContent = originalText;
+      }
+     }
+    },
+
+    openErrorPopup(message) {
+     if (!elements.confirmModal) return;
+     elements.confirmModalTitle.textContent = 'Error';
+     elements.confirmModalBody.textContent = message;
+     elements.confirmModalYes.textContent = 'OK';
+     elements.confirmModalNo.hidden = true;
+     elements.confirmModal.hidden = false;
+     elements.confirmModalYes.onclick = () => this.closeConfirmModal();
+     elements.confirmModalNo.onclick = () => this.closeConfirmModal();
+    },
+
     async deleteFile(file) {
      try {
+      // Drop the file's vectors first so deleting the file never leaves orphans in the DB.
+      await fetch(`${CONFIG.RAG_API_URL}/file/${encodeURIComponent(file.id)}`, { method: 'DELETE' }).catch(() => {});
+
       const apiBase = CONFIG.RAG_FILES_API_URL.replace(/\/files$/, '');
       const res = await fetch(
        `${apiBase}/${encodeURIComponent(file.id)}?bucket=${encodeURIComponent(CONFIG.RAG_BUCKET)}`,
@@ -4129,6 +4686,93 @@ elements.messages.innerHTML = '';
      }
     },
 
+    setActionButtonsBusy(selector, busy, busyText) {
+     document.querySelectorAll(selector).forEach((btn) => {
+      if (busy) {
+       if (btn.dataset.originalText === undefined) btn.dataset.originalText = btn.textContent;
+       btn.textContent = busyText;
+       btn.disabled = true;
+      } else {
+       if (btn.dataset.originalText !== undefined) {
+        btn.textContent = btn.dataset.originalText;
+        delete btn.dataset.originalText;
+       }
+       btn.disabled = false;
+      }
+     });
+    },
+
+    clearAllIngestions() {
+     historyManager.openConfirmModal({
+      title: 'Delete All Ingestions',
+      body: 'Remove every ingested chunk from the vector DB? Uploaded files are kept, but you will need to re-ingest them. This cannot be undone.',
+      confirmLabel: 'Yes, Delete All',
+      onConfirm: () => this.performClearIngestions(),
+     });
+    },
+
+    async performClearIngestions() {
+     this.setActionButtonsBusy('.js-rag-clear-ingestions', true, 'Deleting...');
+     try {
+      const res = await fetch(CONFIG.RAG_API_URL, { method: 'DELETE' });
+      const result = await res.json();
+      if (result.success) {
+       messageManager.append('System', 'Deleted all ingestions from the vector DB.', 'system');
+       await this.loadFiles();
+      } else {
+       this.openErrorPopup(`Failed to delete ingestions: ${result.message}`);
+      }
+     } catch (error) {
+      this.openErrorPopup('Failed to delete ingestions.');
+     } finally {
+      this.setActionButtonsBusy('.js-rag-clear-ingestions', false);
+     }
+    },
+
+    async ingestAll() {
+     const pending = this.files.filter((f) => !f.ingested);
+     if (pending.length === 0) {
+      messageManager.append('System', 'All uploaded files are already ingested.', 'system');
+      return;
+     }
+
+     this.setActionButtonsBusy('.js-rag-ingest-all', true, 'Ingesting...');
+     let ok = 0;
+     let failed = 0;
+     for (const file of pending) {
+      try {
+       const res = await fetch(CONFIG.RAG_INGEST_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+         source: 'minio',
+         fileId: file.id,
+         bucket: CONFIG.RAG_BUCKET,
+         provider: state.selectedProvider || undefined,
+        }),
+       });
+       const result = await res.json();
+       if (result.success) {
+        ok += 1;
+       } else {
+        failed += 1;
+        console.error(`Ingest failed for "${this.displayName(file)}":`, result.message);
+       }
+      } catch (error) {
+       failed += 1;
+       console.error(`Ingest error for "${this.displayName(file)}":`, error);
+      }
+     }
+     this.setActionButtonsBusy('.js-rag-ingest-all', false);
+
+     messageManager.append(
+      'System',
+      `Ingested ${ok} file${ok === 1 ? '' : 's'}${failed > 0 ? `, ${failed} failed (see console)` : ''}.`,
+      'system'
+     );
+     await this.loadFiles();
+    },
+
     bindDragDrop(element, highlightEl) {
      if (!element || !highlightEl) return;
      let depth = 0;
@@ -4183,6 +4827,14 @@ elements.messages.innerHTML = '';
 
      elements.ragFilesDeleteAllBtn?.addEventListener('click', () => this.deleteAllFiles());
 
+     document.querySelectorAll('.js-rag-clear-ingestions').forEach((btn) =>
+      btn.addEventListener('click', () => this.clearAllIngestions())
+     );
+
+     document.querySelectorAll('.js-rag-ingest-all').forEach((btn) =>
+      btn.addEventListener('click', () => this.ingestAll())
+     );
+
      this.bindDragDrop(elements.ragFilesModal, elements.ragFilesDialog);
      this.bindDragDrop(elements.ragPanel, elements.ragPanel);
 
@@ -4196,6 +4848,7 @@ elements.messages.innerHTML = '';
     document.title = `ChatAI Session | ${state.sessionId}`;
 
     streamingToggle.init();
+    ragToggle.init();
     providerManager.init();
     providerManager.loadProviders();
     formHandler.init();

@@ -1,9 +1,12 @@
 import { OpenAI } from 'openai';
 
+import { env } from '@/common/utils/envConfig';
+
 import { getModel } from './registry';
 import { OpenAITool } from './tools';
 
 const DEFAULT_PROVIDER = 'localAI';
+const EMBEDDING_MODEL = env.LOCALAI_EMBEDDING_MODEL;
 
 export type { OpenAITool };
 
@@ -47,8 +50,24 @@ export async function callAI(
    // counts are available to the WebSocket client.
    ...(requestOptions.stream ? { stream_options: { include_usage: true } } : {}),
    ...(requestOptions ? requestOptions : {}),
+   tools: []
   },
   { signal }
  );
  return completion;
+}
+
+export async function createEmbeddings(
+ input: string | string[],
+ options?: { model?: string; provider?: string }
+): Promise<number[][]> {
+ const { model = EMBEDDING_MODEL, provider } = options ?? {};
+ const client = getOpenAIInstance(provider);
+
+ const response = await client.embeddings.create({
+  model,
+  input,
+ });
+
+ return response.data.map((item) => item.embedding);
 }

@@ -58,7 +58,7 @@ export const minioService = {
    });
 
    const fileUrl = buildFileUrl(targetBucket, filename);
-   saveReference(id, filename, fileUrl, targetBucket, file.size, file.mimetype);
+   await saveReference(id, filename, fileUrl, targetBucket, file.size, file.mimetype);
 
    return new ServiceResponse<MinioUploadResult>(
     ResponseStatus.Success,

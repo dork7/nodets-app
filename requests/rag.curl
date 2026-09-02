@@ -1,0 +1,28 @@
+# Ingest documents from data.json
+curl -X POST 'http://localhost:2020/v1/rag/ingest' \
+  -H 'Content-Type: application/json' \
+  -d '{"source":"json"}'
+
+# Ingest a MinIO file by id
+curl -X POST 'http://localhost:2020/v1/rag/ingest' \
+  -H 'Content-Type: application/json' \
+  -d '{"source":"minio","fileId":"550e8400-e29b-41d4-a716-446655440000","bucket":"uploads"}'
+
+# Ingest CSV content
+curl -X POST 'http://localhost:2020/v1/rag/ingest' \
+  -H 'Content-Type: application/json' \
+  -d '{"source":"csv","content":"name,age\nAlice,30\nBob,25"}'
+
+# Ingest from a URL
+curl -X POST 'http://localhost:2020/v1/rag/ingest' \
+  -H 'Content-Type: application/json' \
+  -d '{"source":"url","url":"https://example.com"}'
+
+# Search the knowledge base
+curl -X GET 'http://localhost:2020/v1/rag/search?q=delivery%20UAE&k=3'
+
+# Clear the collection
+curl -X DELETE 'http://localhost:2020/v1/rag'
+
+# Get RAG stats
+curl -X GET 'http://localhost:2020/v1/rag/stats'

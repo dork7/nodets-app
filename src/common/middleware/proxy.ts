@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express';
 
 import { RequestProps } from '../interfaces/common';
 
-export const proxyList: { url: string }[] = [];
+export const proxyList: { url: string }[] = [{ url: '/v1/catalogue' }];
 
 export const proxyHandler = (req: RequestProps, res: Response, next: NextFunction) => {
  const found = proxyList.find((item) => item.url === req.originalUrl.split('?')[0]);
