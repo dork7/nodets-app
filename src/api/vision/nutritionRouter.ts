@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import multer from 'multer';
 
-import { visionService } from '@/api/vision/visionService';
+import { OPENROUTER_PROVIDER, visionService } from '@/api/vision/visionService';
 import { logger } from '@/server';
 
 const upload = multer({
@@ -82,7 +82,8 @@ export const nutritionRouter: Router = (() => {
 
    const serviceResponse = await visionService.extractImageDetails(
     req.file as Express.Multer.File | undefined,
-    (req.body?.prompt as string | undefined) ?? undefined
+    (req.body?.prompt as string | undefined) ?? undefined,
+    OPENROUTER_PROVIDER
    );
 
    if (!serviceResponse.success || !serviceResponse.responseObject) {

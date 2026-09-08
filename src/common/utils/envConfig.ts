@@ -40,6 +40,8 @@ export const env = cleanEnv(process.env, {
  OPENROUTER_BASE_URL: url({ default: 'https://openrouter.ai/api/v1', desc: 'Base URL for the OpenRouter API' }),
  OPENROUTER_API_KEY: str({ default: '', desc: 'API key for the OpenRouter API' }),
  OPENROUTER_VISION_MODEL: str({ default: 'google/gemma-4-26b-a4b-it:free', desc: 'Image analysis model' }),
+ LOCALAI_CHAT_MODEL: str({ default: 'ai/gemma3', desc: 'Default chat/completions model for LocalAI' }),
+ OPENROUTER_CHAT_MODEL: str({ default: 'google/gemma-4-26b-a4b-it:free', desc: 'Default chat/completions model for OpenRouter' }),
  CHROMA_URL: url({ default: 'http://localhost:8000', desc: 'Base URL for the ChromaDB vector store' }),
  RAG_COLLECTION_NAME: str({ default: 'knowledge_base2', desc: 'ChromaDB collection used by the RAG system' }),
  RAG_ENABLED: bool({ default: false, desc: 'Master switch for RAG retrieval in chat' }),
