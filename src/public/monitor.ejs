@@ -149,6 +149,24 @@
 
         .chart-box { padding: 0.5rem 0.25rem 0; }
         .token-mini { font-size: 0.7rem; color: hsl(var(--muted-foreground)); }
+
+        /* --- model metrics --- */
+        .grid-model-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        @media (max-width: 900px) { .grid-model-stats { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 520px) { .grid-model-stats { grid-template-columns: 1fr; } }
+        .stat-mini {
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 0.125rem);
+            padding: 0.85rem 1rem;
+        }
+        .stat-mini-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: hsl(var(--muted-foreground)); }
+        .stat-mini-value { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-top: 0.2rem; font-variant-numeric: tabular-nums; }
+        .stat-mini .stat-sub {
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .endpoint-state { font-variant-numeric: tabular-nums; }
+        .endpoint-state.ok { color: hsl(var(--success)); }
+        .endpoint-state.down { color: hsl(var(--destructive)); }
     </style>
 </head>
 <body>
@@ -227,16 +245,79 @@
                 </div>
             </div>
         </section>
+
+        <section class="card section-gap">
+            <div class="card-header">
+                <div class="card-title-lg">Loaded AI Models</div>
+                <div class="card-description">
+                    Live from LocalAI <code>/metrics</code> &amp; <code>/system</code> &middot;
+                    <span id="models-endpoint-state" class="endpoint-state">&mdash;</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="grid grid-model-stats">
+                    <div class="stat-mini">
+                        <div class="stat-mini-label">Models Loaded</div>
+                        <div id="models-loaded" class="stat-mini-value">0</div>
+                        <div id="models-loaded-sub" class="stat-sub">&mdash;</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-label">LocalAI Process RSS</div>
+                        <div id="localai-rss" class="stat-mini-value">0</div>
+                        <div id="localai-uptime" class="stat-sub">&mdash;</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-label">Served Requests</div>
+                        <div id="models-requests" class="stat-mini-value">0</div>
+                        <div id="models-tokens-sub" class="stat-sub">&mdash;</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-label">Unrecorded Usage</div>
+                        <div id="models-unrecorded" class="stat-mini-value">0</div>
+                        <div class="stat-sub">billing-gap events</div>
+                    </div>
+                </div>
+                <div class="table-wrap section-gap">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Status</th>
+                                <th>Requests</th>
+                                <th>Prompt Tokens</th>
+                                <th>Completion Tokens</th>
+                                <th>Total Tokens</th>
+                            </tr>
+                        </thead>
+                        <tbody id="models-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script>
         const LOGS_ENDPOINT = '/v1/monitor/logs';
+        const MODELS_ENDPOINT = '/v1/monitor/models';
         const expanded = new Set();
 
         const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
             { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
         ));
         const num = (n) => Number(n || 0).toLocaleString();
+        const fmtBytes = (n) => {
+            if (!n) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.min(units.length - 1, Math.floor(Math.log(n) / Math.log(1024)));
+            return (n / Math.pow(1024, i)).toFixed(i ? 1 : 0) + ' ' + units[i];
+        };
+        const fmtDuration = (s) => {
+            if (!s) return '—';
+            const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+            if (d) return `${d}d ${h}h`;
+            if (h) return `${h}h ${m}m`;
+            return `${m}m`;
+        };
         const shortId = (id) => {
             if (!id) return '&mdash;';
             const s = String(id);
@@ -423,8 +504,69 @@
             });
         }
 
-        fetchData();
-        setInterval(fetchData, 5000);
+        async function fetchModelMetrics() {
+            const stateEl = document.getElementById('models-endpoint-state');
+            try {
+                const response = await fetch(MODELS_ENDPOINT);
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const body = await response.json();
+                renderModelMetrics(body.responseObject || body.data || body);
+            } catch (err) {
+                console.error('Error fetching model metrics:', err);
+                stateEl.textContent = 'unreachable';
+                stateEl.className = 'endpoint-state down';
+            }
+        }
+
+        function renderModelMetrics(snap) {
+            const stateEl = document.getElementById('models-endpoint-state');
+            stateEl.textContent = snap.reachable ? 'LocalAI connected' : 'LocalAI unreachable';
+            stateEl.className = 'endpoint-state ' + (snap.reachable ? 'ok' : 'down');
+
+            const proc = snap.process || {};
+            const totals = snap.totals || {};
+            const loaded = snap.loadedModels || [];
+
+            document.getElementById('models-loaded').textContent = num(snap.loadedCount);
+            document.getElementById('models-loaded-sub').textContent = loaded.length ? loaded.join(', ') : 'none resident';
+            document.getElementById('models-loaded-sub').title = loaded.join(', ');
+            document.getElementById('localai-rss').textContent = fmtBytes(proc.residentMemoryBytes);
+            document.getElementById('localai-uptime').textContent = 'uptime ' + fmtDuration(proc.uptimeSeconds);
+            document.getElementById('models-requests').textContent = num(totals.requests);
+            document.getElementById('models-tokens-sub').textContent =
+                `${num(totals.promptTokens)} prompt · ${num(totals.completionTokens)} completion tokens`;
+
+            const unrec = document.getElementById('models-unrecorded');
+            unrec.textContent = num(totals.unrecorded);
+            unrec.style.color = totals.unrecorded > 0 ? 'hsl(var(--destructive))' : '';
+
+            const tbody = document.getElementById('models-table-body');
+            const models = snap.models || [];
+            if (!models.length) {
+                tbody.innerHTML = '<tr class="empty-row"><td colspan="6">'
+                    + (snap.reachable ? 'No model usage reported yet.' : 'Could not reach the LocalAI metrics endpoint.')
+                    + '</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = models.map((m) => `
+                <tr>
+                    <td class="cell-mono">${esc(m.model)}</td>
+                    <td><span class="badge ${m.loaded ? 'badge-success' : 'badge-muted'}">${m.loaded ? 'LOADED' : 'IDLE'}</span></td>
+                    <td class="cell-mono cell-nowrap">${num(m.requests)}</td>
+                    <td class="cell-mono cell-nowrap">${num(m.promptTokens)}</td>
+                    <td class="cell-mono cell-nowrap">${num(m.completionTokens)}</td>
+                    <td class="cell-mono cell-nowrap"><strong>${num(m.totalTokens)}</strong></td>
+                </tr>`).join('');
+        }
+
+        function refreshAll() {
+            fetchData();
+            fetchModelMetrics();
+        }
+
+        refreshAll();
+        setInterval(refreshAll, 5000);
     </script>
 </body>
 </html>

@@ -977,6 +977,37 @@
      display: none;
     }
 
+    .model-search-input {
+     flex-shrink: 0;
+     width: 100%;
+     background: var(--bg-inset);
+     border: 1px solid var(--border);
+     border-radius: var(--radius-sm);
+     color: var(--fg);
+     font-family: var(--font-mono);
+     font-size: 0.78em;
+     padding: 6px 10px;
+     outline: none;
+     transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .model-search-input::placeholder {
+     color: var(--fg-faint);
+    }
+
+    .model-search-input:focus-visible,
+    .model-search-input:focus {
+     border-color: var(--border-strong);
+     box-shadow: inset 0 0 0 1px var(--accent);
+    }
+
+    .model-search-empty {
+     color: var(--fg-faint);
+     font-size: 0.78em;
+     text-align: center;
+     padding: 12px 4px;
+    }
+
     #model-selector {
      display: flex;
      flex-direction: column;
@@ -2043,7 +2074,7 @@
      font-weight: 600;
     }
 
-    #send:hover {
+    #send:hover:not(:disabled) {
      opacity: 0.88;
     }
 
@@ -2063,6 +2094,7 @@
      border-color: var(--border-strong);
     }
 
+    #send:disabled,
     #stop-stream:disabled,
     #upload-btn:disabled {
      opacity: 0.45;
@@ -2565,6 +2597,7 @@
     <div id="right-sidebar">
      <div id="models-panel">
       <span class="model-selector-label">AI Model</span>
+      <input type="text" id="model-search-input" class="model-search-input" placeholder="Search models…" autocomplete="off" />
       <div id="model-selector"></div>
       <button type="button" id="model-view-all-btn" title="Show all models">View all</button>
      </div>
@@ -2651,6 +2684,7 @@ const state = {
     pastedCodeList: [],
     loadedModelsByName: {},
     allModels: [],
+    modelSearchQuery: '',
     sessionId: localStorage.getItem('chatSessionId') || `sess-${Math.random().toString(36).substr(2, 9)}`,
 };
 
@@ -2661,6 +2695,7 @@ const state = {
     form: document.getElementById('input-form'),
     input: document.getElementById('input'),
     speakBtn: document.getElementById('speak-btn'),
+    sendBtn: document.getElementById('send'),
     stopBtn: document.getElementById('stop-stream'),
     streamToggle: document.getElementById('stream-toggle'),
     streamingLabel: document.getElementById('streaming-label'),
@@ -2669,6 +2704,7 @@ const state = {
     ragDistance: document.getElementById('rag-distance'),
     ragDistanceContainer: document.getElementById('rag-distance-container'),
     modelSelector: document.getElementById('model-selector'),
+    modelSearchInput: document.getElementById('model-search-input'),
     providerSelector: document.getElementById('provider-selector'),
     uploadBtn: document.getElementById('upload-btn'),
     fileInput: document.getElementById('file-input'),
@@ -2755,6 +2791,9 @@ const state = {
 
     setStopButtonEnabled(isEnabled) {
      elements.stopBtn.disabled = !isEnabled;
+     // A response is in flight exactly while the stop button is active, so the
+     // send button is the inverse: blocked until the socket response completes.
+     elements.sendBtn.disabled = isEnabled;
     },
 
     async copyToClipboard(text) {
@@ -3186,6 +3225,8 @@ const state = {
      state.socket.addEventListener('close', () => {
       messageManager.append('System', 'Disconnected from chat server.', 'system');
       state.isConnected = false;
+      state.isStreaming = false;
+      utils.setStopButtonEnabled(false);
       this.scheduleReconnect();
      });
     },
@@ -3280,7 +3321,15 @@ const state = {
    const modelManager = {
     init() {
      this.bindSheet();
+     this.bindSearch();
      this.loadLoadedModels();
+    },
+
+    bindSearch() {
+     elements.modelSearchInput.addEventListener('input', () => {
+      state.modelSearchQuery = elements.modelSearchInput.value;
+      this.renderModels();
+     });
     },
 
     bindSheet() {
@@ -3338,11 +3387,19 @@ const state = {
     },
 
     renderModels() {
-     const preview = this.getPreviewModels();
-     elements.modelSelector.innerHTML = preview
-      .map((model) => this.rowTemplate(model, state.selectedModel))
-      .join('');
+     const preview = this.filterModels(this.getPreviewModels());
+     elements.modelSelector.innerHTML = preview.length
+      ? preview.map((model) => this.rowTemplate(model, state.selectedModel)).join('')
+      : '<div class="model-search-empty">No models match your search</div>';
      this.bindRowEvents(elements.modelSelector);
+    },
+
+    filterModels(models) {
+     const query = state.modelSearchQuery.trim().toLowerCase();
+     if (!query) return models;
+     return models.filter((model) =>
+      `${model.label} ${model.value}`.toLowerCase().includes(query)
+     );
     },
 
     renderSheet() {
@@ -3694,6 +3751,12 @@ const ragToggle = {
     init() {
      elements.form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // Ignore submits (button click or Enter) while a socket response is in flight.
+      if (state.isStreaming || elements.sendBtn.disabled) {
+       return;
+      }
+
       let message = elements.input.value.trim();
 
       if (message === '/new') {
@@ -3751,6 +3814,8 @@ const ragToggle = {
       uploadManager.clearAll();
       codePreviewManager.clear();
       elements.input.value = '';
+      // Block resubmits during the gap before the server's stream_start arrives.
+      elements.sendBtn.disabled = true;
      });
 
      elements.stopBtn.addEventListener('click', () => {

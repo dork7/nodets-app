@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { handleServiceResponse } from '@/common/utils/httpHandlers';
-import { AiCallLog, monitorService } from '@/services/monitorService';
+import { AiCallLog, ModelMetricsSnapshot, monitorService } from '@/services/monitorService';
 
 export const monitorRouter: Router = (() => {
  const router = express.Router();
@@ -29,6 +29,19 @@ export const monitorRouter: Router = (() => {
   const logs = await monitorService.getRecentLogs();
   handleServiceResponse(
    new ServiceResponse<AiCallLog[]>(ResponseStatus.Success, 'Logs retrieved', logs, StatusCodes.OK),
+   res
+  );
+ });
+
+ router.get('/models', async (_req: Request, res: Response) => {
+  const snapshot = await monitorService.getModelMetrics();
+  handleServiceResponse(
+   new ServiceResponse<ModelMetricsSnapshot>(
+    ResponseStatus.Success,
+    'Model metrics retrieved',
+    snapshot,
+    StatusCodes.OK
+   ),
    res
   );
  });
