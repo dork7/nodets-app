@@ -12,6 +12,7 @@ import { ragRouter } from '@/api/rag/ragRouter';
 import { redisRouter } from '@/api/redis/redisRouter';
 import { nutritionRouter } from '@/api/vision/nutritionRouter';
 import { visionRouter } from '@/api/vision/visionRouter';
+import { monitorRouter } from '@/api/monitor/monitorRouter';
 import { readFileData } from '@/common/utils/fileUtils';
 
 const router = express.Router();
@@ -27,6 +28,7 @@ router.use('/nutrition', nutritionRouter);
 router.use('/minio', minioRouter);
 router.use('/rag', ragRouter);
 router.use('/aiProviders', aiProvidersRouter);
+router.use('/monitor', monitorRouter);
 
 router.use('/dashboard', async (req, res) => {
  const fileContent = await readFileData('file.txt');

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        /*
+         * shadcn/ui design tokens (default "zinc" theme, new-york style).
+         * Hand-ported to plain CSS so the page stays a build-free static file.
+         */
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --border: 240 5.9% 90%;
+            --primary: 240 5.9% 10%;
+            --accent: 240 4.8% 95.9%;
+            --success: 142 71% 45%;
+            --destructive: 0 72% 51%;
+            --radius: 0.5rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: 240 10% 3.9%;
+                --foreground: 0 0% 98%;
+                --card: 240 10% 3.9%;
+                --card-foreground: 0 0% 98%;
+                --muted: 240 3.7% 15.9%;
+                --muted-foreground: 240 5% 64.9%;
+                --border: 240 3.7% 15.9%;
+                --primary: 0 0% 98%;
+                --accent: 240 3.7% 15.9%;
+                --success: 142 71% 45%;
+                --destructive: 0 62% 52%;
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+        /* --- header --- */
+        .page-header { margin-bottom: 2rem; display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .page-header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.025em; }
+        .page-header p { color: hsl(var(--muted-foreground)); margin-top: 0.25rem; }
+        .refresh-note { font-size: 0.8rem; color: hsl(var(--muted-foreground)); }
+
+        /* --- card --- */
+        .card {
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        .card-header { padding: 1.5rem; padding-bottom: 0.5rem; }
+        .card-content { padding: 1.5rem; padding-top: 0.5rem; }
+        .card-title { font-size: 0.875rem; font-weight: 500; letter-spacing: -0.01em; }
+        .card-title-lg { font-size: 1rem; font-weight: 600; letter-spacing: -0.015em; }
+        .card-description { font-size: 0.8rem; color: hsl(var(--muted-foreground)); margin-top: 0.15rem; }
+
+        .stat-value { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.03em; margin-top: 0.35rem; }
+        .stat-sub { font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-top: 0.15rem; }
+
+        /* --- grid --- */
+        .grid { display: grid; gap: 1rem; }
+        .grid-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 1.5rem; }
+        @media (max-width: 900px) { .grid-stats { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 520px) { .grid-stats { grid-template-columns: 1fr; } }
+
+        .section-gap { margin-top: 1.5rem; }
+
+        /* --- table --- */
+        .table-wrap { width: 100%; overflow-x: auto; }
+        table.table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+        table.table thead th {
+            text-align: left;
+            font-weight: 500;
+            color: hsl(var(--muted-foreground));
+            height: 2.5rem;
+            padding: 0.35rem 0.75rem;
+            border-bottom: 1px solid hsl(var(--border));
+            white-space: nowrap;
+        }
+        table.table thead th .th-sub { font-weight: 400; font-size: 0.7rem; opacity: 0.8; }
+        table.table tbody td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid hsl(var(--border));
+            vertical-align: top;
+        }
+        table.table tbody tr.log-row { cursor: pointer; }
+        table.table tbody tr.log-row:hover { background-color: hsl(var(--muted) / 0.5); }
+        table.table tbody tr:last-child td { border-bottom: 0; }
+        .cell-muted { color: hsl(var(--muted-foreground)); }
+        .cell-mono { font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .cell-nowrap { white-space: nowrap; }
+        .prompt-cell { max-width: 340px; }
+        .prompt-preview {
+            display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden; white-space: pre-wrap; word-break: break-word;
+        }
+        .empty-row td { color: hsl(var(--muted-foreground)); text-align: center; padding: 2rem 0.75rem; }
+
+        /* --- detail row --- */
+        .detail-row td { background-color: hsl(var(--muted) / 0.35); padding: 1rem 0.75rem; }
+        .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem 1.5rem; }
+        .detail-item .k { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: hsl(var(--muted-foreground)); }
+        .detail-item .v { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-word; }
+        .detail-block { margin-top: 0.85rem; }
+        .detail-block .k { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: hsl(var(--muted-foreground)); margin-bottom: 0.25rem; }
+        .detail-block pre {
+            background-color: hsl(var(--background));
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 0.125rem);
+            padding: 0.6rem 0.75rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.75rem;
+            white-space: pre-wrap; word-break: break-word;
+            max-height: 260px; overflow: auto;
+        }
+        .detail-block pre.error-text { color: hsl(var(--destructive)); }
+
+        /* --- badge --- */
+        .badge {
+            display: inline-flex; align-items: center;
+            border-radius: calc(var(--radius) - 0.125rem);
+            padding: 0.125rem 0.5rem;
+            font-size: 0.7rem; font-weight: 600; line-height: 1.35;
+            border: 1px solid transparent; white-space: nowrap;
+        }
+        .badge-success { background-color: hsl(var(--success) / 0.12); color: hsl(var(--success)); border-color: hsl(var(--success) / 0.25); }
+        .badge-destructive { background-color: hsl(var(--destructive) / 0.12); color: hsl(var(--destructive)); border-color: hsl(var(--destructive) / 0.25); }
+        .badge-muted { background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground)); border-color: hsl(var(--border)); }
+
+        .chart-box { padding: 0.5rem 0.25rem 0; }
+        .token-mini { font-size: 0.7rem; color: hsl(var(--muted-foreground)); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <div>
+                <h1>AI System Monitor</h1>
+                <p>Real-time observability for AI model performance &middot; last 60 minutes</p>
+            </div>
+            <div class="refresh-note">Auto-refreshes every 5s &middot; <span id="last-refresh">&mdash;</span></div>
+        </header>
+
+        <section class="grid grid-stats">
+            <div class="card">
+                <div class="card-header"><div class="card-title">Total Calls</div></div>
+                <div class="card-content">
+                    <div id="total-calls" class="stat-value">0</div>
+                    <div id="calls-sub" class="stat-sub">0 success &middot; 0 failed</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><div class="card-title">Avg Response Time</div></div>
+                <div class="card-content">
+                    <div id="avg-latency" class="stat-value">0ms</div>
+                    <div id="latency-sub" class="stat-sub">p95 0ms &middot; max 0ms</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><div class="card-title">Failure Rate</div></div>
+                <div class="card-content">
+                    <div id="failure-rate" class="stat-value">0%</div>
+                    <div id="failure-sub" class="stat-sub">0 failed calls</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><div class="card-title">Tokens Consumed</div></div>
+                <div class="card-content">
+                    <div id="total-tokens" class="stat-value">0</div>
+                    <div id="tokens-sub" class="stat-sub">0 prompt &middot; 0 completion</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <div class="card-title-lg">Latency Trend</div>
+                <div class="card-description">Response time per call (ms), oldest &rarr; newest</div>
+            </div>
+            <div class="card-content">
+                <div class="chart-box"><canvas id="latencyChart" height="90"></canvas></div>
+            </div>
+        </section>
+
+        <section class="card section-gap">
+            <div class="card-header">
+                <div class="card-title-lg">Call History</div>
+                <div class="card-description">Most recent 50 AI calls &middot; click a row for full details</div>
+            </div>
+            <div class="card-content">
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Session</th>
+                                <th>Provider</th>
+                                <th>Model</th>
+                                <th>Prompt</th>
+                                <th>Tokens<br><span class="th-sub">prompt / completion / total</span></th>
+                                <th>Response Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const LOGS_ENDPOINT = '/v1/monitor/logs';
+        const expanded = new Set();
+
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+        const num = (n) => Number(n || 0).toLocaleString();
+        const shortId = (id) => {
+            if (!id) return '&mdash;';
+            const s = String(id);
+            return s.length > 12 ? esc(s.slice(0, 6) + '…' + s.slice(-4)) : esc(s);
+        };
+        const tk = (log) => log.tokenUsage || {};
+        const totalTokens = (log) => {
+            const t = tk(log);
+            return t.total_tokens || ((t.prompt_tokens || 0) + (t.completion_tokens || 0));
+        };
+        const percentile = (arr, p) => {
+            if (!arr.length) return 0;
+            const sorted = [...arr].sort((a, b) => a - b);
+            const idx = Math.min(sorted.length - 1, Math.ceil((p / 100) * sorted.length) - 1);
+            return sorted[Math.max(0, idx)];
+        };
+
+        async function fetchData() {
+            try {
+                const response = await fetch(LOGS_ENDPOINT);
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+
+                const body = await response.json();
+                // API wraps the payload in a ServiceResponse: { success, message, responseObject }
+                const logs = Array.isArray(body) ? body : (body.responseObject || body.data || []);
+
+                renderStats(logs);
+                renderTable(logs);
+                updateChart(logs);
+                document.getElementById('last-refresh').textContent = 'updated ' + new Date().toLocaleTimeString();
+            } catch (err) {
+                console.error('Error fetching monitor data:', err);
+            }
+        }
+
+        function renderStats(logs) {
+            const total = logs.length;
+            const failures = logs.filter((l) => l.status === 'FAILED').length;
+            const success = total - failures;
+            const durations = logs.map((l) => l.durationMs || 0);
+            const avg = total ? Math.round(durations.reduce((a, b) => a + b, 0) / total) : 0;
+
+            const promptTokens = logs.reduce((a, l) => a + (tk(l).prompt_tokens || 0), 0);
+            const completionTokens = logs.reduce((a, l) => a + (tk(l).completion_tokens || 0), 0);
+            const allTokens = logs.reduce((a, l) => a + totalTokens(l), 0);
+
+            document.getElementById('total-calls').textContent = num(total);
+            document.getElementById('calls-sub').textContent = `${num(success)} success · ${num(failures)} failed`;
+            document.getElementById('avg-latency').textContent = num(avg) + 'ms';
+            document.getElementById('latency-sub').textContent =
+                `p95 ${num(percentile(durations, 95))}ms · max ${num(Math.max(0, ...durations))}ms`;
+            document.getElementById('failure-rate').textContent =
+                (total ? ((failures / total) * 100).toFixed(1) : '0') + '%';
+            document.getElementById('failure-sub').textContent = `${num(failures)} failed calls`;
+            document.getElementById('total-tokens').textContent = num(allTokens);
+            document.getElementById('tokens-sub').textContent =
+                `${num(promptTokens)} prompt · ${num(completionTokens)} completion`;
+        }
+
+        function renderTable(logs) {
+            const tbody = document.getElementById('logs-table-body');
+            if (!logs.length) {
+                tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No AI calls recorded in the last 60 minutes.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = logs.slice(0, 50).map((log) => {
+                const key = log.id;
+                const badge = log.status === 'SUCCESS' ? 'badge-success' : 'badge-destructive';
+                const t = tk(log);
+                const tokenCell = totalTokens(log)
+                    ? `${num(t.prompt_tokens || 0)} / ${num(t.completion_tokens || 0)} / <strong>${num(totalTokens(log))}</strong>`
+                    : '<span class="cell-muted">&mdash;</span>';
+                const ts = new Date(log.timestamp);
+
+                const mainRow = `
+                    <tr class="log-row" data-key="${esc(key)}">
+                        <td class="cell-muted cell-mono cell-nowrap" title="${esc(ts.toLocaleString())}">${esc(ts.toLocaleTimeString())}</td>
+                        <td class="cell-mono" title="${esc(log.sessionId || '')}">${shortId(log.sessionId)}</td>
+                        <td>${esc(log.provider || '—')}</td>
+                        <td class="cell-mono">${esc(log.model || '—')}</td>
+                        <td class="prompt-cell"><div class="prompt-preview">${esc(log.prompt || '—')}</div></td>
+                        <td class="cell-mono cell-nowrap">${tokenCell}</td>
+                        <td class="cell-mono cell-nowrap">${num(log.durationMs)}ms</td>
+                        <td><span class="badge ${badge}">${esc(log.status)}</span></td>
+                    </tr>`;
+
+                if (!expanded.has(key)) return mainRow;
+
+                const errBlock = log.error
+                    ? `<div class="detail-block"><div class="k">Error</div><pre class="error-text">${esc(log.error)}</pre></div>`
+                    : '';
+
+                const detailRow = `
+                    <tr class="detail-row">
+                        <td colspan="8">
+                            <div class="detail-grid">
+                                <div class="detail-item"><div class="k">Log ID</div><div class="v">${esc(log.id)}</div></div>
+                                <div class="detail-item"><div class="k">Session ID</div><div class="v">${esc(log.sessionId || '—')}</div></div>
+                                <div class="detail-item"><div class="k">Timestamp</div><div class="v">${esc(new Date(log.timestamp).toISOString())}</div></div>
+                                <div class="detail-item"><div class="k">Provider</div><div class="v">${esc(log.provider || '—')}</div></div>
+                                <div class="detail-item"><div class="k">Model</div><div class="v">${esc(log.model || '—')}</div></div>
+                                <div class="detail-item"><div class="k">Response Time</div><div class="v">${num(log.durationMs)} ms</div></div>
+                                <div class="detail-item"><div class="k">Status</div><div class="v">${esc(log.status)}</div></div>
+                                <div class="detail-item"><div class="k">Prompt Chars</div><div class="v">${num(log.contextSize)}</div></div>
+                                <div class="detail-item"><div class="k">Prompt Tokens</div><div class="v">${num(t.prompt_tokens || 0)}</div></div>
+                                <div class="detail-item"><div class="k">Completion Tokens</div><div class="v">${num(t.completion_tokens || 0)}</div></div>
+                                <div class="detail-item"><div class="k">Total Tokens</div><div class="v">${num(totalTokens(log))}</div></div>
+                            </div>
+                            <div class="detail-block">
+                                <div class="k">Prompt entered by user</div>
+                                <pre>${esc(log.prompt || '—')}</pre>
+                            </div>
+                            ${errBlock}
+                        </td>
+                    </tr>`;
+
+                return mainRow + detailRow;
+            }).join('');
+
+            tbody.querySelectorAll('tr.log-row').forEach((row) => {
+                row.addEventListener('click', () => {
+                    const key = row.getAttribute('data-key');
+                    if (expanded.has(key)) expanded.delete(key);
+                    else expanded.add(key);
+                    fetchData();
+                });
+            });
+        }
+
+        let chartInstance = null;
+        function updateChart(logs) {
+            const ctx = document.getElementById('latencyChart').getContext('2d');
+            const recent = logs.slice(0, 30).reverse();
+            const labels = recent.map((l) => new Date(l.timestamp).toLocaleTimeString());
+            const data = recent.map((l) => l.durationMs);
+            const colors = recent.map((l) => l.status === 'FAILED'
+                ? 'hsl(0 72% 51%)'
+                : `hsl(${getComputedStyle(document.documentElement).getPropertyValue('--primary')})`);
+
+            const styles = getComputedStyle(document.documentElement);
+            const border = `hsl(${styles.getPropertyValue('--primary')})`;
+            const grid = `hsl(${styles.getPropertyValue('--border')})`;
+            const tick = `hsl(${styles.getPropertyValue('--muted-foreground')})`;
+
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Response time (ms)',
+                        data,
+                        borderColor: border,
+                        backgroundColor: `hsl(${styles.getPropertyValue('--primary')} / 0.1)`,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 3,
+                        pointBackgroundColor: colors,
+                        pointBorderColor: colors,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: (item) => {
+                                    const log = recent[item.dataIndex];
+                                    const parts = [`${log.provider || '—'} · ${log.model || '—'}`, `status: ${log.status}`];
+                                    if (totalTokens(log)) parts.push(`tokens: ${totalTokens(log)}`);
+                                    return parts.join('\n');
+                                },
+                            },
+                        },
+                    },
+                    scales: {
+                        y: { grid: { color: grid }, ticks: { color: tick }, beginAtZero: true, title: { display: true, text: 'ms', color: tick } },
+                        x: { grid: { display: false }, ticks: { color: tick, maxRotation: 0, autoSkip: true } },
+                    },
+                },
+            });
+        }
+
+        fetchData();
+        setInterval(fetchData, 5000);
+    </script>
+</body>
+</html>

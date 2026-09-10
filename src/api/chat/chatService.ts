@@ -7,6 +7,8 @@ import { env } from '@/common/utils/envConfig';
 import { openai } from '@/openai';
 import { openRouterAIInstance } from '@/openai/providers/openRouterAI';
 import { logger } from '@/server';
+import { sendSlackNotification } from '@/common/utils/slack';
+import { monitorService } from '@/services/monitorService';
 
 const LOCALAI_PROVIDER = 'localai';
 export const OPENROUTER_PROVIDER = 'openrouter';
@@ -45,8 +47,12 @@ export const chatService = {
    );
   }
 
+  const aiModel = model ?? getDefaultChatModel(provider);
+  const providerName = isOpenRouter(provider) ? OPENROUTER_PROVIDER : LOCALAI_PROVIDER;
+  const fullPrompt = conversation.map(m => `${m.role}: ${m.content}`).join('\n');
+  const startTime = Date.now();
+
   try {
-   const aiModel = model ?? getDefaultChatModel(provider);
    const client = isOpenRouter(provider) ? openRouterAIInstance : openai;
 
    const completion = await client.chat.completions.create({
@@ -54,6 +60,8 @@ export const chatService = {
     messages: conversation,
     ...(temperature !== undefined ? { temperature } : {}),
    } as ChatCompletionCreateParamsNonStreaming & { stream: false });
+
+   const durationMs = Date.now() - startTime;
 
    const message = completion.choices[0]?.message as ChatCompletionMessage | undefined;
    const reply = message?.content?.trim() ?? '';
@@ -63,17 +71,34 @@ export const chatService = {
     reply,
     ...(reasoning ? { reasoning } : {}),
     model: aiModel,
-    provider: isOpenRouter(provider) ? OPENROUTER_PROVIDER : LOCALAI_PROVIDER,
+    provider: providerName,
     ...(completion.usage
      ? {
-        usage: {
-         prompt_tokens: completion.usage.prompt_tokens,
-         completion_tokens: completion.usage.completion_tokens,
-         total_tokens: completion.usage.total_tokens,
-        },
-       }
+      usage: {
+       prompt_tokens: completion.usage.prompt_tokens,
+       completion_tokens: completion.usage.completion_tokens,
+       total_tokens: completion.usage.total_tokens,
+      },
+     }
      : {}),
    };
+
+   await monitorService.logCall(
+    providerName,
+    aiModel,
+    'SUCCESS',
+    durationMs,
+    prompt?.trim() || fullPrompt,
+    undefined,
+    undefined,
+    completion.usage
+     ? {
+      prompt_tokens: completion.usage.prompt_tokens,
+      completion_tokens: completion.usage.completion_tokens,
+      total_tokens: completion.usage.total_tokens,
+     }
+     : undefined
+   );
 
    return new ServiceResponse<ChatResponse>(
     ResponseStatus.Success,
@@ -84,6 +109,21 @@ export const chatService = {
   } catch (error) {
    const errorMessage = `Failed to process the chat request with AI: ${(error as Error).message}`;
    logger.error(errorMessage, error);
+
+   try {
+    await sendSlackNotification(errorMessage, 'ERROR');
+   } catch (slackError) {
+    logger.error('Failed to send Slack notification', slackError);
+   }
+
+   await monitorService.logCall(
+    providerName,
+    aiModel,
+    'FAILED',
+    Date.now() - startTime,
+    fullPrompt,
+    (error as Error).message
+   );
 
    return new ServiceResponse<ChatResponse | null>(
     ResponseStatus.Failed,

@@ -140,6 +140,39 @@
      white-space: nowrap;
     }
 
+    .app-monitor-link {
+     display: inline-flex;
+     align-items: center;
+     gap: 8px;
+     margin-left: 16px;
+     background: var(--bg-raised);
+     border: 1px solid var(--border);
+     border-radius: var(--radius);
+     padding: 8px 14px;
+     color: var(--fg);
+     font-family: var(--font-mono);
+     font-size: 11px;
+     font-weight: 500;
+     text-transform: uppercase;
+     letter-spacing: 0.12em;
+     text-decoration: none;
+     white-space: nowrap;
+     transition: all 0.2s;
+    }
+
+    .app-monitor-link:hover {
+     opacity: 1;
+     color: var(--fg);
+     border-color: var(--border-strong);
+     background: var(--bg-deep);
+    }
+
+    .app-monitor-link svg {
+     width: 13px;
+     height: 13px;
+     flex-shrink: 0;
+    }
+
     .app-provider-select {
      appearance: none;
      -webkit-appearance: none;
@@ -2353,6 +2386,19 @@
       <label class="app-provider-label" for="provider-selector">Provider</label>
       <select id="provider-selector" class="app-provider-select" aria-label="AI provider"></select>
      </div>
+     <a
+      class="app-monitor-link"
+      href="/v1/monitor/dashboard"
+      target="_blank"
+      rel="noopener"
+      title="Open the AI monitor dashboard in a new tab"
+     >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+       <path d="M3 3v18h18" />
+       <path d="m19 9-5 5-4-4-3 3" />
+      </svg>
+      Monitor
+     </a>
     </div>
    </header>
    <div id="confirm-modal" class="modal-overlay" hidden>
