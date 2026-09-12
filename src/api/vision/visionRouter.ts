@@ -1,4 +1,4 @@
-import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
+import { extendZodWithOpenApi, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import express, { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import multer from 'multer';
@@ -9,6 +9,8 @@ import { visionService } from '@/api/vision/visionService';
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { handleServiceResponse } from '@/common/utils/httpHandlers';
+
+extendZodWithOpenApi(z);
 
 export const visionRegistry = new OpenAPIRegistry();
 
@@ -26,6 +28,8 @@ const upload = multer({
 const multipartSchema = z.object({
  image: z.any(),
  prompt: z.string().optional(),
+ provider: z.string().optional(),
+ model: z.string().optional(),
 });
 
 visionRegistry.registerPath({
@@ -65,7 +69,7 @@ export const visionRouter: Router = (() => {
    const serviceResponse = await visionService.extractImageDetails(
     req.file as Express.Multer.File | undefined,
     (req.body?.prompt as string | undefined) ?? undefined,
-    (req.body?.useOpenRouter as boolean | undefined) ?? false,
+    (req.body?.provider as string | undefined) ?? undefined,
     (req.body?.model as string | undefined) ?? undefined
    );
 

@@ -1,4 +1,4 @@
-import { getModel, listModels } from '@/openai/registry';
+import { getModel, listModels } from '@/config/openaiConfig/registry';
 
 export interface AIProviderInfo {
  name: string;

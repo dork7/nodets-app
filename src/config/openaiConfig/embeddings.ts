@@ -1,4 +1,4 @@
-import { createEmbeddings } from '@/openai';
+import { createEmbeddings } from '@/config/openaiConfig';
 
 const BATCH_SIZE = 100;
 

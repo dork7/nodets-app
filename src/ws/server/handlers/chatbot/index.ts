@@ -1,6 +1,7 @@
-import { callAI } from '@/openai';
-import { executeToolCalls, type ToolCallRequest, toOpenAITools } from '@/openai/tools';
+import { callAI } from '@/config/openaiConfig';
+import { executeToolCalls, type ToolCallRequest, toOpenAITools } from '@/config/openaiConfig/tools';
 import { logger } from '@/server';
+import { monitorService } from '@/services/monitorService';
 import { redis } from '@/services/redisStore';
 
 import { buildConversationHistory, getSummeriseHistory } from './utils/history';
@@ -280,14 +281,19 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
 
  const requestStartTime = Date.now();
 
+ // Hoisted so the monitor logging in catch/finally can see them.
+ const userInput = message.params?.prompt || DEFAULT_PROMPT;
+ const globalModels = (global as { aiModels?: string[] })?.aiModels;
+ const aiModel = message?.model || globalModels?.[0] || 'default';
+ const provider = message?.provider || 'localAI';
+ let monitorTokenUsage: TokenUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+ let monitorStatus: 'SUCCESS' | 'FAILED' = 'SUCCESS';
+ let monitorError: string | undefined;
+
  try {
   // Extract and validate input
-  const userInput = message.params?.prompt || DEFAULT_PROMPT;
   const imageIds = message.params?.imageIds || (message.params?.imageId ? [message.params.imageId] : []);
   const fileIds = message.params?.fileIds || [];
-  const globalModels = (global as { aiModels?: string[] })?.aiModels;
-  const aiModel = message?.model || globalModels?.[0] || '';
-  const provider = message?.provider || 'localAI';
   const isStreaming = normalizeStreamParam(message?.stream);
 
   logger.info(
@@ -410,6 +416,7 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
   }
 
   // Save token usage
+  monitorTokenUsage = tokenUsage;
   if (tokenUsage.total_tokens && tokenUsage.total_tokens > 0) {
    await saveTokenUsage(message.id, tokenUsage);
   }
@@ -440,13 +447,29 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
    return;
   }
 
-  logger.error(`Error in chatAI handler: ${getErrorMessage(error)}`);
+  monitorStatus = 'FAILED';
+  monitorError = getErrorMessage(error);
+  logger.error(`Error in chatAI handler: ${monitorError}`);
   sendStreamError(ws, message.id, error);
  } finally {
   const requestEndTime = Date.now();
   logger.info(
    `[chatAI] Request end at ${formatRequestTime(requestEndTime)} for session ${message.id} (duration: ${requestEndTime - requestStartTime}ms)`
   );
+
+  // Record the call for the monitor dashboard (skip user-aborted requests).
+  if (!abortController.signal.aborted) {
+   await monitorService.logCall(
+    provider,
+    aiModel,
+    monitorStatus,
+    requestEndTime - requestStartTime,
+    userInput,
+    monitorError,
+    message.id,
+    monitorTokenUsage
+   );
+  }
 
   if (activeAIRequests.get(message.id) === abortController) {
    activeAIRequests.delete(message.id);

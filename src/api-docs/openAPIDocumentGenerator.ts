@@ -3,6 +3,7 @@ import { OpenApiGeneratorV3, OpenAPIRegistry } from '@asteasolutions/zod-to-open
 import { aiProvidersRegistry } from '@/api/aiProviders/aiProvidersRouter';
 import { aiUtilsRegistry } from '@/api/aiUtils/aiUtilsRouter';
 import { catalogueRegistery } from '@/api/catalogue/catalogueRouter';
+import { chatRegistry } from '@/api/chat/chatRouter';
 import { healthCheckRegistry } from '@/api/healthCheck/healthCheckRouter';
 import { kafkaRegistry } from '@/api/kafka/kafkaRouter';
 import { ragRegistry } from '@/api/rag/ragRouter';
@@ -14,6 +15,7 @@ export function generateOpenAPIDocument() {
   healthCheckRegistry,
   aiUtilsRegistry,
   catalogueRegistery,
+  chatRegistry,
   ragRegistry,
   redisRegistry,
   kafkaRegistry,

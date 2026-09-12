@@ -1,5 +1,5 @@
 import { env } from '@/common/utils/envConfig';
-import { embedMany } from '@/openai/embeddings';
+import { embedMany } from '@/config/openaiConfig/embeddings';
 import { logger } from '@/server';
 import { queryCollection } from '@/services/vectorStore';
 

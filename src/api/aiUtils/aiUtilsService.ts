@@ -6,7 +6,7 @@ import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse
 import { getLLMModels } from '@/common/utils/getDockerLLMS';
 import { LOCALAI_URL } from '@/common/utils/getLocalAILLMs';
 import { redisClient } from '@/config/redisStore';
-import { openai } from '@/openai';
+import { openai } from '@/config/openaiConfig';
 import { logger } from '@/server';
 import { redis } from '@/services/redisStore';
 

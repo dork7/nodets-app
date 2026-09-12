@@ -1,5 +1,5 @@
 import { env } from '@/common/utils/envConfig';
-import { callAI, openai } from '@/openai';
+import { callAI, openai } from '@/config/openaiConfig';
 
 import { ChatMessage } from '..';
 

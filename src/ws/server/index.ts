@@ -4,6 +4,7 @@ import { WebSocketServer } from 'ws';
 import { env } from '@/common/utils/envConfig';
 import { genCorrelationId } from '@/common/utils/helpers';
 import { logger } from '@/server';
+import { monitorService } from '@/services/monitorService';
 
 import { chatbotHandler } from './handlers/chatbot';
 import { getMethod } from './methods';
@@ -23,7 +24,9 @@ export const startWebSocketServer = async (httpServer: any) => {
 
   if (url.includes('/ws/server')) {
    ws.on('message', async (message: any) => {
-    logger.info(`Received WebSocket message:   ${message.toString()}`);
+    const startTime = Date.now();
+    const rawMessage = message.toString();
+    logger.info(`Received WebSocket message:   ${rawMessage}`);
 
     ws.send(
      JSON.stringify({
@@ -34,97 +37,123 @@ export const startWebSocketServer = async (httpServer: any) => {
 
     let parsedMessage;
     try {
-     parsedMessage = JSON.parse(message.toString());
+     parsedMessage = JSON.parse(rawMessage);
     } catch {
-     parsedMessage = { content: message.toString() };
+     parsedMessage = { content: rawMessage };
     }
 
     const handler = getMethod(parsedMessage.method);
 
     if (!handler) {
+     const errorMsg = `Unknown method: ${parsedMessage.method}`;
+     await monitorService.logCall(
+      'websocket',
+      'unknown',
+      'FAILED',
+      Date.now() - startTime,
+      rawMessage,
+      errorMsg
+     );
+
      return ws.send(
       JSON.stringify({
        type: 'error',
-       id: message.id,
-       error: `Unknown method: ${message.method}`,
+       id: parsedMessage.id,
+       error: errorMsg,
       })
      );
     }
-    const result = await handler(parsedMessage);
-    const messageToSend = JSON.stringify({
-     type: 'response',
-     id: genCorrelationId(),
-     result,
-    });
 
-    if (params.type === 'broadcast') {
-     // Broadcast message to all connected clients
+    try {
+     const result = await handler(parsedMessage);
+     const durationMs = Date.now() - startTime;
 
-     wss.clients.forEach((client: any) => {
-      if (client.readyState === ws.OPEN && client !== ws) {
-       client.send(messageToSend);
-      }
+     await monitorService.logCall(
+      'websocket',
+      'server_handler',
+      'SUCCESS',
+      durationMs,
+      rawMessage
+     );
+
+     const messageToSend = JSON.stringify({
+      type: 'response',
+      id: genCorrelationId(),
+      result,
      });
-    } else {
-     ws.send(messageToSend);
+
+     if (params.type === 'broadcast') {
+      wss.clients.forEach((client: any) => {
+       if (client.readyState === ws.OPEN && client !== ws) {
+        client.send(messageToSend);
+       }
+      });
+     } else {
+      ws.send(messageToSend);
+     }
+    } catch (err: any) {
+     const errorMsg = err.message || 'Handler error';
+     await monitorService.logCall(
+      'websocket',
+      'server_handler',
+      'FAILED',
+      Date.now() - startTime,
+      rawMessage,
+      errorMsg
+     );
+     ws.send(JSON.stringify({ type: 'error', id: parsedMessage.id, error: errorMsg }));
     }
    });
   } else if (url.includes('/ws/stream')) {
-   // Handle other WebSocket paths here
-   ws.on('message', (message: any) => {
+   ws.on('message', async (message: any) => {
+    const startTime = Date.now();
+    const rawMessage = message.toString();
     let parsedMessage;
     try {
-     parsedMessage = JSON.parse(message.toString());
+     parsedMessage = JSON.parse(rawMessage);
     } catch {
-     parsedMessage = { content: message.toString() };
+     parsedMessage = { content: rawMessage };
     }
     const handler = getMethod(parsedMessage.method);
 
     if (!handler) {
-     return ws.send(
-      JSON.stringify({
-       type: 'error',
-       id: message.id,
-       error: `Unknown method: ${message.method}`,
-      })
-     );
+     const errorMsg = `Unknown method: ${parsedMessage.method}`;
+     await monitorService.logCall('websocket', 'stream_handler', 'FAILED', Date.now() - startTime, rawMessage, errorMsg);
+     return ws.send(JSON.stringify({ type: 'error', id: parsedMessage.id, error: errorMsg }));
     }
-    handler(ws, parsedMessage);
 
-    logger.info(`Received message on /ws/stream: ${message.toString()}`);
-    // Process the message as needed
+    try {
+     await handler(ws, parsedMessage);
+     await monitorService.logCall('websocket', 'stream_handler', 'SUCCESS', Date.now() - startTime, rawMessage);
+     logger.info(`Received message on /ws/stream: ${rawMessage}`);
+    } catch (err: any) {
+     await monitorService.logCall('websocket', 'stream_handler', 'FAILED', Date.now() - startTime, rawMessage, err.message);
+    }
    });
   } else if (url.includes('/ws/chatAI')) {
-   // Handle other WebSocket paths here
-   ws.on('message', (message: any) => {
+   ws.on('message', async (message: any) => {
+    const rawMessage = message.toString();
     let parsedMessage;
     try {
-     parsedMessage = JSON.parse(message.toString());
+     parsedMessage = JSON.parse(rawMessage);
     } catch {
-     parsedMessage = { content: message.toString() };
+     parsedMessage = { content: rawMessage };
     }
-    const handler = chatbotHandler; //getMethod(parsedMessage.method);
 
-    if (!handler) {
-     return ws.send(
-      JSON.stringify({
-       type: 'error',
-       id: message.id,
-       error: `Unknown method: ${message.method}`,
-      })
-     );
+    // The chatAI handler records its own monitor entry (with the real
+    // provider/model/prompt, session id and token usage), so we don't log here.
+    try {
+     await chatbotHandler(ws, parsedMessage);
+     logger.info(`Received message on /ws/chatAI: ${rawMessage}`);
+    } catch (err: any) {
+     logger.error(`chatAI handler error: ${err?.message}`);
     }
-    handler(ws, parsedMessage);
-
-    logger.info(`Received message on /ws/chatAI: ${message.toString()}`);
-    // Process the message as needed
    });
   } else {
    return ws.send(
     JSON.stringify({
      type: 'error',
-
-     error: `Unknown URL: ${urlParts} `,
+     error: `Unknown URL: ${url} `,
     })
    );
   }
@@ -136,3 +165,4 @@ export const startWebSocketServer = async (httpServer: any) => {
 
  logger.info(`WebSocket server running on the same HTTP server ws://${HOST}:2020`);
 };
+

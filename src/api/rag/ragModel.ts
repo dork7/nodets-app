@@ -57,7 +57,14 @@ export const StatsResponseSchema = z.object({
  collections: z.array(z.string()),
 });
 
-export const TestEmbeddingSchema = z.object({
- text: z.string().min(1),
+export const TestEmbeddingRequestSchema = z.object({
+ body: z.object({
+  text: z.string().min(1),
+  provider: z.string().optional(),
+ }),
+});
+
+export const TestEmbeddingResponseSchema = z.object({
+ text: z.string(),
  provider: z.string().optional(),
 });

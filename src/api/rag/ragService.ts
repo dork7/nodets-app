@@ -6,7 +6,7 @@ import { chunkDocument } from '@/api/rag/chunker';
 import { UnsupportedFileTypeError } from '@/api/rag/extractText';
 import { LoadedDocument, loaders } from '@/api/rag/loaders';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
-import { embedMany } from '@/openai/embeddings';
+import { embedMany } from '@/config/openaiConfig/embeddings';
 import { logger } from '@/server';
 import {
  clearCollection,
