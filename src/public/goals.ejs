@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goal Tracker</title>
+    <style>
+        /*
+         * shadcn/ui design tokens (default "zinc" theme, new-york style).
+         * Hand-ported to plain CSS so the page stays a build-free static file.
+         */
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --border: 240 5.9% 90%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --accent: 240 4.8% 95.9%;
+            --success: 142 71% 45%;
+            --destructive: 0 72% 51%;
+            --radius: 0.5rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: 240 10% 3.9%;
+                --foreground: 0 0% 98%;
+                --card: 240 10% 3.9%;
+                --card-foreground: 0 0% 98%;
+                --muted: 240 3.7% 15.9%;
+                --muted-foreground: 240 5% 64.9%;
+                --border: 240 3.7% 15.9%;
+                --primary: 0 0% 98%;
+                --primary-foreground: 240 5.9% 10%;
+                --accent: 240 3.7% 15.9%;
+                --success: 142 71% 45%;
+                --destructive: 0 62% 52%;
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { max-width: 980px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+        .page-header { margin-bottom: 1.5rem; display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .page-header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.025em; }
+        .page-header p { color: hsl(var(--muted-foreground)); margin-top: 0.25rem; }
+
+        .card {
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        .card-header { padding: 1.25rem 1.5rem 0.5rem; }
+        .card-content { padding: 1.25rem 1.5rem 1.5rem; }
+        .card-title-lg { font-size: 1rem; font-weight: 600; letter-spacing: -0.015em; }
+        .card-description { font-size: 0.8rem; color: hsl(var(--muted-foreground)); margin-top: 0.15rem; }
+        .section-gap { margin-top: 1.25rem; }
+
+        label { display: block; font-size: 0.75rem; font-weight: 500; color: hsl(var(--muted-foreground)); margin-bottom: 0.25rem; }
+        input[type="text"], input[type="number"], input[type="date"], select, textarea {
+            width: 100%;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 0.125rem);
+            padding: 0.5rem 0.65rem;
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+        .field { margin-bottom: 0.85rem; }
+        .field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; }
+
+        button {
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border-radius: calc(var(--radius) - 0.125rem);
+            padding: 0.45rem 0.85rem;
+            cursor: pointer;
+            border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+        button:hover { background-color: hsl(var(--accent)); }
+        button.btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border-color: hsl(var(--primary)); }
+        button.btn-primary:hover { opacity: 0.9; }
+        button.btn-danger { color: hsl(var(--destructive)); border-color: hsl(var(--destructive) / 0.4); }
+        button.btn-danger:hover { background-color: hsl(var(--destructive) / 0.08); }
+        button.btn-sm { padding: 0.3rem 0.6rem; font-size: 0.72rem; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .goal-card { margin-bottom: 1rem; }
+        .goal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+        .goal-title-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .goal-title { font-size: 1.05rem; font-weight: 600; }
+        .goal-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+        .badge {
+            display: inline-flex; align-items: center;
+            border-radius: calc(var(--radius) - 0.125rem);
+            padding: 0.125rem 0.5rem;
+            font-size: 0.68rem; font-weight: 600; line-height: 1.35;
+            border: 1px solid transparent; white-space: nowrap;
+        }
+        .badge-success { background-color: hsl(var(--success) / 0.12); color: hsl(var(--success)); border-color: hsl(var(--success) / 0.25); }
+        .badge-destructive { background-color: hsl(var(--destructive) / 0.12); color: hsl(var(--destructive)); border-color: hsl(var(--destructive) / 0.25); }
+        .badge-muted { background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground)); border-color: hsl(var(--border)); }
+
+        .progress-track { height: 0.5rem; border-radius: 999px; background-color: hsl(var(--muted)); overflow: hidden; margin: 0.6rem 0; }
+        .progress-fill { height: 100%; background-color: hsl(var(--primary)); border-radius: 999px; }
+
+        .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem 1rem; margin-top: 0.5rem; }
+        .stat-item .k { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: hsl(var(--muted-foreground)); }
+        .stat-item .v { font-size: 0.9rem; font-weight: 600; margin-top: 0.1rem; font-variant-numeric: tabular-nums; }
+
+        .topics-list { margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem; }
+        .topic-item { border: 1px solid hsl(var(--border)); border-radius: calc(var(--radius) - 0.125rem); padding: 0.75rem 0.9rem; }
+        .topic-head { display: flex; justify-content: space-between; gap: 0.75rem; align-items: flex-start; flex-wrap: wrap; }
+        .topic-name { font-weight: 600; font-size: 0.88rem; }
+        .topic-desc { font-size: 0.78rem; color: hsl(var(--muted-foreground)); margin-top: 0.1rem; }
+        .topic-course { font-size: 0.78rem; margin-top: 0.4rem; }
+        .topic-course a { color: inherit; }
+        .topic-controls { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .topic-controls input[type="number"] { width: 5.5rem; }
+        .course-candidates { margin-top: 0.6rem; display: flex; flex-direction: column; gap: 0.4rem; }
+        .course-candidate { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; border: 1px solid hsl(var(--border)); border-radius: calc(var(--radius) - 0.125rem); padding: 0.5rem 0.65rem; font-size: 0.78rem; flex-wrap: wrap; }
+        .course-candidate .info { flex: 1; min-width: 200px; }
+        .course-candidate .meta { color: hsl(var(--muted-foreground)); font-size: 0.72rem; margin-top: 0.1rem; }
+
+        .suggestion-list { margin-top: 0.6rem; display: flex; flex-direction: column; gap: 0.4rem; }
+        .suggestion-item { display: flex; align-items: flex-start; gap: 0.5rem; border: 1px solid hsl(var(--border)); border-radius: calc(var(--radius) - 0.125rem); padding: 0.5rem 0.65rem; font-size: 0.8rem; }
+        .suggestion-item input { width: auto; margin-top: 0.2rem; }
+
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 0.5rem; }
+        .log-table th { text-align: left; color: hsl(var(--muted-foreground)); font-weight: 500; padding: 0.3rem 0.5rem; border-bottom: 1px solid hsl(var(--border)); }
+        .log-table td { padding: 0.35rem 0.5rem; border-bottom: 1px solid hsl(var(--border)); vertical-align: top; }
+        .cell-muted { color: hsl(var(--muted-foreground)); }
+
+        .empty-state { color: hsl(var(--muted-foreground)); font-size: 0.85rem; padding: 1rem 0; text-align: center; }
+        .error-note { color: hsl(var(--destructive)); font-size: 0.78rem; margin-top: 0.4rem; }
+        .hint { font-size: 0.72rem; color: hsl(var(--muted-foreground)); margin-top: 0.3rem; }
+        .divider { border: none; border-top: 1px solid hsl(var(--border)); margin: 0.9rem 0; }
+        .inline-form { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; }
+        .inline-form .field { margin-bottom: 0; flex: 1; min-width: 110px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <div>
+                <h1>Goal Tracker</h1>
+                <p>Add a learning goal, pick topics and courses, log study time, and watch your deadline recalculate.</p>
+            </div>
+        </header>
+
+        <section class="card">
+            <div class="card-header">
+                <div class="card-title-lg">New goal</div>
+                <div class="card-description">Give it a name and, optionally, a target date.</div>
+            </div>
+            <div class="card-content">
+                <form id="new-goal-form" class="field-row" style="align-items: end;">
+                    <div class="field">
+                        <label for="new-goal-title">Goal title</label>
+                        <input type="text" id="new-goal-title" placeholder="e.g. Learn Rust" required />
+                    </div>
+                    <div class="field">
+                        <label for="new-goal-deadline">Target deadline (optional)</label>
+                        <input type="date" id="new-goal-deadline" />
+                    </div>
+                    <div class="field" style="flex: 0;">
+                        <button type="submit" class="btn-primary">Add goal</button>
+                    </div>
+                </form>
+                <div id="new-goal-error" class="error-note" hidden></div>
+            </div>
+        </section>
+
+        <section id="goals-container" class="section-gap"></section>
+    </div>
+
+    <script>
+        const API = '/v1/goals';
+        const expanded = new Set();
+        const courseCandidates = {}; // `${goalId}:${topicIndex}` -> Course[]
+        const topicSuggestions = {}; // goalId -> TopicSuggestion[]
+        const busy = new Set(); // goalId -> true while an action is in flight
+        let goals = [];
+
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+        const hrs = (n) => (n === null || n === undefined ? '—' : `${Number(n).toFixed(1)}h`);
+        const pct = (a, b) => (b > 0 ? Math.min(100, Math.round((a / b) * 100)) : 0);
+        const todayStr = () => new Date().toISOString().slice(0, 10);
+
+        async function api(path, options) {
+            const res = await fetch(API + path, {
+                headers: { 'Content-Type': 'application/json' },
+                ...options,
+            });
+            const body = await res.json().catch(() => null);
+            if (!res.ok || !body || body.success === false) {
+                throw new Error((body && body.message) || `Request failed (${res.status})`);
+            }
+            return body.responseObject;
+        }
+
+        async function loadGoals() {
+            try {
+                goals = await api('', { method: 'GET' });
+            } catch (err) {
+                console.error(err);
+                goals = [];
+            }
+            render();
+        }
+
+        function statusBadge(status) {
+            if (status === 'completed') return '<span class="badge badge-success">Completed</span>';
+            if (status === 'in-progress') return '<span class="badge badge-muted">In progress</span>';
+            return '<span class="badge badge-muted">Not started</span>';
+        }
+
+        function deadlineBadge(derived) {
+            if (derived.onTrack === null || derived.onTrack === undefined) return '';
+            if (derived.onTrack) return '<span class="badge badge-success">On track</span>';
+            return '<span class="badge badge-destructive">Behind schedule</span>';
+        }
+
+        function render() {
+            const container = document.getElementById('goals-container');
+            if (!goals.length) {
+                container.innerHTML = '<div class="card"><div class="card-content"><div class="empty-state">No goals yet — add one above to get started.</div></div></div>';
+                return;
+            }
+            container.innerHTML = goals.map(renderGoalCard).join('');
+        }
+
+        function renderGoalCard(goal) {
+            const d = goal.derived;
+            const isOpen = expanded.has(goal.id);
+            const progress = pct(d.totalLoggedHours, d.totalEstimatedHours);
+
+            return `
+                <div class="card goal-card" data-goal="${esc(goal.id)}">
+                    <div class="card-header">
+                        <div class="goal-head">
+                            <div>
+                                <div class="goal-title-row">
+                                    <span class="goal-title">${esc(goal.title)}</span>
+                                    ${statusBadge(d.status)}
+                                    ${deadlineBadge(d)}
+                                </div>
+                                <div class="card-description">
+                                    ${d.totalEstimatedHours > 0
+                                        ? `${hrs(d.totalLoggedHours)} logged of ${hrs(d.totalEstimatedHours)} estimated &middot; ${hrs(d.remainingHours)} remaining`
+                                        : 'Add topics and pick courses to get an hour estimate.'}
+                                </div>
+                            </div>
+                            <div class="goal-actions">
+                                <button class="btn-sm" data-action="toggle" data-goal="${esc(goal.id)}">${isOpen ? 'Collapse' : 'Open'}</button>
+                                <button class="btn-sm btn-danger" data-action="delete-goal" data-goal="${esc(goal.id)}">Delete</button>
+                            </div>
+                        </div>
+                        ${d.totalEstimatedHours > 0 ? `<div class="progress-track"><div class="progress-fill" style="width:${progress}%"></div></div>` : ''}
+                        <div class="stat-row">
+                            <div class="stat-item"><div class="k">Pace</div><div class="v">${hrs(d.actualPaceHoursPerDay)}/day</div></div>
+                            <div class="stat-item"><div class="k">Projected finish</div><div class="v">${esc(d.projectedCompletionDate || 'need more data')}</div></div>
+                            <div class="stat-item"><div class="k">Deadline</div><div class="v">${esc(goal.targetDeadline || 'none set')}</div></div>
+                            <div class="stat-item"><div class="k">Required pace</div><div class="v">${d.requiredPaceHoursPerDay === null ? '—' : hrs(d.requiredPaceHoursPerDay) + '/day'}</div></div>
+                        </div>
+                    </div>
+                    ${isOpen ? renderGoalDetail(goal) : ''}
+                </div>`;
+        }
+
+        function renderGoalDetail(goal) {
+            return `
+                <div class="card-content">
+                    <hr class="divider" />
+                    ${renderTopicSuggestSection(goal)}
+                    ${renderTopics(goal)}
+                    <hr class="divider" />
+                    ${renderLogForm(goal)}
+                    ${renderLogHistory(goal)}
+                    <hr class="divider" />
+                    ${renderDeadlineForm(goal)}
+                </div>`;
+        }
+
+        function renderTopicSuggestSection(goal) {
+            const suggestions = topicSuggestions[goal.id];
+            return `
+                <div>
+                    <div class="goal-head" style="align-items:center;">
+                        <div class="card-title-lg" style="font-size:0.9rem;">Topics</div>
+                        <button class="btn-sm" data-action="suggest-topics" data-goal="${esc(goal.id)}">Suggest related topics</button>
+                    </div>
+                    ${suggestions ? renderTopicSuggestions(goal, suggestions) : ''}
+                </div>`;
+        }
+
+        function renderTopicSuggestions(goal, suggestions) {
+            if (!suggestions.length) return '<div class="hint">No suggestions returned — try again or add topics manually.</div>';
+            return `
+                <div class="suggestion-list" data-suggestions-for="${esc(goal.id)}">
+                    ${suggestions.map((s, i) => `
+                        <label class="suggestion-item">
+                            <input type="checkbox" value="${i}" checked />
+                            <span><strong>${esc(s.name)}</strong>${s.description ? ` — ${esc(s.description)}` : ''}</span>
+                        </label>`).join('')}
+                </div>
+                <div style="margin-top:0.5rem;">
+                    <button class="btn-sm btn-primary" data-action="add-selected-topics" data-goal="${esc(goal.id)}">Add selected topics</button>
+                    <button class="btn-sm" data-action="dismiss-suggestions" data-goal="${esc(goal.id)}">Dismiss</button>
+                </div>`;
+        }
+
+        function renderTopics(goal) {
+            if (!goal.topics.length) {
+                return '<div class="hint">No topics yet — suggest some above or they will appear here once added.</div>';
+            }
+            return `<div class="topics-list">${goal.topics.map((t, i) => renderTopic(goal, t, i)).join('')}</div>`;
+        }
+
+        function renderTopic(goal, topic, index) {
+            const key = `${goal.id}:${index}`;
+            const candidates = courseCandidates[key];
+            return `
+                <div class="topic-item">
+                    <div class="topic-head">
+                        <div>
+                            <div class="topic-name">${esc(topic.name)}</div>
+                            ${topic.description ? `<div class="topic-desc">${esc(topic.description)}</div>` : ''}
+                            ${topic.course
+                                ? `<div class="topic-course"><a href="${esc(topic.course.url)}" target="_blank" rel="noopener">${esc(topic.course.title)}</a>${topic.course.channelTitle ? ` &middot; ${esc(topic.course.channelTitle)}` : ''}</div>`
+                                : '<div class="topic-course cell-muted">No course chosen yet</div>'}
+                        </div>
+                        <button class="btn-sm btn-danger" data-action="remove-topic" data-goal="${esc(goal.id)}" data-index="${index}">Remove</button>
+                    </div>
+                    <div class="topic-controls">
+                        <button class="btn-sm" data-action="find-courses" data-goal="${esc(goal.id)}" data-index="${index}">Find YouTube videos</button>
+                        <label style="margin:0;font-weight:400;">Estimated hours:</label>
+                        <input type="number" step="0.25" min="0" class="estimate-input" data-goal="${esc(goal.id)}" data-index="${index}" value="${topic.estimatedHours ?? ''}" placeholder="0" />
+                        <button class="btn-sm" data-action="save-estimate" data-goal="${esc(goal.id)}" data-index="${index}">Save</button>
+                    </div>
+                    ${candidates ? renderCourseCandidates(goal, index, candidates) : ''}
+                </div>`;
+        }
+
+        function renderCourseCandidates(goal, index, candidates) {
+            if (candidates.error) {
+                return `<div class="error-note">${esc(candidates.error)}</div>`;
+            }
+            if (!candidates.length) {
+                return '<div class="hint">No videos found for this topic.</div>';
+            }
+            return `
+                <div class="hint">Top ${candidates.length} most-viewed videos:</div>
+                <div class="course-candidates">
+                    ${candidates.map((c, ci) => `
+                        <div class="course-candidate">
+                            <div class="info">
+                                <a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a>
+                                <div class="meta">${esc(c.channelTitle || 'Unknown channel')} &middot; ${Number(c.viewCount || 0).toLocaleString()} views${c.likeCount !== undefined ? ` &middot; ${Number(c.likeCount).toLocaleString()} likes` : ''}</div>
+                                <div class="meta"><strong>Time to complete: ${hrs(c.durationHours)}</strong></div>
+                            </div>
+                            <button class="btn-sm btn-primary" data-action="choose-course" data-goal="${esc(goal.id)}" data-index="${index}" data-candidate="${ci}">Use this</button>
+                        </div>`).join('')}
+                </div>`;
+        }
+
+        function renderLogForm(goal) {
+            const topicOptions = goal.topics.map((t) => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('');
+            return `
+                <div>
+                    <div class="card-title-lg" style="font-size:0.9rem;">Log study time</div>
+                    <form class="inline-form section-gap" data-action="log-form" data-goal="${esc(goal.id)}">
+                        <div class="field">
+                            <label>Hours</label>
+                            <input type="number" step="0.25" min="0" class="log-hours" required />
+                        </div>
+                        <div class="field">
+                            <label>Topic (optional)</label>
+                            <select class="log-topic"><option value="">General</option>${topicOptions}</select>
+                        </div>
+                        <div class="field">
+                            <label>Date</label>
+                            <input type="date" class="log-date" value="${todayStr()}" />
+                        </div>
+                        <div class="field">
+                            <label>Note (optional)</label>
+                            <input type="text" class="log-note" placeholder="What did you study?" />
+                        </div>
+                        <div class="field" style="flex:0;">
+                            <button type="submit" class="btn-primary">Log</button>
+                        </div>
+                    </form>
+                    <div class="log-error error-note" hidden></div>
+                </div>`;
+        }
+
+        function renderLogHistory(goal) {
+            if (!goal.log.length) return '<div class="hint">No study sessions logged yet.</div>';
+            const rows = [...goal.log].sort((a, b) => b.date.localeCompare(a.date)).map((entry) => `
+                <tr>
+                    <td>${esc(entry.date)}</td>
+                    <td>${hrs(entry.hours)}</td>
+                    <td>${esc(entry.topic || 'General')}</td>
+                    <td class="cell-muted">${esc(entry.note || '')}</td>
+                </tr>`).join('');
+            return `
+                <table class="log-table">
+                    <thead><tr><th>Date</th><th>Hours</th><th>Topic</th><th>Note</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>`;
+        }
+
+        function renderDeadlineForm(goal) {
+            return `
+                <div>
+                    <div class="card-title-lg" style="font-size:0.9rem;">Target deadline</div>
+                    <form class="inline-form section-gap" data-action="deadline-form" data-goal="${esc(goal.id)}">
+                        <div class="field">
+                            <input type="date" class="deadline-input" value="${goal.targetDeadline || ''}" />
+                        </div>
+                        <div class="field" style="flex:0;">
+                            <button type="submit" class="btn-primary">Save</button>
+                        </div>
+                        <div class="field" style="flex:0;">
+                            <button type="button" data-action="clear-deadline" data-goal="${esc(goal.id)}">Clear</button>
+                        </div>
+                    </form>
+                </div>`;
+        }
+
+        function findGoal(id) {
+            return goals.find((g) => g.id === id);
+        }
+
+        function replaceGoal(updated) {
+            const i = goals.findIndex((g) => g.id === updated.id);
+            if (i >= 0) goals[i] = updated;
+        }
+
+        document.getElementById('new-goal-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('new-goal-title').value.trim();
+            const deadline = document.getElementById('new-goal-deadline').value || null;
+            const errorEl = document.getElementById('new-goal-error');
+            errorEl.hidden = true;
+            if (!title) return;
+            try {
+                const goal = await api('', { method: 'POST', body: JSON.stringify({ title, targetDeadline: deadline }) });
+                goals.push(goal);
+                expanded.add(goal.id);
+                document.getElementById('new-goal-title').value = '';
+                document.getElementById('new-goal-deadline').value = '';
+                render();
+            } catch (err) {
+                errorEl.textContent = err.message;
+                errorEl.hidden = false;
+            }
+        });
+
+        document.getElementById('goals-container').addEventListener('click', async (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            const action = btn.getAttribute('data-action');
+            const goalId = btn.getAttribute('data-goal');
+
+            if (action === 'toggle') {
+                if (expanded.has(goalId)) expanded.delete(goalId); else expanded.add(goalId);
+                render();
+                return;
+            }
+
+            if (action === 'delete-goal') {
+                if (!confirm('Delete this goal and all its history? This cannot be undone.')) return;
+                await api(`/${goalId}`, { method: 'DELETE' });
+                goals = goals.filter((g) => g.id !== goalId);
+                render();
+                return;
+            }
+
+            if (action === 'suggest-topics') {
+                btn.disabled = true;
+                btn.textContent = 'Thinking…';
+                try {
+                    topicSuggestions[goalId] = await api(`/${goalId}/suggest-topics`, { method: 'POST', body: JSON.stringify({}) });
+                } catch (err) {
+                    topicSuggestions[goalId] = [];
+                    alert(err.message);
+                }
+                render();
+                return;
+            }
+
+            if (action === 'dismiss-suggestions') {
+                delete topicSuggestions[goalId];
+                render();
+                return;
+            }
+
+            if (action === 'add-selected-topics') {
+                const list = document.querySelector(`[data-suggestions-for="${goalId}"]`);
+                const suggestions = topicSuggestions[goalId] || [];
+                const chosen = [...list.querySelectorAll('input[type="checkbox"]:checked')].map((cb) => suggestions[Number(cb.value)]);
+                if (!chosen.length) return;
+                const updated = await api(`/${goalId}/topics`, { method: 'POST', body: JSON.stringify({ topics: chosen }) });
+                replaceGoal(updated);
+                delete topicSuggestions[goalId];
+                render();
+                return;
+            }
+
+            if (action === 'remove-topic') {
+                const index = Number(btn.getAttribute('data-index'));
+                if (!confirm('Remove this topic?')) return;
+                const updated = await api(`/${goalId}/topics/${index}`, { method: 'DELETE' });
+                replaceGoal(updated);
+                delete courseCandidates[`${goalId}:${index}`];
+                render();
+                return;
+            }
+
+            if (action === 'find-courses') {
+                const index = Number(btn.getAttribute('data-index'));
+                const key = `${goalId}:${index}`;
+                btn.disabled = true;
+                btn.textContent = 'Searching…';
+                try {
+                    courseCandidates[key] = await api(`/${goalId}/topics/${index}/suggest-courses`, { method: 'GET' });
+                } catch (err) {
+                    courseCandidates[key] = { error: err.message };
+                }
+                render();
+                return;
+            }
+
+            if (action === 'choose-course') {
+                const index = Number(btn.getAttribute('data-index'));
+                const candidateIndex = Number(btn.getAttribute('data-candidate'));
+                const key = `${goalId}:${index}`;
+                const course = courseCandidates[key][candidateIndex];
+                const updated = await api(`/${goalId}/topics/${index}/course`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ course, estimatedHours: course.durationHours ?? 0 }),
+                });
+                replaceGoal(updated);
+                delete courseCandidates[key];
+                render();
+                return;
+            }
+
+            if (action === 'save-estimate') {
+                const index = Number(btn.getAttribute('data-index'));
+                const input = document.querySelector(`.estimate-input[data-goal="${goalId}"][data-index="${index}"]`);
+                const value = Number(input.value || 0);
+                const updated = await api(`/${goalId}/topics/${index}/estimate`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ estimatedHours: value }),
+                });
+                replaceGoal(updated);
+                render();
+                return;
+            }
+
+            if (action === 'clear-deadline') {
+                const updated = await api(`/${goalId}/deadline`, { method: 'PUT', body: JSON.stringify({ targetDeadline: null }) });
+                replaceGoal(updated);
+                render();
+                return;
+            }
+        });
+
+        document.getElementById('goals-container').addEventListener('submit', async (e) => {
+            const form = e.target.closest('form[data-action]');
+            if (!form) return;
+            e.preventDefault();
+            const action = form.getAttribute('data-action');
+            const goalId = form.getAttribute('data-goal');
+
+            if (action === 'log-form') {
+                const hoursVal = Number(form.querySelector('.log-hours').value || 0);
+                const topic = form.querySelector('.log-topic').value || undefined;
+                const date = form.querySelector('.log-date').value || undefined;
+                const note = form.querySelector('.log-note').value.trim() || undefined;
+                const errorEl = form.nextElementSibling;
+                if (hoursVal <= 0) return;
+                try {
+                    const updated = await api(`/${goalId}/log`, { method: 'POST', body: JSON.stringify({ hours: hoursVal, topic, date, note }) });
+                    replaceGoal(updated);
+                    render();
+                } catch (err) {
+                    errorEl.textContent = err.message;
+                    errorEl.hidden = false;
+                }
+                return;
+            }
+
+            if (action === 'deadline-form') {
+                const value = form.querySelector('.deadline-input').value || null;
+                const updated = await api(`/${goalId}/deadline`, { method: 'PUT', body: JSON.stringify({ targetDeadline: value }) });
+                replaceGoal(updated);
+                render();
+                return;
+            }
+        });
+
+        loadGoals();
+    </script>
+</body>
+</html>
