@@ -1,7 +1,7 @@
 import { env } from '@/common/utils/envConfig';
 import { app, logger } from '@/server';
 
-import { loadAIProviders } from './openai/loadAIProviders';
+import { loadAIProviders } from './config/openaiConfig/loadAIProviders';
 import { startWebSocketServer } from './ws/server';
 import { loadHandlers } from './ws/server/methods';
 

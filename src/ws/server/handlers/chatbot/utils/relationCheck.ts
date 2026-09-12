@@ -1,6 +1,6 @@
 import { env } from 'process';
 
-import { callAI, openai } from '@/openai';
+import { callAI, openai } from '@/config/openaiConfig';
 
 export async function isRelatedConversation(
  previousMessage: string,

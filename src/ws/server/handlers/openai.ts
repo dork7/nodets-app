@@ -1,4 +1,4 @@
-import { callAI } from '@/openai';
+import { callAI } from '@/config/openaiConfig';
 
 export const name = 'openai';
 

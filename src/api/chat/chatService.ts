@@ -4,8 +4,8 @@ import { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/chat/co
 import { ChatCompletionMessage, ChatMessage, ChatResponse } from '@/api/chat/chatModel';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { env } from '@/common/utils/envConfig';
-import { openai } from '@/openai';
-import { openRouterAIInstance } from '@/openai/providers/openRouterAI';
+import { openai } from '@/config/openaiConfig';
+import { openRouterAIInstance } from '@/config/openaiConfig/providers/openRouterAI';
 import { logger } from '@/server';
 import { sendSlackNotification } from '@/common/utils/slack';
 import { monitorService } from '@/services/monitorService';

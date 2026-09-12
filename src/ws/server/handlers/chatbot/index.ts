@@ -1,5 +1,5 @@
-import { callAI } from '@/openai';
-import { executeToolCalls, type ToolCallRequest, toOpenAITools } from '@/openai/tools';
+import { callAI } from '@/config/openaiConfig';
+import { executeToolCalls, type ToolCallRequest, toOpenAITools } from '@/config/openaiConfig/tools';
 import { logger } from '@/server';
 import { monitorService } from '@/services/monitorService';
 import { redis } from '@/services/redisStore';
