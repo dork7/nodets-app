@@ -314,6 +314,19 @@
                         <button class="btn-sm" data-action="suggest-topics" data-goal="${esc(goal.id)}">Suggest related topics</button>
                     </div>
                     ${suggestions ? renderTopicSuggestions(goal, suggestions) : ''}
+                    <form class="inline-form section-gap" data-action="add-topic-form" data-goal="${esc(goal.id)}">
+                        <div class="field">
+                            <label>Add a topic manually</label>
+                            <input type="text" class="add-topic-name" placeholder="Topic name" required />
+                        </div>
+                        <div class="field">
+                            <label>&nbsp;</label>
+                            <input type="text" class="add-topic-desc" placeholder="Description (optional)" />
+                        </div>
+                        <div class="field" style="flex:0;">
+                            <button type="submit" class="btn-sm">Add topic</button>
+                        </div>
+                    </form>
                 </div>`;
         }
 
@@ -347,7 +360,7 @@
                 <div class="topic-item">
                     <div class="topic-head">
                         <div>
-                            <div class="topic-name">${esc(topic.name)}</div>
+                            <div class="topic-name"${topic.completed ? ' style="text-decoration: line-through; opacity: 0.7;"' : ''}>${esc(topic.name)}${topic.completed ? ' <span class="badge badge-success">Done</span>' : ''}</div>
                             ${topic.description ? `<div class="topic-desc">${esc(topic.description)}</div>` : ''}
                             ${topic.course
                                 ? `<div class="topic-course"><a href="${esc(topic.course.url)}" target="_blank" rel="noopener">${esc(topic.course.title)}</a>${topic.course.channelTitle ? ` &middot; ${esc(topic.course.channelTitle)}` : ''}</div>`
@@ -356,12 +369,20 @@
                         <button class="btn-sm btn-danger" data-action="remove-topic" data-goal="${esc(goal.id)}" data-index="${index}">Remove</button>
                     </div>
                     <div class="topic-controls">
+                        <label style="margin:0;font-weight:400;display:flex;align-items:center;gap:0.3rem;">
+                            <input type="checkbox" data-action="toggle-complete" data-goal="${esc(goal.id)}" data-index="${index}" ${topic.completed ? 'checked' : ''} style="width:auto;" />
+                            Mark video as done
+                        </label>
                         <button class="btn-sm" data-action="find-courses" data-goal="${esc(goal.id)}" data-index="${index}">Find YouTube videos</button>
                         <label style="margin:0;font-weight:400;">Estimated hours:</label>
                         <input type="number" step="0.25" min="0" class="estimate-input" data-goal="${esc(goal.id)}" data-index="${index}" value="${topic.estimatedHours ?? ''}" placeholder="0" />
                         <button class="btn-sm" data-action="save-estimate" data-goal="${esc(goal.id)}" data-index="${index}">Save</button>
                     </div>
                     ${candidates ? renderCourseCandidates(goal, index, candidates) : ''}
+                    <div class="topic-controls" style="margin-top:0.5rem;">
+                        <input type="text" class="notes-input" data-goal="${esc(goal.id)}" data-index="${index}" value="${esc(topic.notes || '')}" placeholder="Add a note for this topic…" style="flex:1;min-width:200px;" />
+                        <button class="btn-sm" data-action="save-note" data-goal="${esc(goal.id)}" data-index="${index}">Save note</button>
+                    </div>
                 </div>`;
         }
 
@@ -589,6 +610,30 @@
                 render();
                 return;
             }
+
+            if (action === 'toggle-complete') {
+                const index = Number(btn.getAttribute('data-index'));
+                const updated = await api(`/${goalId}/topics/${index}/complete`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ completed: btn.checked }),
+                });
+                replaceGoal(updated);
+                render();
+                return;
+            }
+
+            if (action === 'save-note') {
+                const index = Number(btn.getAttribute('data-index'));
+                const input = document.querySelector(`.notes-input[data-goal="${goalId}"][data-index="${index}"]`);
+                const notes = input.value.trim() || null;
+                const updated = await api(`/${goalId}/topics/${index}/notes`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ notes }),
+                });
+                replaceGoal(updated);
+                render();
+                return;
+            }
         });
 
         document.getElementById('goals-container').addEventListener('submit', async (e) => {
@@ -620,6 +665,20 @@
                 const value = form.querySelector('.deadline-input').value || null;
                 const updated = await api(`/${goalId}/deadline`, { method: 'PUT', body: JSON.stringify({ targetDeadline: value }) });
                 replaceGoal(updated);
+                render();
+                return;
+            }
+
+            if (action === 'add-topic-form') {
+                const name = form.querySelector('.add-topic-name').value.trim();
+                const description = form.querySelector('.add-topic-desc').value.trim() || undefined;
+                if (!name) return;
+                const updated = await api(`/${goalId}/topics`, {
+                    method: 'POST',
+                    body: JSON.stringify({ topics: [{ name, description }] }),
+                });
+                replaceGoal(updated);
+                form.reset();
                 render();
                 return;
             }
