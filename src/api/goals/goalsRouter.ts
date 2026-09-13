@@ -13,7 +13,9 @@ import {
  logStudySchema,
  removeTopicSchema,
  setDeadlineSchema,
+ setTopicCompletedSchema,
  setTopicCourseSchema,
+ setTopicNotesSchema,
  suggestCoursesSchema,
  suggestTopicsSchema,
  updateTopicEstimateSchema,
@@ -126,6 +128,26 @@ export const goalsRouter: Router = (() => {
   async (req: Request, res: Response) => {
    const topicIndex = Number(req.params.topicIndex);
    const serviceResponse = await goalsService.updateTopicEstimate(req.params.id, topicIndex, req.body.estimatedHours);
+   handleServiceResponse(serviceResponse, res);
+  }
+ );
+
+ router.put(
+  '/:id/topics/:topicIndex/complete',
+  validateRequest(setTopicCompletedSchema),
+  async (req: Request, res: Response) => {
+   const topicIndex = Number(req.params.topicIndex);
+   const serviceResponse = await goalsService.setTopicCompleted(req.params.id, topicIndex, req.body.completed);
+   handleServiceResponse(serviceResponse, res);
+  }
+ );
+
+ router.put(
+  '/:id/topics/:topicIndex/notes',
+  validateRequest(setTopicNotesSchema),
+  async (req: Request, res: Response) => {
+   const topicIndex = Number(req.params.topicIndex);
+   const serviceResponse = await goalsService.setTopicNotes(req.params.id, topicIndex, req.body.notes);
    handleServiceResponse(serviceResponse, res);
   }
  );

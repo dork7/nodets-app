@@ -240,6 +240,8 @@ export const goalsService = {
     course: null,
     estimatedHours: null,
     loggedHours: 0,
+    completed: false,
+    notes: null,
    }));
 
    const updated = recalc({ ...goal, topics: [...goal.topics, ...newTopics] });
@@ -403,6 +405,52 @@ export const goalsService = {
    return new ServiceResponse<Goal>(ResponseStatus.Success, 'Estimate updated', updated, StatusCodes.OK);
   } catch (ex) {
    const errorMessage = `Error updating estimate for goal ${id} topic ${topicIndex}: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
+
+ setTopicCompleted: async (
+  id: string,
+  topicIndex: number,
+  completed: boolean
+ ): Promise<ServiceResponse<Goal | null>> => {
+  try {
+   const goal = await goalsRepository.findById(id);
+   if (!goal) {
+    return new ServiceResponse(ResponseStatus.Failed, 'Goal not found', null, StatusCodes.NOT_FOUND);
+   }
+   if (!goal.topics[topicIndex]) {
+    return new ServiceResponse(ResponseStatus.Failed, 'Topic not found', null, StatusCodes.NOT_FOUND);
+   }
+
+   const topics = goal.topics.map((topic, index) => (index === topicIndex ? { ...topic, completed } : topic));
+   const updated = recalc({ ...goal, topics });
+   await goalsRepository.save(updated);
+   return new ServiceResponse<Goal>(ResponseStatus.Success, 'Topic marked as done', updated, StatusCodes.OK);
+  } catch (ex) {
+   const errorMessage = `Error updating completion for goal ${id} topic ${topicIndex}: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
+
+ setTopicNotes: async (id: string, topicIndex: number, notes: string | null): Promise<ServiceResponse<Goal | null>> => {
+  try {
+   const goal = await goalsRepository.findById(id);
+   if (!goal) {
+    return new ServiceResponse(ResponseStatus.Failed, 'Goal not found', null, StatusCodes.NOT_FOUND);
+   }
+   if (!goal.topics[topicIndex]) {
+    return new ServiceResponse(ResponseStatus.Failed, 'Topic not found', null, StatusCodes.NOT_FOUND);
+   }
+
+   const topics = goal.topics.map((topic, index) => (index === topicIndex ? { ...topic, notes } : topic));
+   const updated = recalc({ ...goal, topics });
+   await goalsRepository.save(updated);
+   return new ServiceResponse<Goal>(ResponseStatus.Success, 'Note saved', updated, StatusCodes.OK);
+  } catch (ex) {
+   const errorMessage = `Error updating notes for goal ${id} topic ${topicIndex}: ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
   }

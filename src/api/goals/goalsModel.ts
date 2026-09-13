@@ -20,6 +20,8 @@ export const TopicSchema = z.object({
  course: CourseSchema.nullable().default(null),
  estimatedHours: z.number().nonnegative().nullable().default(null),
  loggedHours: z.number().nonnegative().default(0),
+ completed: z.boolean().default(false),
+ notes: z.string().nullable().default(null),
 });
 export type Topic = z.infer<typeof TopicSchema>;
 
@@ -112,6 +114,16 @@ export const setTopicCourseSchema = z.object({
 export const updateTopicEstimateSchema = z.object({
  params: z.object({ id: z.string(), topicIndex: z.coerce.number().int().min(0) }),
  body: z.object({ estimatedHours: z.number().nonnegative() }),
+});
+
+export const setTopicCompletedSchema = z.object({
+ params: z.object({ id: z.string(), topicIndex: z.coerce.number().int().min(0) }),
+ body: z.object({ completed: z.boolean() }),
+});
+
+export const setTopicNotesSchema = z.object({
+ params: z.object({ id: z.string(), topicIndex: z.coerce.number().int().min(0) }),
+ body: z.object({ notes: z.string().nullable() }),
 });
 
 export const logStudySchema = z.object({
