@@ -48,4 +48,5 @@ export const env = cleanEnv(process.env, {
  RAG_TOP_K: num({ default: 3, desc: 'Number of chunks retrieved per query' }),
  LOCALAI_EMBEDDING_MODEL: str({ default: 'nemotron-3-embed-1b-q4', desc: 'Embedding model (canonical name)' }),
  LOCALAI_URL: str({ default: 'http://localhost:8000/v1', desc: 'URL for the LocalAI API' }),
+ YOUTUBE_API_KEY: str({ default: '', desc: 'API key for the YouTube Data API v3 (goal-tracker course search)' }),
 });

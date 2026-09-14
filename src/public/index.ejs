@@ -1,48 +1,177 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Request Logs</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        :root {
+            --bg: #0a0806;
+            --bg-raised: #13110f;
+            --bg-inset: #1f1d1a;
+            --border: #373532;
+            --border-strong: #4f4d49;
+            --fg: #ebe7e3;
+            --fg-muted: #a7a4a0;
+            --fg-faint: #83807c;
+            --accent: #f5f1ed;
+            --on-accent: #0a0806;
+            --font-mono: "Geist Mono", "Berkeley Mono", "JetBrains Mono", ui-monospace,
+                "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+            --font-sans: "Geist", ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+            --radius: 6px;
+            --radius-sm: 4px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            background: var(--bg);
+            color: var(--fg);
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        p.eyebrow {
+            margin: 0 0 4px;
+            color: var(--fg-faint);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        h3 {
+            margin: 0 0 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        h3 span {
+            color: var(--fg-muted);
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 960px;
+            font-family: var(--font-mono);
+            font-size: 12.5px;
+        }
+
+        thead tr {
+            background: var(--bg-inset);
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 14px;
+            font-weight: 500;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--fg-faint);
+            white-space: nowrap;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            color: var(--fg-muted);
+            max-width: 320px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: top;
+        }
+
+        td:first-child {
+            color: var(--fg);
+        }
+
+        tbody tr:hover td {
+            background: var(--bg-raised);
+            color: var(--fg);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        a#app_redirect {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 20px;
+            padding: 8px 16px;
+            background: var(--accent);
+            color: var(--on-accent);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            text-decoration: none;
+        }
+
+        a#app_redirect:hover {
+            opacity: 0.88;
+        }
+    </style>
 </head>
 
-<body style="">
-    <p style="">LOGS</p>
-    <h3>Number of entires <%= recordCount %></h3>
-    
- 
-            <table border="1" style="">
-                <thead>
+<body>
+    <p class="eyebrow">Request Logs</p>
+    <h3>Entries <span><%= recordCount %></span></h3>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>requestId</th>
+                    <th>apiURL</th>
+                    <th>nativeRequestParams</th>
+                    <th>nativeRequestQuery</th>
+                    <th>nativeRequestURL</th>
+                    <th>nativeHeader</th>
+                    <th>nativeResponseHeaders</th>
+                    <th>nativeRequestBody</th>
+                    <th>nativeResponse</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for (const key in fileContent) { %>
                     <tr>
-                        <th>requestId</th>
-                        <th>apiURL</th>
-                        <th>nativeRequestParams</th>
-                        <th>nativeRequestQuery</th>
-                        <th>nativeRequestURL</th>
-                        <th>nativeHeader</th>
-                        <th>nativeResponseHeaders</th>
-                        <th>nativeRequestBody</th>
-                        <th>nativeResponse</th>
+                        <td><%= fileContent[key].requestId %></td>
+                        <td><%= fileContent[key].apiURL %></td>
+                        <td><%= JSON.stringify(fileContent[key].nativeRequestParams) %></td>
+                        <td><%= JSON.stringify(fileContent[key].nativeRequestQuery) %></td>
+                        <td><%= JSON.stringify(fileContent[key].nativeRequestURL) %></td>
+                        <td><%= JSON.stringify(fileContent[key].nativeHeader) %></td>
+                        <td><%= JSON.stringify(fileContent[key].nativeResponseHeaders) %></td>
+                        <td><%= JSON.stringify(fileContent[key].nativeRequestBody) %></td>
+                        <td><%= JSON.stringify(fileContent[key].nativeResponse) %></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <% for (const key in fileContent) { %>
-                        <tr>
-                            <td><%= fileContent[key].requestId %></td>
-                            <td><%= fileContent[key].apiURL %></td>
-                            <td><%= JSON.stringify(fileContent[key].nativeRequestParams) %></td>
-                            <td><%= JSON.stringify(fileContent[key].nativeRequestQuery) %></td>
-                            <td><%= JSON.stringify(fileContent[key].nativeRequestURL) %></td>
-                            <td><%= JSON.stringify(fileContent[key].nativeHeader) %></td>
-                            <td><%= JSON.stringify(fileContent[key].nativeResponseHeaders) %></td>
-                            <td><%= JSON.stringify(fileContent[key].nativeRequestBody) %></td>
-                            <td><%= JSON.stringify(fileContent[key].nativeResponse) %></td>
-   
-   
-                        </tr>
-                    <% } %>
-                </tbody>
-            </table>
-             <br></br>
-            <a id="app_redirect" href="#" style="">Login</a>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <a id="app_redirect" href="#">Login</a>
 
     <script>
         $("#application").change(function () {

@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goal Tracker</title>
+    <style>
+        /*
+         * Matte dark tokens shared across all portals (chatAI, nutrition,
+         * monitor, goals) — warm near-black neutrals, single accent.
+         */
+        :root {
+            --background: 30 25% 3.1%;
+            --foreground: 30 16.7% 90.6%;
+            --card: 30 11.8% 6.7%;
+            --card-foreground: 30 16.7% 90.6%;
+            --muted: 36 8.8% 11.2%;
+            --muted-foreground: 34 3.8% 64.1%;
+            --border: 36 4.8% 20.6%;
+            --primary: 30 28.6% 94.5%;
+            --primary-foreground: 30 25% 3.1%;
+            --accent: 24 6.2% 15.9%;
+            --success: 126 44.8% 54.5%;
+            --destructive: 4 100% 69.4%;
+            --radius: 0.5rem;
+            --shadow-border: 0 0 0 1px oklch(1 0 0 / 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { max-width: 980px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+        .page-header { margin-bottom: 1.5rem; display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .page-header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.025em; }
+        .page-header p { color: hsl(var(--muted-foreground)); margin-top: 0.25rem; }
+
+        .card {
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-border);
+        }
+        .card-header { padding: 1.25rem 1.5rem 0.5rem; }
+        .card-content { padding: 1.25rem 1.5rem 1.5rem; }
+        .card-title-lg { font-size: 1rem; font-weight: 600; letter-spacing: -0.015em; }
+        .card-description { font-size: 0.8rem; color: hsl(var(--muted-foreground)); margin-top: 0.15rem; }
+        .section-gap { margin-top: 1.25rem; }
+
+        label { display: block; font-size: 0.75rem; font-weight: 500; color: hsl(var(--muted-foreground)); margin-bottom: 0.25rem; }
+        input[type="text"], input[type="number"], input[type="date"], select, textarea {
+            width: 100%;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 0.125rem);
+            padding: 0.5rem 0.65rem;
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+        .field { margin-bottom: 0.85rem; }
+        .field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; }
+
+        button {
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border-radius: calc(var(--radius) - 0.125rem);
+            padding: 0.45rem 0.85rem;
+            cursor: pointer;
+            border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            transition-property: background-color, border-color, color, opacity, transform;
+            transition-duration: 150ms;
+            transition-timing-function: ease-out;
+        }
+        button:hover { background-color: hsl(var(--accent)); }
+        button:active:not(:disabled) { transform: scale(0.96); }
+        button.btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border-color: hsl(var(--primary)); }
+        button.btn-primary:hover { opacity: 0.9; }
+        button.btn-danger { color: hsl(var(--destructive)); border-color: hsl(var(--destructive) / 0.4); }
+        button.btn-danger:hover { background-color: hsl(var(--destructive) / 0.08); }
+        button.btn-sm { padding: 0.3rem 0.6rem; font-size: 0.72rem; }
+        button.btn-icon-trailing { padding-inline-end: calc(0.6rem - 2px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+            outline: 2px solid hsl(var(--primary) / 0.5);
+            outline-offset: 2px;
+        }
+        input[type="checkbox"] { accent-color: hsl(var(--primary)); }
+
+        .icon { width: 1em; height: 1em; vertical-align: -0.125em; flex-shrink: 0; }
+        .icon-lg { width: 2rem; height: 2rem; }
+        .icon-chevron { transition: transform 150ms ease-out; }
+        .icon-chevron.is-open { transform: rotate(180deg); }
+        @keyframes icon-spin { to { transform: rotate(360deg); } }
+        .icon-spin { animation: icon-spin 0.6s linear infinite; }
+
+        .goal-card { margin-bottom: 1rem; }
+        .goal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+        .goal-title-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .goal-title { font-size: 1.05rem; font-weight: 600; }
+        .goal-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.3em;
+            border-radius: 999px;
+            padding: 0.15rem 0.5rem;
+            font-size: 0.68rem; font-weight: 600; line-height: 1.35;
+            border: 1px solid transparent; white-space: nowrap;
+        }
+        .badge:has(.icon) { padding-inline-start: calc(0.5rem - 2px); }
+        .badge-success { background-color: hsl(var(--success) / 0.12); color: hsl(var(--success)); border-color: hsl(var(--success) / 0.25); }
+        .badge-destructive { background-color: hsl(var(--destructive) / 0.12); color: hsl(var(--destructive)); border-color: hsl(var(--destructive) / 0.25); }
+        .badge-muted { background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground)); border-color: hsl(var(--border)); }
+
+        .progress-track { height: 0.5rem; border-radius: 999px; background-color: hsl(var(--muted)); overflow: hidden; margin: 0.6rem 0; }
+        .progress-fill { height: 100%; background-color: hsl(var(--primary)); border-radius: 999px; transition: width 300ms cubic-bezier(0.2, 0, 0, 1); }
+
+        .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem 1rem; margin-top: 0.5rem; }
+        .stat-item .k { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: hsl(var(--muted-foreground)); }
+        .stat-item .v { font-size: 0.9rem; font-weight: 600; margin-top: 0.1rem; font-variant-numeric: tabular-nums; }
+
+        .topics-list { margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem; }
+        .topic-item { border: 1px solid hsl(var(--border)); border-radius: calc(var(--radius) - 0.125rem); padding: 0.75rem 0.9rem; }
+        .topic-head { display: flex; justify-content: space-between; gap: 0.75rem; align-items: flex-start; flex-wrap: wrap; }
+        .topic-name { font-weight: 600; font-size: 0.88rem; }
+        .topic-desc { font-size: 0.78rem; color: hsl(var(--muted-foreground)); margin-top: 0.1rem; }
+        .topic-course { font-size: 0.78rem; margin-top: 0.4rem; }
+        .topic-course a { color: inherit; }
+        .topic-controls { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .topic-controls input[type="number"] { width: 5.5rem; }
+        .course-candidates { margin-top: 0.6rem; display: flex; flex-direction: column; gap: 0.4rem; }
+        .course-candidate { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; border: 1px solid hsl(var(--border)); border-radius: calc(var(--radius) - 0.125rem); padding: 0.5rem 0.65rem; font-size: 0.78rem; flex-wrap: wrap; }
+        .course-candidate .info { flex: 1; min-width: 200px; }
+        .course-candidate .meta { color: hsl(var(--muted-foreground)); font-size: 0.72rem; margin-top: 0.1rem; }
+
+        .suggestion-list { margin-top: 0.6rem; display: flex; flex-direction: column; gap: 0.4rem; }
+        .suggestion-item { display: flex; align-items: flex-start; gap: 0.5rem; border: 1px solid hsl(var(--border)); border-radius: calc(var(--radius) - 0.125rem); padding: 0.5rem 0.65rem; font-size: 0.8rem; }
+        .suggestion-item input { width: auto; margin-top: 0.2rem; }
+
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 0.5rem; }
+        .log-table th { text-align: left; color: hsl(var(--muted-foreground)); font-weight: 500; padding: 0.3rem 0.5rem; border-bottom: 1px solid hsl(var(--border)); }
+        .log-table td { padding: 0.35rem 0.5rem; border-bottom: 1px solid hsl(var(--border)); vertical-align: top; }
+        .cell-muted { color: hsl(var(--muted-foreground)); }
+
+        .empty-state { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; color: hsl(var(--muted-foreground)); font-size: 0.85rem; padding: 2.5rem 0; text-align: center; }
+        .empty-state .icon-lg { opacity: 0.45; }
+        .error-note { color: hsl(var(--destructive)); font-size: 0.78rem; margin-top: 0.4rem; }
+        .hint { font-size: 0.72rem; color: hsl(var(--muted-foreground)); margin-top: 0.3rem; }
+        .divider { border: none; border-top: 1px solid hsl(var(--border)); margin: 0.9rem 0; }
+        .inline-form { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; }
+        .inline-form .field { margin-bottom: 0; flex: 1; min-width: 110px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <div>
+                <h1>Goal Tracker</h1>
+                <p>Add a learning goal, pick topics and courses, log study time, and watch your deadline recalculate.</p>
+            </div>
+        </header>
+
+        <section class="card">
+            <div class="card-header">
+                <div class="card-title-lg">New goal</div>
+                <div class="card-description">Give it a name and, optionally, a target date.</div>
+            </div>
+            <div class="card-content">
+                <form id="new-goal-form" class="field-row" style="align-items: end;">
+                    <div class="field">
+                        <label for="new-goal-title">Goal title</label>
+                        <input type="text" id="new-goal-title" placeholder="e.g. Learn Rust" required />
+                    </div>
+                    <div class="field">
+                        <label for="new-goal-deadline">Target deadline (optional)</label>
+                        <input type="date" id="new-goal-deadline" />
+                    </div>
+                    <div class="field" style="flex: 0;">
+                        <button type="submit" class="btn-primary">Add goal</button>
+                    </div>
+                </form>
+                <div id="new-goal-error" class="error-note" hidden></div>
+            </div>
+        </section>
+
+        <section id="goals-container" class="section-gap"></section>
+    </div>
+
+    <script>
+        const API = '/v1/goals';
+        const expanded = new Set();
+        const courseCandidates = {}; // `${goalId}:${topicIndex}` -> Course[]
+        const topicSuggestions = {}; // goalId -> TopicSuggestion[]
+        const busy = new Set(); // goalId -> true while an action is in flight
+        let goals = [];
+
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+
+        const icon = {
+            chevron: (open) => `<svg class="icon icon-chevron${open ? ' is-open' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`,
+            check: () => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+            alert: () => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+            spinner: () => `<svg class="icon icon-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>`,
+            inbox: () => `<svg class="icon icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"></path><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"></path></svg>`,
+        };
+        const hrs = (n) => (n === null || n === undefined ? '—' : `${Number(n).toFixed(1)}h`);
+        const pct = (a, b) => (b > 0 ? Math.min(100, Math.round((a / b) * 100)) : 0);
+        const todayStr = () => new Date().toISOString().slice(0, 10);
+
+        async function api(path, options) {
+            const res = await fetch(API + path, {
+                headers: { 'Content-Type': 'application/json' },
+                ...options,
+            });
+            const body = await res.json().catch(() => null);
+            if (!res.ok || !body || body.success === false) {
+                throw new Error((body && body.message) || `Request failed (${res.status})`);
+            }
+            return body.responseObject;
+        }
+
+        async function loadGoals() {
+            try {
+                goals = await api('', { method: 'GET' });
+            } catch (err) {
+                console.error(err);
+                goals = [];
+            }
+            render();
+        }
+
+        function statusBadge(status) {
+            if (status === 'completed') return `<span class="badge badge-success">${icon.check()}Completed</span>`;
+            if (status === 'in-progress') return '<span class="badge badge-muted">In progress</span>';
+            return '<span class="badge badge-muted">Not started</span>';
+        }
+
+        function deadlineBadge(derived) {
+            if (derived.onTrack === null || derived.onTrack === undefined) return '';
+            if (derived.onTrack) return `<span class="badge badge-success">${icon.check()}On track</span>`;
+            return `<span class="badge badge-destructive">${icon.alert()}Behind schedule</span>`;
+        }
+
+        function render() {
+            const container = document.getElementById('goals-container');
+            if (!goals.length) {
+                container.innerHTML = `<div class="card"><div class="card-content"><div class="empty-state">${icon.inbox()}<div>No goals yet — add one above to get started.</div></div></div></div>`;
+                return;
+            }
+            container.innerHTML = goals.map(renderGoalCard).join('');
+        }
+
+        function renderGoalCard(goal) {
+            const d = goal.derived;
+            const isOpen = expanded.has(goal.id);
+            const progress = pct(d.totalLoggedHours, d.totalEstimatedHours);
+
+            return `
+                <div class="card goal-card" data-goal="${esc(goal.id)}">
+                    <div class="card-header">
+                        <div class="goal-head">
+                            <div>
+                                <div class="goal-title-row">
+                                    <span class="goal-title">${esc(goal.title)}</span>
+                                    ${statusBadge(d.status)}
+                                    ${deadlineBadge(d)}
+                                </div>
+                                <div class="card-description">
+                                    ${d.totalEstimatedHours > 0
+                                        ? `${hrs(d.totalLoggedHours)} logged of ${hrs(d.totalEstimatedHours)} estimated &middot; ${hrs(d.remainingHours)} remaining`
+                                        : 'Add topics and pick courses to get an hour estimate.'}
+                                </div>
+                            </div>
+                            <div class="goal-actions">
+                                <button class="btn-sm btn-icon-trailing" data-action="toggle" data-goal="${esc(goal.id)}">${isOpen ? 'Collapse' : 'Open'}${icon.chevron(isOpen)}</button>
+                                <button class="btn-sm btn-danger" data-action="delete-goal" data-goal="${esc(goal.id)}">Delete</button>
+                            </div>
+                        </div>
+                        ${d.totalEstimatedHours > 0 ? `<div class="progress-track"><div class="progress-fill" style="width:${progress}%"></div></div>` : ''}
+                        <div class="stat-row">
+                            <div class="stat-item"><div class="k">Pace</div><div class="v">${hrs(d.actualPaceHoursPerDay)}/day</div></div>
+                            <div class="stat-item"><div class="k">Projected finish</div><div class="v">${esc(d.projectedCompletionDate || 'need more data')}</div></div>
+                            <div class="stat-item"><div class="k">Deadline</div><div class="v">${esc(goal.targetDeadline || 'none set')}</div></div>
+                            <div class="stat-item"><div class="k">Required pace</div><div class="v">${d.requiredPaceHoursPerDay === null ? '—' : hrs(d.requiredPaceHoursPerDay) + '/day'}</div></div>
+                        </div>
+                    </div>
+                    ${isOpen ? renderGoalDetail(goal) : ''}
+                </div>`;
+        }
+
+        function renderGoalDetail(goal) {
+            return `
+                <div class="card-content">
+                    <hr class="divider" />
+                    ${renderTopicSuggestSection(goal)}
+                    ${renderTopics(goal)}
+                    <hr class="divider" />
+                    ${renderLogForm(goal)}
+                    ${renderLogHistory(goal)}
+                    <hr class="divider" />
+                    ${renderDeadlineForm(goal)}
+                </div>`;
+        }
+
+        function renderTopicSuggestSection(goal) {
+            const suggestions = topicSuggestions[goal.id];
+            return `
+                <div>
+                    <div class="goal-head" style="align-items:center;">
+                        <div class="card-title-lg" style="font-size:0.9rem;">Topics</div>
+                        <button class="btn-sm" data-action="suggest-topics" data-goal="${esc(goal.id)}">Suggest related topics</button>
+                    </div>
+                    ${suggestions ? renderTopicSuggestions(goal, suggestions) : ''}
+                    <form class="inline-form section-gap" data-action="add-topic-form" data-goal="${esc(goal.id)}">
+                        <div class="field">
+                            <label>Add a topic manually</label>
+                            <input type="text" class="add-topic-name" placeholder="Topic name" required />
+                        </div>
+                        <div class="field">
+                            <label>&nbsp;</label>
+                            <input type="text" class="add-topic-desc" placeholder="Description (optional)" />
+                        </div>
+                        <div class="field" style="flex:0;">
+                            <button type="submit" class="btn-sm">Add topic</button>
+                        </div>
+                    </form>
+                </div>`;
+        }
+
+        function renderTopicSuggestions(goal, suggestions) {
+            if (!suggestions.length) return '<div class="hint">No suggestions returned — try again or add topics manually.</div>';
+            return `
+                <div class="suggestion-list" data-suggestions-for="${esc(goal.id)}">
+                    ${suggestions.map((s, i) => `
+                        <label class="suggestion-item">
+                            <input type="checkbox" value="${i}" checked />
+                            <span><strong>${esc(s.name)}</strong>${s.description ? ` — ${esc(s.description)}` : ''}</span>
+                        </label>`).join('')}
+                </div>
+                <div style="margin-top:0.5rem;">
+                    <button class="btn-sm btn-primary" data-action="add-selected-topics" data-goal="${esc(goal.id)}">Add selected topics</button>
+                    <button class="btn-sm" data-action="dismiss-suggestions" data-goal="${esc(goal.id)}">Dismiss</button>
+                </div>`;
+        }
+
+        function renderTopics(goal) {
+            if (!goal.topics.length) {
+                return '<div class="hint">No topics yet — suggest some above or they will appear here once added.</div>';
+            }
+            return `<div class="topics-list">${goal.topics.map((t, i) => renderTopic(goal, t, i)).join('')}</div>`;
+        }
+
+        function renderTopic(goal, topic, index) {
+            const key = `${goal.id}:${index}`;
+            const candidates = courseCandidates[key];
+            return `
+                <div class="topic-item">
+                    <div class="topic-head">
+                        <div>
+                            <div class="topic-name"${topic.completed ? ' style="text-decoration: line-through; opacity: 0.7;"' : ''}>${esc(topic.name)}${topic.completed ? ` <span class="badge badge-success">${icon.check()}Done</span>` : ''}</div>
+                            ${topic.description ? `<div class="topic-desc">${esc(topic.description)}</div>` : ''}
+                            ${topic.course
+                                ? `<div class="topic-course"><a href="${esc(topic.course.url)}" target="_blank" rel="noopener">${esc(topic.course.title)}</a>${topic.course.channelTitle ? ` &middot; ${esc(topic.course.channelTitle)}` : ''}</div>`
+                                : '<div class="topic-course cell-muted">No course chosen yet</div>'}
+                        </div>
+                        <button class="btn-sm btn-danger" data-action="remove-topic" data-goal="${esc(goal.id)}" data-index="${index}">Remove</button>
+                    </div>
+                    <div class="topic-controls">
+                        <label style="margin:0;font-weight:400;display:flex;align-items:center;gap:0.3rem;">
+                            <input type="checkbox" data-action="toggle-complete" data-goal="${esc(goal.id)}" data-index="${index}" ${topic.completed ? 'checked' : ''} style="width:auto;" />
+                            Mark video as done
+                        </label>
+                        <button class="btn-sm" data-action="find-courses" data-goal="${esc(goal.id)}" data-index="${index}">Find YouTube videos</button>
+                        <label style="margin:0;font-weight:400;">Estimated hours:</label>
+                        <input type="number" step="0.25" min="0" class="estimate-input" data-goal="${esc(goal.id)}" data-index="${index}" value="${topic.estimatedHours ?? ''}" placeholder="0" />
+                        <button class="btn-sm" data-action="save-estimate" data-goal="${esc(goal.id)}" data-index="${index}">Save</button>
+                    </div>
+                    ${candidates ? renderCourseCandidates(goal, index, candidates) : ''}
+                    <div class="topic-controls" style="margin-top:0.5rem;">
+                        <input type="text" class="notes-input" data-goal="${esc(goal.id)}" data-index="${index}" value="${esc(topic.notes || '')}" placeholder="Add a note for this topic…" style="flex:1;min-width:200px;" />
+                        <button class="btn-sm" data-action="save-note" data-goal="${esc(goal.id)}" data-index="${index}">Save note</button>
+                    </div>
+                </div>`;
+        }
+
+        function renderCourseCandidates(goal, index, candidates) {
+            if (candidates.error) {
+                return `<div class="error-note">${esc(candidates.error)}</div>`;
+            }
+            if (!candidates.length) {
+                return '<div class="hint">No videos found for this topic.</div>';
+            }
+            return `
+                <div class="hint">Top ${candidates.length} most-viewed videos:</div>
+                <div class="course-candidates">
+                    ${candidates.map((c, ci) => `
+                        <div class="course-candidate">
+                            <div class="info">
+                                <a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a>
+                                <div class="meta">${esc(c.channelTitle || 'Unknown channel')} &middot; ${Number(c.viewCount || 0).toLocaleString()} views${c.likeCount !== undefined ? ` &middot; ${Number(c.likeCount).toLocaleString()} likes` : ''}</div>
+                                <div class="meta"><strong>Time to complete: ${hrs(c.durationHours)}</strong></div>
+                            </div>
+                            <button class="btn-sm btn-primary" data-action="choose-course" data-goal="${esc(goal.id)}" data-index="${index}" data-candidate="${ci}">Use this</button>
+                        </div>`).join('')}
+                </div>`;
+        }
+
+        function renderLogForm(goal) {
+            const topicOptions = goal.topics.map((t) => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('');
+            return `
+                <div>
+                    <div class="card-title-lg" style="font-size:0.9rem;">Log study time</div>
+                    <form class="inline-form section-gap" data-action="log-form" data-goal="${esc(goal.id)}">
+                        <div class="field">
+                            <label>Hours</label>
+                            <input type="number" step="0.25" min="0" class="log-hours" required />
+                        </div>
+                        <div class="field">
+                            <label>Topic (optional)</label>
+                            <select class="log-topic"><option value="">General</option>${topicOptions}</select>
+                        </div>
+                        <div class="field">
+                            <label>Date</label>
+                            <input type="date" class="log-date" value="${todayStr()}" />
+                        </div>
+                        <div class="field">
+                            <label>Note (optional)</label>
+                            <input type="text" class="log-note" placeholder="What did you study?" />
+                        </div>
+                        <div class="field" style="flex:0;">
+                            <button type="submit" class="btn-primary">Log</button>
+                        </div>
+                    </form>
+                    <div class="log-error error-note" hidden></div>
+                </div>`;
+        }
+
+        function renderLogHistory(goal) {
+            if (!goal.log.length) return '<div class="hint">No study sessions logged yet.</div>';
+            const rows = [...goal.log].sort((a, b) => b.date.localeCompare(a.date)).map((entry) => `
+                <tr>
+                    <td>${esc(entry.date)}</td>
+                    <td>${hrs(entry.hours)}</td>
+                    <td>${esc(entry.topic || 'General')}</td>
+                    <td class="cell-muted">${esc(entry.note || '')}</td>
+                </tr>`).join('');
+            return `
+                <table class="log-table">
+                    <thead><tr><th>Date</th><th>Hours</th><th>Topic</th><th>Note</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>`;
+        }
+
+        function renderDeadlineForm(goal) {
+            return `
+                <div>
+                    <div class="card-title-lg" style="font-size:0.9rem;">Target deadline</div>
+                    <form class="inline-form section-gap" data-action="deadline-form" data-goal="${esc(goal.id)}">
+                        <div class="field">
+                            <input type="date" class="deadline-input" value="${goal.targetDeadline || ''}" />
+                        </div>
+                        <div class="field" style="flex:0;">
+                            <button type="submit" class="btn-primary">Save</button>
+                        </div>
+                        <div class="field" style="flex:0;">
+                            <button type="button" data-action="clear-deadline" data-goal="${esc(goal.id)}">Clear</button>
+                        </div>
+                    </form>
+                </div>`;
+        }
+
+        function findGoal(id) {
+            return goals.find((g) => g.id === id);
+        }
+
+        function replaceGoal(updated) {
+            const i = goals.findIndex((g) => g.id === updated.id);
+            if (i >= 0) goals[i] = updated;
+        }
+
+        document.getElementById('new-goal-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('new-goal-title').value.trim();
+            const deadline = document.getElementById('new-goal-deadline').value || null;
+            const errorEl = document.getElementById('new-goal-error');
+            errorEl.hidden = true;
+            if (!title) return;
+            try {
+                const goal = await api('', { method: 'POST', body: JSON.stringify({ title, targetDeadline: deadline }) });
+                goals.push(goal);
+                expanded.add(goal.id);
+                document.getElementById('new-goal-title').value = '';
+                document.getElementById('new-goal-deadline').value = '';
+                render();
+            } catch (err) {
+                errorEl.textContent = err.message;
+                errorEl.hidden = false;
+            }
+        });
+
+        document.getElementById('goals-container').addEventListener('click', async (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            const action = btn.getAttribute('data-action');
+            const goalId = btn.getAttribute('data-goal');
+
+            if (action === 'toggle') {
+                if (expanded.has(goalId)) expanded.delete(goalId); else expanded.add(goalId);
+                render();
+                return;
+            }
+
+            if (action === 'delete-goal') {
+                if (!confirm('Delete this goal and all its history? This cannot be undone.')) return;
+                await api(`/${goalId}`, { method: 'DELETE' });
+                goals = goals.filter((g) => g.id !== goalId);
+                render();
+                return;
+            }
+
+            if (action === 'suggest-topics') {
+                btn.disabled = true;
+                btn.innerHTML = `${icon.spinner()}Thinking…`;
+                try {
+                    topicSuggestions[goalId] = await api(`/${goalId}/suggest-topics`, { method: 'POST', body: JSON.stringify({}) });
+                } catch (err) {
+                    topicSuggestions[goalId] = [];
+                    alert(err.message);
+                }
+                render();
+                return;
+            }
+
+            if (action === 'dismiss-suggestions') {
+                delete topicSuggestions[goalId];
+                render();
+                return;
+            }
+
+            if (action === 'add-selected-topics') {
+                const list = document.querySelector(`[data-suggestions-for="${goalId}"]`);
+                const suggestions = topicSuggestions[goalId] || [];
+                const chosen = [...list.querySelectorAll('input[type="checkbox"]:checked')].map((cb) => suggestions[Number(cb.value)]);
+                if (!chosen.length) return;
+                const updated = await api(`/${goalId}/topics`, { method: 'POST', body: JSON.stringify({ topics: chosen }) });
+                replaceGoal(updated);
+                delete topicSuggestions[goalId];
+                render();
+                return;
+            }
+
+            if (action === 'remove-topic') {
+                const index = Number(btn.getAttribute('data-index'));
+                if (!confirm('Remove this topic?')) return;
+                const updated = await api(`/${goalId}/topics/${index}`, { method: 'DELETE' });
+                replaceGoal(updated);
+                delete courseCandidates[`${goalId}:${index}`];
+                render();
+                return;
+            }
+
+            if (action === 'find-courses') {
+                const index = Number(btn.getAttribute('data-index'));
+                const key = `${goalId}:${index}`;
+                btn.disabled = true;
+                btn.innerHTML = `${icon.spinner()}Searching…`;
+                try {
+                    courseCandidates[key] = await api(`/${goalId}/topics/${index}/suggest-courses`, { method: 'GET' });
+                } catch (err) {
+                    courseCandidates[key] = { error: err.message };
+                }
+                render();
+                return;
+            }
+
+            if (action === 'choose-course') {
+                const index = Number(btn.getAttribute('data-index'));
+                const candidateIndex = Number(btn.getAttribute('data-candidate'));
+                const key = `${goalId}:${index}`;
+                const course = courseCandidates[key][candidateIndex];
+                const updated = await api(`/${goalId}/topics/${index}/course`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ course, estimatedHours: course.durationHours ?? 0 }),
+                });
+                replaceGoal(updated);
+                delete courseCandidates[key];
+                render();
+                return;
+            }
+
+            if (action === 'save-estimate') {
+                const index = Number(btn.getAttribute('data-index'));
+                const input = document.querySelector(`.estimate-input[data-goal="${goalId}"][data-index="${index}"]`);
+                const value = Number(input.value || 0);
+                const updated = await api(`/${goalId}/topics/${index}/estimate`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ estimatedHours: value }),
+                });
+                replaceGoal(updated);
+                render();
+                return;
+            }
+
+            if (action === 'clear-deadline') {
+                const updated = await api(`/${goalId}/deadline`, { method: 'PUT', body: JSON.stringify({ targetDeadline: null }) });
+                replaceGoal(updated);
+                render();
+                return;
+            }
+
+            if (action === 'toggle-complete') {
+                const index = Number(btn.getAttribute('data-index'));
+                const updated = await api(`/${goalId}/topics/${index}/complete`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ completed: btn.checked }),
+                });
+                replaceGoal(updated);
+                render();
+                return;
+            }
+
+            if (action === 'save-note') {
+                const index = Number(btn.getAttribute('data-index'));
+                const input = document.querySelector(`.notes-input[data-goal="${goalId}"][data-index="${index}"]`);
+                const notes = input.value.trim() || null;
+                const updated = await api(`/${goalId}/topics/${index}/notes`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ notes }),
+                });
+                replaceGoal(updated);
+                render();
+                return;
+            }
+        });
+
+        document.getElementById('goals-container').addEventListener('submit', async (e) => {
+            const form = e.target.closest('form[data-action]');
+            if (!form) return;
+            e.preventDefault();
+            const action = form.getAttribute('data-action');
+            const goalId = form.getAttribute('data-goal');
+
+            if (action === 'log-form') {
+                const hoursVal = Number(form.querySelector('.log-hours').value || 0);
+                const topic = form.querySelector('.log-topic').value || undefined;
+                const date = form.querySelector('.log-date').value || undefined;
+                const note = form.querySelector('.log-note').value.trim() || undefined;
+                const errorEl = form.nextElementSibling;
+                if (hoursVal <= 0) return;
+                try {
+                    const updated = await api(`/${goalId}/log`, { method: 'POST', body: JSON.stringify({ hours: hoursVal, topic, date, note }) });
+                    replaceGoal(updated);
+                    render();
+                } catch (err) {
+                    errorEl.textContent = err.message;
+                    errorEl.hidden = false;
+                }
+                return;
+            }
+
+            if (action === 'deadline-form') {
+                const value = form.querySelector('.deadline-input').value || null;
+                const updated = await api(`/${goalId}/deadline`, { method: 'PUT', body: JSON.stringify({ targetDeadline: value }) });
+                replaceGoal(updated);
+                render();
+                return;
+            }
+
+            if (action === 'add-topic-form') {
+                const name = form.querySelector('.add-topic-name').value.trim();
+                const description = form.querySelector('.add-topic-desc').value.trim() || undefined;
+                if (!name) return;
+                const updated = await api(`/${goalId}/topics`, {
+                    method: 'POST',
+                    body: JSON.stringify({ topics: [{ name, description }] }),
+                });
+                replaceGoal(updated);
+                form.reset();
+                render();
+                return;
+            }
+        });
+
+        loadGoals();
+    </script>
+</body>
+</html>

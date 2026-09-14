@@ -6,26 +6,26 @@
    <style>
     /* ===== OpenCode terminal theme — near-black, monochrome, hairlines ===== */
     :root {
-     --bg: #0a0a0a;
-     --bg-raised: #121212;
-     --bg-inset: #1a1a1a;
-     --bg-deep: #1f1f1f;
+     --bg: #0a0806;
+     --bg-raised: #13110f;
+     --bg-inset: #1f1d1a;
+     --bg-deep: #2b2826;
 
-     --border: #262626;
-     --border-strong: #3a3a3a;
+     --border: #373532;
+     --border-strong: #4f4d49;
 
-     --fg: #ededed;
-     --fg-muted: #9a9a9a;
-     --fg-faint: #5c5c5c;
+     --fg: #ebe7e3;
+     --fg-muted: #a7a4a0;
+     --fg-faint: #83807c;
 
-     --accent: #fafafa;
-     --on-accent: #0a0a0a;
-     --accent-soft: #b9b9b9;
+     --accent: #f5f1ed;
+     --on-accent: #0a0806;
+     --accent-soft: #bab7b2;
 
-     --success: #3fb950;
-     --warn: #d29922;
-     --danger: #f85149;
-     --info: #58a6ff;
+     --success: #57bf61;
+     --warn: #ce9b3a;
+     --danger: #ff6e63;
+     --info: #63a8f8;
 
      --font-mono: "Geist Mono", "Berkeley Mono", "JetBrains Mono", ui-monospace,
       "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
@@ -110,7 +110,7 @@
     }
 
     .app-header-meta {
-     margin-left: auto;
+     margin-inline-start: auto;
      color: var(--fg-faint);
      font-size: 0.66em;
      text-transform: uppercase;
@@ -127,7 +127,7 @@
      border: 1px solid var(--border);
      border-radius: var(--radius);
      padding: 7px 12px;
-     margin-left: 16px;
+     margin-inline-start: 16px;
     }
 
     .app-provider-label {
@@ -144,7 +144,7 @@
      display: inline-flex;
      align-items: center;
      gap: 8px;
-     margin-left: 16px;
+     margin-inline-start: 16px;
      background: var(--bg-raised);
      border: 1px solid var(--border);
      border-radius: var(--radius);
@@ -317,7 +317,7 @@
      cursor: pointer;
      transition: all 0.2s;
      flex-shrink: 0;
-     margin-left: auto;
+     margin-inline-start: auto;
      white-space: nowrap;
     }
 
@@ -416,7 +416,7 @@
 
     .rag-add-item {
      border-style: dashed;
-     border-left-color: var(--accent);
+     border-inline-start-color: var(--accent);
     }
 
     .rag-add-item .history-item-content {
@@ -425,7 +425,7 @@
     }
 
     .rag-add-item:hover {
-     border-left-color: var(--accent);
+     border-inline-start-color: var(--accent);
     }
 
     #clear-history-btn {
@@ -470,7 +470,7 @@
      background: var(--bg-inset);
      border: 1px solid var(--border);
      border-radius: var(--radius-sm);
-     border-left: 2px solid var(--border);
+     border-inline-start: 2px solid var(--border);
      cursor: pointer;
      transition: all 0.2s;
      overflow: hidden;
@@ -479,7 +479,7 @@
     .history-item:hover {
      background: var(--bg-deep);
      border-color: var(--border-strong);
-     border-left-color: var(--accent);
+     border-inline-start-color: var(--accent);
     }
 
     .history-item-content {
@@ -520,7 +520,7 @@
      min-height: 0;
      overflow-y: auto;
      margin-bottom: 16px;
-     padding-right: 6px;
+     padding-inline-end: 6px;
      display: flex;
      flex-direction: column;
      gap: 14px;
@@ -543,7 +543,7 @@
      background: var(--bg-inset);
      color: var(--fg);
      align-self: flex-end;
-     text-align: right;
+     text-align: end;
     }
 
     .message.ai {
@@ -553,13 +553,13 @@
      color: var(--fg);
      display: flex;
      flex-direction: column;
-     border-left: 2px solid var(--border-strong);
+     border-inline-start: 2px solid var(--border-strong);
     }
 
     .message.system {
      background: transparent;
      color: var(--fg-faint);
-     text-align: left;
+     text-align: start;
      font-size: 0.7em;
      text-transform: uppercase;
      letter-spacing: 0.08em;
@@ -582,7 +582,7 @@
      text-transform: uppercase;
      letter-spacing: 0.08em;
      color: var(--fg-faint);
-     margin-right: 6px;
+     margin-inline-end: 6px;
     }
 
     .message.user > strong {
@@ -627,7 +627,7 @@
      display: inline-block;
      width: 14px;
      height: 14px;
-     margin-right: 8px;
+     margin-inline-end: 8px;
      vertical-align: middle;
      flex-shrink: 0;
      border: 1px solid var(--border);
@@ -682,14 +682,14 @@
      border: 1px solid var(--border);
      cursor: pointer;
      display: block;
-     text-align: left;
-     margin-left: auto;
+     text-align: start;
+     margin-inline-start: auto;
     }
 
     .copy-message-btn {
      position: absolute;
      top: 8px;
-     right: 8px;
+     inset-inline-end: 8px;
      width: 26px;
      height: 26px;
      display: inline-flex;
@@ -743,7 +743,7 @@
      margin: 10px 0;
      display: block;
      border: 1px solid var(--border);
-     border-left: 2px solid var(--border-strong);
+     border-inline-start: 2px solid var(--border-strong);
     }
 
     .message.ai code {
@@ -1032,7 +1032,7 @@
      cursor: pointer;
      transition: all 0.2s;
      flex-shrink: 0;
-     margin-left: auto;
+     margin-inline-start: auto;
      white-space: nowrap;
     }
 
@@ -1162,7 +1162,7 @@
     .model-row.loaded {
      background: var(--bg-inset);
      border-color: var(--border-strong);
-     border-left: 2px solid var(--accent);
+     border-inline-start: 2px solid var(--accent);
     }
 
     .model-row.loaded .model-btn {
@@ -1259,7 +1259,7 @@
      }
 
      .model-sheet-count {
-      margin-left: auto;
+      margin-inline-start: auto;
       color: var(--fg-faint);
       font-size: 0.72em;
       text-transform: uppercase;
@@ -1353,7 +1353,7 @@
      }
 
      .history-sheet-count {
-      margin-left: auto;
+      margin-inline-start: auto;
       color: var(--fg-faint);
       font-size: 0.72em;
       text-transform: uppercase;
@@ -1481,7 +1481,7 @@
       letter-spacing: 0.05em;
       font-size: 0.72em;
       cursor: pointer;
-      margin-right: 10px;
+      margin-inline-end: 10px;
      }
 
      #rag-files-upload-btn {
@@ -1527,7 +1527,7 @@
 
      #rag-files-delete-all-btn:hover {
       background: var(--danger);
-      color: #fff;
+      color: var(--on-accent);
      }
 
      #rag-files-delete-all-btn:disabled {
@@ -1563,7 +1563,7 @@
      #rag-clear-ingestions-btn:hover,
      .rag-clear-ingestions-btn:hover {
       background: var(--danger);
-      color: #fff;
+      color: var(--on-accent);
      }
 
      .rag-ingest-all-btn {
@@ -1608,7 +1608,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      padding-right: 6px;
+      padding-inline-end: 6px;
      }
 
      .rag-files-list::-webkit-scrollbar {
@@ -1641,13 +1641,13 @@
 
      .rag-file-item {
       position: relative;
-      padding-right: 26px;
+      padding-inline-end: 26px;
      }
 
      .rag-delete-btn {
       position: absolute;
       top: 4px;
-      right: 6px;
+      inset-inline-end: 6px;
       background: transparent;
       border: 1px solid transparent;
       border-radius: var(--radius-sm);
@@ -1681,7 +1681,7 @@
      .rag-ingest-btn {
       display: inline-block;
       margin-top: 6px;
-      margin-right: 6px;
+      margin-inline-end: 6px;
       background: transparent;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
@@ -1718,7 +1718,7 @@
      }
      .rag-file-ingested-badge {
       display: inline-block;
-      margin-left: 8px;
+      margin-inline-start: 8px;
       padding: 1px 6px;
       border-radius: var(--radius-sm);
       border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
@@ -1746,7 +1746,7 @@
      }
 
      .modal-count {
-      margin-left: auto;
+      margin-inline-start: auto;
       color: var(--fg-faint);
       font-size: 0.72em;
       text-transform: uppercase;
@@ -1804,7 +1804,7 @@
      }
 
      .code-preview-lines {
-      margin-left: auto;
+      margin-inline-start: auto;
       font-size: 10px;
       color: var(--fg-muted);
       font-family: var(--font-mono);
@@ -2047,8 +2047,8 @@
     .input-controls {
      display: flex;
      flex-wrap: wrap;
-     align-items: start;
-     gap: 1px;
+     align-items: center;
+     gap: 10px;
     }
 
     /* ===== Buttons ===== */
@@ -2106,7 +2106,7 @@
      display: flex;
      align-items: center;
      gap: 12px;
-     margin-right: auto;
+     margin-inline-end: auto;
     }
 
     .streaming-toggle-container,
@@ -2268,7 +2268,7 @@
     }
 
     .rag-source-item {
-     border-left: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+     border-inline-start: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
      background: var(--bg-deep);
      border-radius: 0 4px 4px 0;
      padding: 4px 8px;
@@ -2402,6 +2402,78 @@
       }
       to {
        opacity: 1;
+      }
+     }
+
+     /* ===== Responsive ===== */
+     @media (max-width: 1000px) {
+      #main-container {
+       flex-direction: column;
+      }
+
+      #main-column {
+       order: -1;
+      }
+
+      #left-sidebar,
+      #right-sidebar {
+       order: 0;
+       width: 100%;
+       max-height: 260px;
+      }
+     }
+
+     @media (max-width: 640px) {
+      .app-header-inner {
+       flex-wrap: wrap;
+       padding: 14px 16px;
+       gap: 10px 16px;
+      }
+
+      .app-header-meta {
+       display: none;
+      }
+
+      .app-provider-tab,
+      .app-monitor-link {
+       margin-inline-start: 0;
+      }
+
+      #main-container {
+       margin-top: 10px;
+       padding: 0 14px 16px;
+       gap: 10px;
+      }
+
+      #chat-container {
+       padding: 12px;
+      }
+
+      .message {
+       max-width: 92%;
+      }
+
+      .message.system {
+       max-width: 100%;
+      }
+     }
+
+     @media (max-width: 480px) {
+      .toggle-group {
+       width: 100%;
+       margin-inline-end: 0;
+       justify-content: space-between;
+      }
+
+      .input-controls {
+       align-items: stretch;
+      }
+
+      #send,
+      #stop-stream,
+      #upload-btn,
+      #new-chat-btn {
+       flex: 1 1 auto;
       }
      }
     </style>
