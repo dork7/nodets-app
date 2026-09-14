@@ -11,7 +11,7 @@ mongoose.connection.on('error', (err) => {
  process.exit(-1);
 });
 
-let mongoURL = env.MONGO_URI_LOCAL;
+let mongoURL = env.MONGO_URI;
 // print mongoose logs in dev env
 if (env.NODE_ENV === 'development') {
  mongoose.set('debug', true);

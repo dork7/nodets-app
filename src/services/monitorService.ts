@@ -1,5 +1,6 @@
 import { LOCALAI_URL } from '@/common/utils/getLocalAILLMs';
-import { redisClient } from '@/config/redisStore';
+import { AiCallLogModel } from '@/models/aiCallLog.model';
+import { AiModelStatsModel } from '@/models/aiModelStats.model';
 import { logger } from '@/server';
 
 export interface TokenUsage {
@@ -83,10 +84,7 @@ export interface AiCallLog {
   tokenUsage?: TokenUsage;
 }
 
-const LOG_KEY = 'ai_logs_list';
-const STATS_KEY_PREFIX = 'ai_stats_model:';
 const MAX_LOGS = 500;
-const TTL_SECONDS = 3600; // 60 minutes
 
 export const monitorService = {
   async logCall(
@@ -100,12 +98,13 @@ export const monitorService = {
     tokenUsage?: TokenUsage
   ) {
     try {
-      const id = Math.random().toString(36).substring(2, 9);
-      const timestamp = new Date().toISOString();
+      const callId = Math.random().toString(36).substring(2, 9);
+      const timestamp = new Date();
       const contextSize = prompt.length;
 
-      const log: AiCallLog = {
-        id,
+      // 1. Append to the detailed logs collection (capped at MAX_LOGS, oldest evicted first)
+      await AiCallLogModel.create({
+        callId,
         timestamp,
         sessionId,
         provider,
@@ -116,33 +115,14 @@ export const monitorService = {
         prompt,
         contextSize,
         tokenUsage,
-      };
+      });
 
-      // 1. Append to the detailed logs list
-      await redisClient.lPush(LOG_KEY, JSON.stringify(log));
-      await redisClient.lTrim(LOG_KEY, 0, MAX_LOGS - 1);
-      await redisClient.expire(LOG_KEY, TTL_SECONDS);
-
-      // 2. Update aggregated stats in a Redis Hash per model
-      const statsKey = `${STATS_KEY_PREFIX}${model}`;
-      const currentStatsJson = await redisClient.hGet(statsKey, 'data');
-
-      const stats: { totalCalls: number; totalDuration: number } = currentStatsJson
-        ? JSON.parse(currentStatsJson)
-        : { totalCalls: 0, totalDuration: 0 };
-
-      stats.totalCalls += 1;
-      stats.totalDuration += durationMs;
-
-      const avgDuration = stats.totalDuration / stats.totalCalls;
-
-      await redisClient.hSet(statsKey, 'data', JSON.stringify({
-        totalCalls: stats.totalCalls,
-        totalDuration: stats.totalDuration,
-        avgDurationMs: avgDuration,
-        lastUpdated: timestamp
-      }));
-      await redisClient.expire(statsKey, TTL_SECONDS);
+      // 2. Update aggregated stats per model
+      await AiModelStatsModel.findOneAndUpdate(
+        { model },
+        { $inc: { totalCalls: 1, totalDuration: durationMs }, $set: { lastUpdated: timestamp } },
+        { upsert: true }
+      );
 
       logger.info(`[Monitor] Logged AI call for ${model}: ${status}`);
     } catch (err) {
@@ -152,8 +132,20 @@ export const monitorService = {
 
   async getRecentLogs(): Promise<AiCallLog[]> {
     try {
-      const logs = await redisClient.lRange(LOG_KEY, 0, -1);
-      return logs.map((log: string) => JSON.parse(log) as AiCallLog);
+      const logs = await AiCallLogModel.find().sort({ timestamp: -1 }).limit(MAX_LOGS).lean();
+      return logs.map((log) => ({
+        id: log.callId,
+        timestamp: log.timestamp.toISOString(),
+        sessionId: log.sessionId,
+        provider: log.provider,
+        model: log.model,
+        status: log.status,
+        error: log.error,
+        durationMs: log.durationMs,
+        prompt: log.prompt,
+        contextSize: log.contextSize,
+        tokenUsage: log.tokenUsage,
+      }));
     } catch (err) {
       logger.error('[Monitor] Failed to fetch logs', err);
       return [];
@@ -162,8 +154,15 @@ export const monitorService = {
 
   async getModelStats(model: string) {
     try {
-      const statsJson = await redisClient.hGet(`${STATS_KEY_PREFIX}${model}`, 'data');
-      return statsJson ? JSON.parse(statsJson) : null;
+      const stats = await AiModelStatsModel.findOne({ model }).lean();
+      if (!stats) return null;
+
+      return {
+        totalCalls: stats.totalCalls,
+        totalDuration: stats.totalDuration,
+        avgDurationMs: stats.totalCalls > 0 ? stats.totalDuration / stats.totalCalls : 0,
+        lastUpdated: stats.lastUpdated.toISOString(),
+      };
     } catch (err) {
       logger.error(`[Monitor] Failed to fetch stats for ${model}`, err);
       return null;

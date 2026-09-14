@@ -26,6 +26,8 @@ import { OPENROUTER_FREE_MODELS } from './config/openRouterModels';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
 import { redisClient } from './config/redisStore';
 import { initMinio } from './services/minio';
+import mongoose from 'mongoose';
+import connectMongoDB from './config/mongoose';
 const loggerOriginal = pino({ name: 'server start' });
 
 const logger = new Proxy(loggerOriginal, {
@@ -62,8 +64,10 @@ global.cacheHash = cacheConfig.createHash(cacheRules);
 if (env.ENV === 'local') {
   redisClient.connect();
   initMinio();
-  // mongoDB();
+  connectMongoDB();
 //  initKafka().catch((err) => logger.error(err));
+}if (env.ENV === 'dev') {
+  mongoose.connect(env.MONGO_URI);
 }
 
 // Middlewares
@@ -92,17 +96,22 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public'));
 
 app.get('/dashboard', async function (req, res) {
- const fileContent = await readFileData('file.txt');
- const splitted = fileContent.split('\n');
+ try {
+  const fileContent = await readFileData('file.txt');
+  const splitted = fileContent.split('\n');
 
- const objects = splitted.filter((item) => item.trim() !== '').map((item) => JSON.parse(item));
- const recordCount = objects.length;
+  const objects = splitted.filter((item) => item.trim() !== '').map((item) => JSON.parse(item));
+  const recordCount = objects.length;
 
- res.render(path.join(__dirname, 'public'), {
-  appUsers: [{ user_name: 'test' }, { user_name: 'test2' }],
-  fileContent: objects, //&& JSON.parse(fileContent),
-  recordCount,
- });
+  res.render(path.join(__dirname, 'public'), {
+   appUsers: [{ user_name: 'test' }, { user_name: 'test2' }],
+   fileContent: objects, //&& JSON.parse(fileContent),
+   recordCount,
+  });
+ } catch (error) {
+  logger.error(`Error rendering /dashboard: ${error}`);
+  res.status(500).json({ success: false, message: 'Failed to load dashboard' });
+ }
 });
 
 app.get('/chatAI', async function (req, res) {

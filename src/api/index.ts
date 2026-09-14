@@ -33,11 +33,15 @@ router.use('/monitor', monitorRouter);
 router.use('/goals', goalsRouter);
 
 router.use('/dashboard', async (req, res) => {
- const fileContent = await readFileData('file.txt');
- res.render(path.join(__dirname, 'public'), {
-  appUsers: [{ user_name: 'test' }, { user_name: 'test2' }],
-  fileContent: '123',
- });
+ try {
+  await readFileData('file.txt');
+  res.render(path.join(__dirname, 'public'), {
+   appUsers: [{ user_name: 'test' }, { user_name: 'test2' }],
+   fileContent: '123',
+  });
+ } catch (error) {
+  res.status(500).json({ success: false, message: 'Failed to load dashboard' });
+ }
 });
 
 export default router;
