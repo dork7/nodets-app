@@ -6,40 +6,24 @@
     <title>Goal Tracker</title>
     <style>
         /*
-         * shadcn/ui design tokens (default "zinc" theme, new-york style).
-         * Hand-ported to plain CSS so the page stays a build-free static file.
+         * Matte dark tokens shared across all portals (chatAI, nutrition,
+         * monitor, goals) — warm near-black neutrals, single accent.
          */
         :root {
-            --background: 0 0% 100%;
-            --foreground: 240 10% 3.9%;
-            --card: 0 0% 100%;
-            --card-foreground: 240 10% 3.9%;
-            --muted: 240 4.8% 95.9%;
-            --muted-foreground: 240 3.8% 46.1%;
-            --border: 240 5.9% 90%;
-            --primary: 240 5.9% 10%;
-            --primary-foreground: 0 0% 98%;
-            --accent: 240 4.8% 95.9%;
-            --success: 142 71% 45%;
-            --destructive: 0 72% 51%;
+            --background: 30 25% 3.1%;
+            --foreground: 30 16.7% 90.6%;
+            --card: 30 11.8% 6.7%;
+            --card-foreground: 30 16.7% 90.6%;
+            --muted: 36 8.8% 11.2%;
+            --muted-foreground: 34 3.8% 64.1%;
+            --border: 36 4.8% 20.6%;
+            --primary: 30 28.6% 94.5%;
+            --primary-foreground: 30 25% 3.1%;
+            --accent: 24 6.2% 15.9%;
+            --success: 126 44.8% 54.5%;
+            --destructive: 4 100% 69.4%;
             --radius: 0.5rem;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --background: 240 10% 3.9%;
-                --foreground: 0 0% 98%;
-                --card: 240 10% 3.9%;
-                --card-foreground: 0 0% 98%;
-                --muted: 240 3.7% 15.9%;
-                --muted-foreground: 240 5% 64.9%;
-                --border: 240 3.7% 15.9%;
-                --primary: 0 0% 98%;
-                --primary-foreground: 240 5.9% 10%;
-                --accent: 240 3.7% 15.9%;
-                --success: 142 71% 45%;
-                --destructive: 0 62% 52%;
-            }
+            --shadow-border: 0 0 0 1px oklch(1 0 0 / 0.08);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -62,9 +46,8 @@
         .card {
             background-color: hsl(var(--card));
             color: hsl(var(--card-foreground));
-            border: 1px solid hsl(var(--border));
             border-radius: var(--radius);
-            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            box-shadow: var(--shadow-border);
         }
         .card-header { padding: 1.25rem 1.5rem 0.5rem; }
         .card-content { padding: 1.25rem 1.5rem 1.5rem; }
@@ -96,14 +79,35 @@
             border: 1px solid hsl(var(--border));
             background-color: hsl(var(--background));
             color: hsl(var(--foreground));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            transition-property: background-color, border-color, color, opacity, transform;
+            transition-duration: 150ms;
+            transition-timing-function: ease-out;
         }
         button:hover { background-color: hsl(var(--accent)); }
+        button:active:not(:disabled) { transform: scale(0.96); }
         button.btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border-color: hsl(var(--primary)); }
         button.btn-primary:hover { opacity: 0.9; }
         button.btn-danger { color: hsl(var(--destructive)); border-color: hsl(var(--destructive) / 0.4); }
         button.btn-danger:hover { background-color: hsl(var(--destructive) / 0.08); }
         button.btn-sm { padding: 0.3rem 0.6rem; font-size: 0.72rem; }
+        button.btn-icon-trailing { padding-inline-end: calc(0.6rem - 2px); }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+            outline: 2px solid hsl(var(--primary) / 0.5);
+            outline-offset: 2px;
+        }
+        input[type="checkbox"] { accent-color: hsl(var(--primary)); }
+
+        .icon { width: 1em; height: 1em; vertical-align: -0.125em; flex-shrink: 0; }
+        .icon-lg { width: 2rem; height: 2rem; }
+        .icon-chevron { transition: transform 150ms ease-out; }
+        .icon-chevron.is-open { transform: rotate(180deg); }
+        @keyframes icon-spin { to { transform: rotate(360deg); } }
+        .icon-spin { animation: icon-spin 0.6s linear infinite; }
 
         .goal-card { margin-bottom: 1rem; }
         .goal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
@@ -112,18 +116,19 @@
         .goal-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 
         .badge {
-            display: inline-flex; align-items: center;
-            border-radius: calc(var(--radius) - 0.125rem);
-            padding: 0.125rem 0.5rem;
+            display: inline-flex; align-items: center; gap: 0.3em;
+            border-radius: 999px;
+            padding: 0.15rem 0.5rem;
             font-size: 0.68rem; font-weight: 600; line-height: 1.35;
             border: 1px solid transparent; white-space: nowrap;
         }
+        .badge:has(.icon) { padding-inline-start: calc(0.5rem - 2px); }
         .badge-success { background-color: hsl(var(--success) / 0.12); color: hsl(var(--success)); border-color: hsl(var(--success) / 0.25); }
         .badge-destructive { background-color: hsl(var(--destructive) / 0.12); color: hsl(var(--destructive)); border-color: hsl(var(--destructive) / 0.25); }
         .badge-muted { background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground)); border-color: hsl(var(--border)); }
 
         .progress-track { height: 0.5rem; border-radius: 999px; background-color: hsl(var(--muted)); overflow: hidden; margin: 0.6rem 0; }
-        .progress-fill { height: 100%; background-color: hsl(var(--primary)); border-radius: 999px; }
+        .progress-fill { height: 100%; background-color: hsl(var(--primary)); border-radius: 999px; transition: width 300ms cubic-bezier(0.2, 0, 0, 1); }
 
         .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem 1rem; margin-top: 0.5rem; }
         .stat-item .k { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: hsl(var(--muted-foreground)); }
@@ -152,7 +157,8 @@
         .log-table td { padding: 0.35rem 0.5rem; border-bottom: 1px solid hsl(var(--border)); vertical-align: top; }
         .cell-muted { color: hsl(var(--muted-foreground)); }
 
-        .empty-state { color: hsl(var(--muted-foreground)); font-size: 0.85rem; padding: 1rem 0; text-align: center; }
+        .empty-state { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; color: hsl(var(--muted-foreground)); font-size: 0.85rem; padding: 2.5rem 0; text-align: center; }
+        .empty-state .icon-lg { opacity: 0.45; }
         .error-note { color: hsl(var(--destructive)); font-size: 0.78rem; margin-top: 0.4rem; }
         .hint { font-size: 0.72rem; color: hsl(var(--muted-foreground)); margin-top: 0.3rem; }
         .divider { border: none; border-top: 1px solid hsl(var(--border)); margin: 0.9rem 0; }
@@ -206,6 +212,14 @@
         const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
             { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
         ));
+
+        const icon = {
+            chevron: (open) => `<svg class="icon icon-chevron${open ? ' is-open' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`,
+            check: () => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+            alert: () => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+            spinner: () => `<svg class="icon icon-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>`,
+            inbox: () => `<svg class="icon icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"></path><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"></path></svg>`,
+        };
         const hrs = (n) => (n === null || n === undefined ? '—' : `${Number(n).toFixed(1)}h`);
         const pct = (a, b) => (b > 0 ? Math.min(100, Math.round((a / b) * 100)) : 0);
         const todayStr = () => new Date().toISOString().slice(0, 10);
@@ -233,21 +247,21 @@
         }
 
         function statusBadge(status) {
-            if (status === 'completed') return '<span class="badge badge-success">Completed</span>';
+            if (status === 'completed') return `<span class="badge badge-success">${icon.check()}Completed</span>`;
             if (status === 'in-progress') return '<span class="badge badge-muted">In progress</span>';
             return '<span class="badge badge-muted">Not started</span>';
         }
 
         function deadlineBadge(derived) {
             if (derived.onTrack === null || derived.onTrack === undefined) return '';
-            if (derived.onTrack) return '<span class="badge badge-success">On track</span>';
-            return '<span class="badge badge-destructive">Behind schedule</span>';
+            if (derived.onTrack) return `<span class="badge badge-success">${icon.check()}On track</span>`;
+            return `<span class="badge badge-destructive">${icon.alert()}Behind schedule</span>`;
         }
 
         function render() {
             const container = document.getElementById('goals-container');
             if (!goals.length) {
-                container.innerHTML = '<div class="card"><div class="card-content"><div class="empty-state">No goals yet — add one above to get started.</div></div></div>';
+                container.innerHTML = `<div class="card"><div class="card-content"><div class="empty-state">${icon.inbox()}<div>No goals yet — add one above to get started.</div></div></div></div>`;
                 return;
             }
             container.innerHTML = goals.map(renderGoalCard).join('');
@@ -275,7 +289,7 @@
                                 </div>
                             </div>
                             <div class="goal-actions">
-                                <button class="btn-sm" data-action="toggle" data-goal="${esc(goal.id)}">${isOpen ? 'Collapse' : 'Open'}</button>
+                                <button class="btn-sm btn-icon-trailing" data-action="toggle" data-goal="${esc(goal.id)}">${isOpen ? 'Collapse' : 'Open'}${icon.chevron(isOpen)}</button>
                                 <button class="btn-sm btn-danger" data-action="delete-goal" data-goal="${esc(goal.id)}">Delete</button>
                             </div>
                         </div>
@@ -360,7 +374,7 @@
                 <div class="topic-item">
                     <div class="topic-head">
                         <div>
-                            <div class="topic-name"${topic.completed ? ' style="text-decoration: line-through; opacity: 0.7;"' : ''}>${esc(topic.name)}${topic.completed ? ' <span class="badge badge-success">Done</span>' : ''}</div>
+                            <div class="topic-name"${topic.completed ? ' style="text-decoration: line-through; opacity: 0.7;"' : ''}>${esc(topic.name)}${topic.completed ? ` <span class="badge badge-success">${icon.check()}Done</span>` : ''}</div>
                             ${topic.description ? `<div class="topic-desc">${esc(topic.description)}</div>` : ''}
                             ${topic.course
                                 ? `<div class="topic-course"><a href="${esc(topic.course.url)}" target="_blank" rel="noopener">${esc(topic.course.title)}</a>${topic.course.channelTitle ? ` &middot; ${esc(topic.course.channelTitle)}` : ''}</div>`
@@ -523,7 +537,7 @@
 
             if (action === 'suggest-topics') {
                 btn.disabled = true;
-                btn.textContent = 'Thinking…';
+                btn.innerHTML = `${icon.spinner()}Thinking…`;
                 try {
                     topicSuggestions[goalId] = await api(`/${goalId}/suggest-topics`, { method: 'POST', body: JSON.stringify({}) });
                 } catch (err) {
@@ -566,7 +580,7 @@
                 const index = Number(btn.getAttribute('data-index'));
                 const key = `${goalId}:${index}`;
                 btn.disabled = true;
-                btn.textContent = 'Searching…';
+                btn.innerHTML = `${icon.spinner()}Searching…`;
                 try {
                     courseCandidates[key] = await api(`/${goalId}/topics/${index}/suggest-courses`, { method: 'GET' });
                 } catch (err) {
