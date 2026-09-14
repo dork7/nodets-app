@@ -1,10 +1,11 @@
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
-import { graphqlHTTP } from 'express-graphql';
+import { createHandler } from 'graphql-http/lib/use/express';
 import helmet from 'helmet';
 import path from 'path';
 import { pino } from 'pino';
+import { ruruHTML } from 'ruru/server';
 
 import apis from '@/api';
 import { openAPIRouter } from '@/api-docs/openAPIRouter';
@@ -122,13 +123,10 @@ app.get('/chatModels', async function (req, res) {
  res.json({ models });
 });
 
-app.use(
- '/graphql',
- graphqlHTTP({
-  schema: schema,
-  graphiql: true, // Enable GraphiQL for testing
- })
-);
+app.all('/graphql', createHandler({ schema }));
+app.get('/graphiql', (req, res) => {
+ res.type('html').send(ruruHTML({ endpoint: '/graphql' }));
+});
 
 // Swagger UI
 app.use(openAPIRouter);
