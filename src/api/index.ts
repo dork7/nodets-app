@@ -17,7 +17,7 @@ import { readFileData } from '@/common/utils/fileUtils';
 
 const router = express.Router();
 
-router.use('/v1/health-check', healthCheckRouter);
+router.use('/health-check', healthCheckRouter);
 router.use('/aiUtils', aiUtilsRouter);
 router.use('/redis', redisRouter);
 router.use('/kafka', kafkaRouter);
