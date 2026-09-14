@@ -1,8 +1,8 @@
 import { callAI } from '@/config/openaiConfig';
 import { executeToolCalls, type ToolCallRequest, toOpenAITools } from '@/config/openaiConfig/tools';
+import { ChatHistoryModel } from '@/models/chatHistory.model';
 import { logger } from '@/server';
 import { monitorService } from '@/services/monitorService';
-import { redis } from '@/services/redisStore';
 
 import { buildConversationHistory, getSummeriseHistory } from './utils/history';
 import { addAttachmentsToLastMsg, getFileText, getImageDataUrl } from './utils/imageHandler';
@@ -60,12 +60,9 @@ interface AIResponse {
 
 // ===== Constants =====
 const DEFAULT_PROMPT = 'Hello, AI!';
-const HISTORY_KEY_PREFIX = 'chat_history_';
 const activeAIRequests = new Map<string, AbortController>();
 
 // ===== Helper Functions =====
-const getHistoryKey = (userId: string): string => `${HISTORY_KEY_PREFIX}${userId}`;
-
 const normalizeStreamParam = (streamParam: boolean | string | undefined): boolean => {
  if (streamParam === 'false' || streamParam === false) {
   return false;
@@ -114,8 +111,8 @@ const sendWebSocketMessage = (ws: any, message: Record<string, unknown>): void =
 // ===== History Management =====
 const getChatHistory = async (userId: string): Promise<ChatMessage[]> => {
  try {
-  const history = await redis.getValue(getHistoryKey(userId));
-  return Array.isArray(history) ? history : [];
+  const doc = await ChatHistoryModel.findOne({ userId }).lean();
+  return doc?.history ?? [];
  } catch (error) {
   logger.error(`Error retrieving chat history for user ${userId}: ${error}`);
   return [];
@@ -124,7 +121,11 @@ const getChatHistory = async (userId: string): Promise<ChatMessage[]> => {
 
 const saveChatHistory = async (userId: string, history: ChatMessage[]): Promise<void> => {
  try {
-  await redis.setValue(getHistoryKey(userId), history);
+  await ChatHistoryModel.findOneAndUpdate(
+   { userId },
+   { history, updatedAt: new Date() },
+   { upsert: true }
+  );
  } catch (error) {
   logger.error(`Error saving chat history for user ${userId}: ${error}`);
  }
@@ -329,7 +330,7 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
 
   // RAG: when enabled, retrieve context from the vector store and inject it as a system
   // message. Injected into `aiMessages` only (never `conversationHistory`) so the context
-  // is not persisted to Redis and re-injected on later turns. Fails open.
+  // is not persisted to MongoDB and re-injected on later turns. Fails open.
   let ragSources: RagChunk[] = [];
   if (message.rag) {
    const retrieval = await retrieveRagContext(userInput, message.ragDistance);

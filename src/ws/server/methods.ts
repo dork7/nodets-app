@@ -1,50 +1,35 @@
-import fs from 'fs';
-import path from 'path';
-import { pathToFileURL } from 'url';
-
 import { logger } from '@/server';
 
+import * as getTimeHandler from './handlers/getTime';
+import * as getUsersHandler from './handlers/getUsers';
+import * as openaiHandler from './handlers/openai';
+import * as pingHandler from './handlers/ping';
+import * as streamHandler from './handlers/stream';
 import { getMethod, listMethods, registerMethod } from './registry';
-
-const handlersDir = path.join(__dirname, 'handlers');
 
 type HandlerModule = {
  name?: string;
  handler?: (...args: any[]) => unknown;
- default?: {
-  name?: string;
-  handler?: (...args: any[]) => unknown;
- };
 };
 
-const handlerExtensions = new Set(['.ts', '.js', '.mjs', '.cjs']);
+// Statically imported (rather than scanned off disk at runtime) because tsup
+// bundles each entry with `splitting: false`, which inlines this file's code into
+// dist/index.js — at that point `__dirname` resolves to dist/, not dist/ws/server/,
+// so a runtime `fs.readdirSync(path.join(__dirname, 'handlers'))` can never find them.
+const handlerModules: HandlerModule[] = [pingHandler, getTimeHandler, getUsersHandler, streamHandler, openaiHandler];
 
-const isHandlerFile = (file: string) => {
- return handlerExtensions.has(path.extname(file)) && !file.endsWith('.d.ts');
-};
-
-const getHandlerExports = (module: HandlerModule) => {
- return module.name && module.handler ? module : module.default || {};
-};
-
-// Dynamically import all handler files in handlers/
 export async function loadHandlers() {
- const files = fs.readdirSync(handlersDir).filter(isHandlerFile);
-
- for (const file of files) {
-  const modulePath = path.join(handlersDir, file);
-  const module = (await import(pathToFileURL(modulePath).href)) as HandlerModule;
-  const { name, handler } = getHandlerExports(module);
+ for (const module of handlerModules) {
+  const { name, handler } = module;
 
   if (!name || typeof handler !== 'function') {
-   throw new Error(`Invalid server handler module: ${modulePath}`);
+   throw new Error(`Invalid server handler module: ${JSON.stringify(module)}`);
   }
 
   registerMethod(name, handler);
-  // logger.info(`🔌 Registered server method: ${name}`);
-  }
+ }
 
-  logger.info(`✅ Available server methods:  ${listMethods()}`);
+ logger.info(`✅ Available server methods:  ${listMethods()}`);
 }
 
 export { getMethod, listMethods };

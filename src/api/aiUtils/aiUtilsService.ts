@@ -7,6 +7,7 @@ import { getLLMModels } from '@/common/utils/getDockerLLMS';
 import { LOCALAI_URL } from '@/common/utils/getLocalAILLMs';
 import { redisClient } from '@/config/redisStore';
 import { openai } from '@/config/openaiConfig';
+import { ChatHistoryModel } from '@/models/chatHistory.model';
 import { logger } from '@/server';
 import { redis } from '@/services/redisStore';
 
@@ -68,8 +69,8 @@ const fetchLocalAI = async <T>(path: string, init?: RequestInit): Promise<T> => 
 export const aiUtilsService = {
  async getChatHistory(userId: string): Promise<ServiceResponse<any[] | null>> {
   try {
-   const history = await redis.getValue(`chat_history_${userId}`);
-   const historyArray = history || [];
+   const doc = await ChatHistoryModel.findOne({ userId }).lean();
+   const historyArray = doc?.history || [];
 
    if (!Array.isArray(historyArray)) {
     return new ServiceResponse(ResponseStatus.Success, 'No chat history found', [], StatusCodes.OK);
@@ -97,10 +98,9 @@ export const aiUtilsService = {
 
  async clearChatHistory(userId: string): Promise<ServiceResponse<{ cleared: boolean } | null>> {
   try {
-   const historyKey = `chat_history_${userId}`;
    const usageKey = `${TOKEN_USAGE_KEY_PREFIX}${userId}`;
 
-   await redis.deleteValue(historyKey);
+   await ChatHistoryModel.deleteOne({ userId });
    await redis.deleteValue(usageKey);
 
    logger.info(`Cleared chat history and token usage for user ${userId}`);
