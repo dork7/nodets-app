@@ -5,6 +5,7 @@ import { aiProvidersRouter } from '@/api/aiProviders/aiProvidersRouter';
 import { aiUtilsRouter } from '@/api/aiUtils/aiUtilsRouter';
 import { catalogueRouter } from '@/api/catalogue/catalogueRouter';
 import { chatRouter } from '@/api/chat/chatRouter';
+import { goalsRouter } from '@/api/goals/goalsRouter';
 import { healthCheckRouter } from '@/api/healthCheck/healthCheckRouter';
 import { kafkaRouter } from '@/api/kafka/kafkaRouter';
 import { minioRouter } from '@/api/minio/minioRouter';
@@ -29,6 +30,7 @@ router.use('/minio', minioRouter);
 router.use('/rag', ragRouter);
 router.use('/aiProviders', aiProvidersRouter);
 router.use('/monitor', monitorRouter);
+router.use('/goals', goalsRouter);
 
 router.use('/dashboard', async (req, res) => {
  try {

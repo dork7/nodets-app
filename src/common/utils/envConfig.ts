@@ -50,4 +50,5 @@ export const env = cleanEnv(process.env, {
  LOCALAI_URL: str({ default: 'http://localhost:8000/v1', desc: 'URL for the LocalAI API' }),
  OLLAMA_URL: str({ default: 'http://localhost:11434', desc: 'Base URL for the Ollama OpenAI-compatible API' }),
  OLLAMA_CHAT_MODEL: str({ default: 'qwen2.5:0.5b', desc: 'Default chat/completions model for Ollama' }),
+ YOUTUBE_API_KEY: str({ default: '', desc: 'API key for the YouTube Data API v3 (goal-tracker course search)' }),
 });
