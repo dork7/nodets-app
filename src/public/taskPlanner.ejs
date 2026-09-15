@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Timeline</title>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --border: 240 5.9% 90%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --accent: 240 4.8% 95.9%;
+            --destructive: 0 72% 51%;
+            --radius: 0.5rem;
+
+            --prio-low: 142 71% 45%;
+            --prio-medium: 217 91% 60%;
+            --prio-high: 30 95% 55%;
+            --prio-critical: 0 72% 51%;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: 240 10% 3.9%;
+                --foreground: 0 0% 98%;
+                --card: 240 10% 3.9%;
+                --card-foreground: 0 0% 98%;
+                --muted: 240 3.7% 15.9%;
+                --muted-foreground: 240 5% 64.9%;
+                --border: 240 3.7% 15.9%;
+                --primary: 0 0% 98%;
+                --primary-foreground: 240 5.9% 10%;
+                --accent: 240 3.7% 15.9%;
+                --destructive: 0 62% 52%;
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+        .page-header { margin-bottom: 2rem; }
+        .page-header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.025em; }
+        .page-header p { color: hsl(var(--muted-foreground)); margin-top: 0.25rem; }
+
+        .card {
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        .card-header { padding: 1.5rem; padding-bottom: 0.5rem; }
+        .card-content { padding: 1.5rem; padding-top: 0.5rem; }
+        .card-title-lg { font-size: 1rem; font-weight: 600; letter-spacing: -0.015em; }
+        .card-description { font-size: 0.8rem; color: hsl(var(--muted-foreground)); margin-top: 0.15rem; }
+        .section-gap { margin-top: 1.5rem; }
+
+        /* --- form --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+            gap: 0.75rem;
+            align-items: end;
+        }
+        @media (max-width: 900px) { .form-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        .field label {
+            display: block;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 0.3rem;
+        }
+        .field input, .field select {
+            width: 100%;
+            height: 2.25rem;
+            padding: 0 0.6rem;
+            border-radius: calc(var(--radius) - 0.125rem);
+            border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-size: 0.8125rem;
+        }
+        .field input:focus, .field select:focus { outline: 2px solid hsl(var(--primary) / 0.4); }
+
+        .btn {
+            height: 2.25rem;
+            padding: 0 1rem;
+            border-radius: calc(var(--radius) - 0.125rem);
+            border: 1px solid transparent;
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-ghost {
+            background-color: transparent;
+            color: hsl(var(--muted-foreground));
+            border: 1px solid hsl(var(--border));
+        }
+
+        .form-error { color: hsl(var(--destructive)); font-size: 0.8rem; margin-top: 0.6rem; min-height: 1.2em; }
+
+        /* --- legend --- */
+        .legend { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: hsl(var(--muted-foreground)); }
+        .legend-dot { width: 0.65rem; height: 0.65rem; border-radius: 50%; }
+
+        /* --- timeline --- */
+        .timeline-scroll { overflow-x: auto; }
+        .timeline { min-width: 720px; }
+        .timeline-row {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            border-bottom: 1px solid hsl(var(--border));
+        }
+        .timeline-row:last-child { border-bottom: 0; }
+        .timeline-head-row { font-size: 0.72rem; color: hsl(var(--muted-foreground)); }
+        .timeline-label {
+            padding: 0.65rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.1rem;
+            border-right: 1px solid hsl(var(--border));
+        }
+        .timeline-label .task-name { font-weight: 500; font-size: 0.8125rem; }
+        .timeline-label .task-meta { font-size: 0.72rem; color: hsl(var(--muted-foreground)); }
+        .timeline-track { position: relative; padding: 0.5rem 0; min-height: 2.75rem; }
+        .timeline-grid-lines { position: absolute; inset: 0; display: flex; }
+        .timeline-grid-lines span { flex: 1; border-left: 1px solid hsl(var(--border) / 0.6); }
+        .timeline-bar {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 1.4rem;
+            border-radius: calc(var(--radius) - 0.125rem);
+            display: flex;
+            align-items: center;
+            padding: 0 0.5rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: default;
+        }
+        .timeline-ticks { display: grid; padding-left: 220px; font-size: 0.7rem; color: hsl(var(--muted-foreground)); }
+        .timeline-ticks-inner { position: relative; height: 1.5rem; }
+        .timeline-ticks-inner span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+
+        .empty-state { padding: 2rem 0.75rem; text-align: center; color: hsl(var(--muted-foreground)); }
+
+        .table-wrap { width: 100%; overflow-x: auto; }
+        table.table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+        table.table thead th {
+            text-align: left; font-weight: 500; color: hsl(var(--muted-foreground));
+            height: 2.5rem; padding: 0.35rem 0.75rem; border-bottom: 1px solid hsl(var(--border)); white-space: nowrap;
+        }
+        table.table tbody td { padding: 0.5rem 0.75rem; border-bottom: 1px solid hsl(var(--border)); }
+        table.table tbody tr:last-child td { border-bottom: 0; }
+        .badge {
+            display: inline-flex; align-items: center; border-radius: calc(var(--radius) - 0.125rem);
+            padding: 0.125rem 0.5rem; font-size: 0.7rem; font-weight: 600; color: white;
+        }
+        .delete-btn {
+            background: none; border: none; color: hsl(var(--destructive)); cursor: pointer; font-size: 0.78rem;
+        }
+        .delete-btn:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <h1>Project Management Timeline</h1>
+            <p>Plan tasks by developer, priority and date range &middot; stored in MongoDB (<code>taskPlanner</code>)</p>
+        </header>
+
+        <section class="card">
+            <div class="card-header">
+                <div class="card-title-lg">Add Task</div>
+                <div class="card-description">Task name, developer, priority and date range</div>
+            </div>
+            <div class="card-content">
+                <form id="task-form" class="form-grid">
+                    <div class="field">
+                        <label for="taskName">Task Name</label>
+                        <input id="taskName" name="taskName" type="text" required maxlength="200" placeholder="e.g. Build login page">
+                    </div>
+                    <div class="field">
+                        <label for="developerName">Developer</label>
+                        <input id="developerName" name="developerName" type="text" required maxlength="120" placeholder="e.g. Jane Doe">
+                    </div>
+                    <div class="field">
+                        <label for="priority">Priority</label>
+                        <select id="priority" name="priority" required>
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="startDate">Start Date</label>
+                        <input id="startDate" name="startDate" type="date" required>
+                    </div>
+                    <div class="field">
+                        <label for="endDate">End Date</label>
+                        <input id="endDate" name="endDate" type="date" required>
+                    </div>
+                    <div class="field">
+                        <button id="submit-btn" class="btn" type="submit">Add Task</button>
+                    </div>
+                </form>
+                <div id="form-error" class="form-error"></div>
+
+                <div class="legend">
+                    <div class="legend-item"><span class="legend-dot" style="background-color:hsl(var(--prio-low))"></span>Low</div>
+                    <div class="legend-item"><span class="legend-dot" style="background-color:hsl(var(--prio-medium))"></span>Medium</div>
+                    <div class="legend-item"><span class="legend-dot" style="background-color:hsl(var(--prio-high))"></span>High</div>
+                    <div class="legend-item"><span class="legend-dot" style="background-color:hsl(var(--prio-critical))"></span>Critical</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card section-gap">
+            <div class="card-header">
+                <div class="card-title-lg">Timeline</div>
+                <div class="card-description">One row per task, bar color reflects priority</div>
+            </div>
+            <div class="card-content">
+                <div class="timeline-scroll">
+                    <div id="timeline-ticks" class="timeline-ticks"></div>
+                    <div id="timeline" class="timeline"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card section-gap">
+            <div class="card-header">
+                <div class="card-title-lg">All Tasks</div>
+            </div>
+            <div class="card-content">
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Developer</th>
+                                <th>Priority</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tasks-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const TASKS_ENDPOINT = '/v1/taskPlanner';
+        const PRIORITY_VAR = { Low: '--prio-low', Medium: '--prio-medium', High: '--prio-high', Critical: '--prio-critical' };
+        const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+        const priorityColor = (p) => `hsl(var(${PRIORITY_VAR[p] || '--prio-medium'}))`;
+        const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+
+        async function fetchTasks() {
+            const response = await fetch(TASKS_ENDPOINT);
+            const body = await response.json();
+            if (!response.ok || !body.success) throw new Error(body.message || 'Failed to load tasks');
+            return body.responseObject || [];
+        }
+
+        function renderEmpty() {
+            document.getElementById('timeline-ticks').innerHTML = '';
+            document.getElementById('timeline').innerHTML = '<div class="empty-state">No tasks yet. Add one above to see it on the timeline.</div>';
+            document.getElementById('tasks-table-body').innerHTML =
+                '<tr><td colspan="6" class="empty-state">No tasks yet.</td></tr>';
+        }
+
+        function renderTimeline(tasks) {
+            if (!tasks.length) { renderEmpty(); return; }
+
+            const starts = tasks.map((t) => startOfDay(t.startDate).getTime());
+            const ends = tasks.map((t) => startOfDay(t.endDate).getTime());
+            const minDate = Math.min(...starts);
+            const maxDate = Math.max(...ends);
+            const paddedMin = minDate - MS_PER_DAY;
+            const paddedMax = maxDate + MS_PER_DAY;
+            const totalMs = Math.max(paddedMax - paddedMin, MS_PER_DAY);
+
+            const pct = (ms) => ((ms - paddedMin) / totalMs) * 100;
+
+            // Ticks: one per week across the range, plus the final day.
+            const totalDays = Math.round(totalMs / MS_PER_DAY);
+            const tickEvery = totalDays > 60 ? 14 : totalDays > 21 ? 7 : 1;
+            const ticks = [];
+            for (let d = 0; d <= totalDays; d += tickEvery) {
+                ticks.push(paddedMin + d * MS_PER_DAY);
+            }
+            const ticksHtml = ticks.map((ms) =>
+                `<span style="left:${pct(ms).toFixed(2)}%">${esc(fmtDate(ms))}</span>`
+            ).join('');
+            document.getElementById('timeline-ticks').innerHTML = `<div class="timeline-ticks-inner">${ticksHtml}</div>`;
+
+            const rowsHtml = tasks.map((task) => {
+                const s = startOfDay(task.startDate).getTime();
+                const e = startOfDay(task.endDate).getTime() + MS_PER_DAY; // inclusive end
+                const left = pct(s);
+                const width = Math.max(pct(e) - left, 1.5);
+                const color = priorityColor(task.priority);
+
+                return `
+                    <div class="timeline-row">
+                        <div class="timeline-label">
+                            <span class="task-name">${esc(task.taskName)}</span>
+                            <span class="task-meta">${esc(task.developerName)} &middot; ${esc(task.priority)}</span>
+                        </div>
+                        <div class="timeline-track">
+                            <div class="timeline-grid-lines">${ticks.map(() => '<span></span>').join('')}</div>
+                            <div class="timeline-bar" style="left:${left.toFixed(2)}%;width:${width.toFixed(2)}%;background-color:${color}"
+                                 title="${esc(task.taskName)} (${esc(fmtDate(task.startDate))} - ${esc(fmtDate(task.endDate))})">
+                                ${esc(task.taskName)}
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            document.getElementById('timeline').innerHTML = rowsHtml;
+        }
+
+        function renderTable(tasks) {
+            const tbody = document.getElementById('tasks-table-body');
+            if (!tasks.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No tasks yet.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = tasks.map((task) => `
+                <tr>
+                    <td>${esc(task.taskName)}</td>
+                    <td>${esc(task.developerName)}</td>
+                    <td><span class="badge" style="background-color:${priorityColor(task.priority)}">${esc(task.priority)}</span></td>
+                    <td>${esc(fmtDate(task.startDate))}</td>
+                    <td>${esc(fmtDate(task.endDate))}</td>
+                    <td><button class="delete-btn" data-id="${esc(task.id)}">Delete</button></td>
+                </tr>`).join('');
+
+            tbody.querySelectorAll('.delete-btn').forEach((btn) => {
+                btn.addEventListener('click', () => deleteTask(btn.getAttribute('data-id')));
+            });
+        }
+
+        async function deleteTask(id) {
+            try {
+                const response = await fetch(`${TASKS_ENDPOINT}/${id}`, { method: 'DELETE' });
+                const body = await response.json();
+                if (!response.ok || !body.success) throw new Error(body.message || 'Failed to delete task');
+                await refresh();
+            } catch (err) {
+                document.getElementById('form-error').textContent = err.message;
+            }
+        }
+
+        async function refresh() {
+            const tasks = await fetchTasks();
+            tasks.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+            renderTimeline(tasks);
+            renderTable(tasks);
+        }
+
+        document.getElementById('task-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const errorEl = document.getElementById('form-error');
+            const submitBtn = document.getElementById('submit-btn');
+            errorEl.textContent = '';
+
+            const form = event.target;
+            const payload = {
+                taskName: form.taskName.value.trim(),
+                developerName: form.developerName.value.trim(),
+                priority: form.priority.value,
+                startDate: form.startDate.value,
+                endDate: form.endDate.value,
+            };
+
+            if (payload.endDate < payload.startDate) {
+                errorEl.textContent = 'End date must be on or after start date.';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            try {
+                const response = await fetch(TASKS_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const body = await response.json();
+                if (!response.ok || !body.success) throw new Error(body.message || 'Failed to create task');
+                form.reset();
+                form.priority.value = 'Medium';
+                await refresh();
+            } catch (err) {
+                errorEl.textContent = err.message;
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        refresh().catch((err) => {
+            document.getElementById('form-error').textContent = err.message;
+        });
+    </script>
+</body>
+</html>
