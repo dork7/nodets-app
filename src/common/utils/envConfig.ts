@@ -48,4 +48,6 @@ export const env = cleanEnv(process.env, {
  RAG_TOP_K: num({ default: 3, desc: 'Number of chunks retrieved per query' }),
  LOCALAI_EMBEDDING_MODEL: str({ default: 'nemotron-3-embed-1b-q4', desc: 'Embedding model (canonical name)' }),
  LOCALAI_URL: str({ default: 'http://localhost:8000/v1', desc: 'URL for the LocalAI API' }),
+ OLLAMA_URL: str({ default: 'http://localhost:11434', desc: 'Base URL for the Ollama OpenAI-compatible API' }),
+ OLLAMA_CHAT_MODEL: str({ default: 'qwen2.5:0.5b', desc: 'Default chat/completions model for Ollama' }),
 });
