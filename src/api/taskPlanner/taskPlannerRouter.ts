@@ -16,7 +16,7 @@ import { taskPlannerService } from './taskPlannerService';
 
 export const taskPlannerRegistry = new OpenAPIRegistry();
 
-taskPlannerRegistry.register('TaskPlanner', TaskPlannerSchema);
+taskPlannerRegistry.register('Project', TaskPlannerSchema);
 
 export const taskPlannerRouter: Router = (() => {
  const router = express.Router();
@@ -41,7 +41,7 @@ export const taskPlannerRouter: Router = (() => {
  taskPlannerRegistry.registerPath({
   method: 'get',
   path: '/taskPlanner',
-  tags: ['TaskPlanner'],
+  tags: ['Projects'],
   responses: createApiResponse(z.array(TaskPlannerSchema), 'Success'),
  });
 
@@ -53,7 +53,7 @@ export const taskPlannerRouter: Router = (() => {
  taskPlannerRegistry.registerPath({
   method: 'get',
   path: '/taskPlanner/{id}',
-  tags: ['TaskPlanner'],
+  tags: ['Projects'],
   request: { params: GetTaskPlannerSchema.shape.params },
   responses: createApiResponse(TaskPlannerSchema, 'Success'),
  });
@@ -66,7 +66,7 @@ export const taskPlannerRouter: Router = (() => {
  taskPlannerRegistry.registerPath({
   method: 'post',
   path: '/taskPlanner',
-  tags: ['TaskPlanner'],
+  tags: ['Projects'],
   request: {
    body: {
     content: { 'application/json': { schema: AddTaskPlannerSchema.shape.body } },
@@ -85,7 +85,7 @@ export const taskPlannerRouter: Router = (() => {
  taskPlannerRegistry.registerPath({
   method: 'put',
   path: '/taskPlanner/{id}',
-  tags: ['TaskPlanner'],
+  tags: ['Projects'],
   request: {
    params: UpdateTaskPlannerSchema.shape.params,
    body: {
@@ -105,7 +105,7 @@ export const taskPlannerRouter: Router = (() => {
  taskPlannerRegistry.registerPath({
   method: 'delete',
   path: '/taskPlanner/{id}',
-  tags: ['TaskPlanner'],
+  tags: ['Projects'],
   request: { params: DeleteTaskPlannerSchema.shape.params },
   responses: createApiResponse(TaskPlannerSchema, 'Success'),
  });

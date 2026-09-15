@@ -9,10 +9,10 @@ import { taskPlannerRepository } from './taskPlannerRepository';
 export const taskPlannerService = {
  findAll: async (): Promise<ServiceResponse<TaskPlanner[] | null>> => {
   try {
-   const tasks = await taskPlannerRepository.findAllAsync();
-   return new ServiceResponse<TaskPlanner[]>(ResponseStatus.Success, 'Tasks found', tasks, StatusCodes.OK);
+   const projects = await taskPlannerRepository.findAllAsync();
+   return new ServiceResponse<TaskPlanner[]>(ResponseStatus.Success, 'Projects found', projects, StatusCodes.OK);
   } catch (ex) {
-   const errorMessage = `Error finding tasks: ${(ex as Error).message}`;
+   const errorMessage = `Error finding projects: ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
@@ -20,22 +20,22 @@ export const taskPlannerService = {
 
  findById: async (id: string): Promise<ServiceResponse<TaskPlanner | null>> => {
   try {
-   const task = await taskPlannerRepository.findByIdAsync(id);
-   if (!task) {
-    return new ServiceResponse(ResponseStatus.Failed, 'Task not found', null, StatusCodes.NOT_FOUND);
+   const project = await taskPlannerRepository.findByIdAsync(id);
+   if (!project) {
+    return new ServiceResponse(ResponseStatus.Failed, 'Project not found', null, StatusCodes.NOT_FOUND);
    }
-   return new ServiceResponse<TaskPlanner>(ResponseStatus.Success, 'Task found', task, StatusCodes.OK);
+   return new ServiceResponse<TaskPlanner>(ResponseStatus.Success, 'Project found', project, StatusCodes.OK);
   } catch (ex) {
-   const errorMessage = `Error finding task with id ${id}: ${(ex as Error).message}`;
+   const errorMessage = `Error finding project with id ${id}: ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
  },
 
  add: async (
-  task: Omit<TaskPlanner, 'id' | 'createdAt' | 'updatedAt'>
+  project: Omit<TaskPlanner, 'id' | 'createdAt' | 'updatedAt'>
  ): Promise<ServiceResponse<TaskPlanner | null>> => {
-  if (task.endDate < task.startDate) {
+  if (project.endDate < project.startDate) {
    return new ServiceResponse(
     ResponseStatus.Failed,
     'endDate must be on or after startDate',
@@ -44,10 +44,10 @@ export const taskPlannerService = {
    );
   }
   try {
-   const created = await taskPlannerRepository.addAsync(task);
-   return new ServiceResponse<TaskPlanner>(ResponseStatus.Success, 'Task created', created, StatusCodes.CREATED);
+   const created = await taskPlannerRepository.addAsync(project);
+   return new ServiceResponse<TaskPlanner>(ResponseStatus.Success, 'Project created', created, StatusCodes.CREATED);
   } catch (ex) {
-   const errorMessage = `Cannot create task: ${(ex as Error).message}`;
+   const errorMessage = `Cannot create project: ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
@@ -65,14 +65,18 @@ export const taskPlannerService = {
     StatusCodes.BAD_REQUEST
    );
   }
+  // Marking a project Done implies full progress unless the caller says otherwise.
+  if (updates.status === 'Done' && updates.progress === undefined) {
+   updates.progress = 100;
+  }
   try {
    const updated = await taskPlannerRepository.updateAsync(id, updates);
    if (!updated) {
-    return new ServiceResponse(ResponseStatus.Failed, 'Task not found', null, StatusCodes.NOT_FOUND);
+    return new ServiceResponse(ResponseStatus.Failed, 'Project not found', null, StatusCodes.NOT_FOUND);
    }
-   return new ServiceResponse<TaskPlanner>(ResponseStatus.Success, 'Task updated', updated, StatusCodes.OK);
+   return new ServiceResponse<TaskPlanner>(ResponseStatus.Success, 'Project updated', updated, StatusCodes.OK);
   } catch (ex) {
-   const errorMessage = `Cannot update task with id ${id}: ${(ex as Error).message}`;
+   const errorMessage = `Cannot update project with id ${id}: ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }
@@ -82,11 +86,11 @@ export const taskPlannerService = {
   try {
    const deleted = await taskPlannerRepository.deleteAsync(id);
    if (!deleted) {
-    return new ServiceResponse(ResponseStatus.Failed, 'Task not found', null, StatusCodes.NOT_FOUND);
+    return new ServiceResponse(ResponseStatus.Failed, 'Project not found', null, StatusCodes.NOT_FOUND);
    }
-   return new ServiceResponse<boolean>(ResponseStatus.Success, 'Task deleted', deleted, StatusCodes.OK);
+   return new ServiceResponse<boolean>(ResponseStatus.Success, 'Project deleted', deleted, StatusCodes.OK);
   } catch (ex) {
-   const errorMessage = `Cannot delete task with id ${id}: ${(ex as Error).message}`;
+   const errorMessage = `Cannot delete project with id ${id}: ${(ex as Error).message}`;
    logger.error(errorMessage);
    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR, ex);
   }

@@ -8,6 +8,7 @@ import { healthCheckRegistry } from '@/api/healthCheck/healthCheckRouter';
 import { kafkaRegistry } from '@/api/kafka/kafkaRouter';
 import { ragRegistry } from '@/api/rag/ragRouter';
 import { redisRegistry } from '@/api/redis/redisRouter';
+import { settingsRegistry } from '@/api/settings/settingsRouter';
 import { taskPlannerRegistry } from '@/api/taskPlanner/taskPlannerRouter';
 import { visionRegistry } from '@/api/vision/visionRouter';
 
@@ -23,6 +24,7 @@ export function generateOpenAPIDocument() {
   aiProvidersRegistry,
   visionRegistry,
   taskPlannerRegistry,
+  settingsRegistry,
  ]);
  const generator = new OpenApiGeneratorV3(registry.definitions);
 
