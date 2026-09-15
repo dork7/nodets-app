@@ -287,7 +287,12 @@ export const monitorService = {
         models: modelList,
       };
     } catch (err) {
-      logger.error('[Monitor] Failed to fetch LocalAI model metrics', err);
+      // Not a critical app error — this fires on every dashboard poll (every 5s)
+      // whenever LOCALAI_URL points at a provider that doesn't expose LocalAI's
+      // /metrics and /system endpoints (e.g. Ollama, which returns 404 for both).
+      // logger.error would also spam a Slack notification per the proxy in
+      // @/server, so this stays at warn.
+      logger.warn(`[Monitor] LocalAI model metrics unavailable: ${(err as Error)?.message ?? err}`);
       return emptyModelMetrics();
     }
   },
