@@ -294,11 +294,35 @@
                 </div>
             </div>
         </section>
+
+        <section class="card section-gap">
+            <div class="card-header">
+                <div class="card-title-lg">Persisted Model Stats</div>
+                <div class="card-description">From MongoDB &middot; survives restarts, accumulates across all providers</div>
+            </div>
+            <div class="card-content">
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Total Calls</th>
+                                <th>Total Duration</th>
+                                <th>Avg Duration</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="persisted-stats-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script>
         const LOGS_ENDPOINT = '/v1/monitor/logs';
         const MODELS_ENDPOINT = '/v1/monitor/models';
+        const STATS_ENDPOINT = '/v1/monitor/stats';
         const expanded = new Set();
 
         const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
@@ -560,9 +584,38 @@
                 </tr>`).join('');
         }
 
+        async function fetchPersistedStats() {
+            try {
+                const response = await fetch(STATS_ENDPOINT);
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const body = await response.json();
+                renderPersistedStats(body.responseObject || body.data || []);
+            } catch (err) {
+                console.error('Error fetching persisted model stats:', err);
+            }
+        }
+
+        function renderPersistedStats(stats) {
+            const tbody = document.getElementById('persisted-stats-table-body');
+            if (!stats.length) {
+                tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No persisted model stats yet.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = stats.map((s) => `
+                <tr>
+                    <td class="cell-mono">${esc(s.model)}</td>
+                    <td class="cell-mono cell-nowrap"><strong>${num(s.totalCalls)}</strong></td>
+                    <td class="cell-mono cell-nowrap">${num(Math.round(s.totalDuration))}ms</td>
+                    <td class="cell-mono cell-nowrap">${num(Math.round(s.avgDurationMs))}ms</td>
+                    <td class="cell-muted cell-mono cell-nowrap" title="${esc(new Date(s.lastUpdated).toLocaleString())}">${esc(new Date(s.lastUpdated).toLocaleTimeString())}</td>
+                </tr>`).join('');
+        }
+
         function refreshAll() {
             fetchData();
             fetchModelMetrics();
+            fetchPersistedStats();
         }
 
         refreshAll();

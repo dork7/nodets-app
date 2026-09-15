@@ -26,7 +26,6 @@ import { OPENROUTER_FREE_MODELS } from './config/openRouterModels';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
 import { redisClient } from './config/redisStore';
 import { initMinio } from './services/minio';
-import mongoose from 'mongoose';
 import connectMongoDB from './config/mongoose';
 const loggerOriginal = pino({ name: 'server start' });
 
@@ -64,11 +63,14 @@ global.cacheHash = cacheConfig.createHash(cacheRules);
 if (env.ENV === 'local') {
   redisClient.connect();
   initMinio();
-  connectMongoDB();
 //  initKafka().catch((err) => logger.error(err));
-}if (env.ENV === 'dev') {
-  mongoose.connect(env.MONGO_URI);
 }
+
+// Chat history and AI monitoring data must persist to MongoDB in every
+// environment (not just 'local'/'dev') — previously this only ran for those
+// two ENV values, so hosted deployments (e.g. Render) never connected and
+// silently lost all chat history and call/model metrics.
+connectMongoDB();
 
 // Middlewares
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
