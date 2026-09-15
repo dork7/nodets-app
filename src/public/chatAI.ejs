@@ -2485,7 +2485,7 @@
       <span class="app-wordmark">ChatAI</span>
       <span class="app-sub">session console</span>
      </div>
-     <div class="app-header-meta">ws://localhost:2020/ws/chatAI</div>
+     <div class="app-header-meta" id="app-header-ws-meta"></div>
      <div class="app-provider-tab">
       <label class="app-provider-label" for="provider-selector">Provider</label>
       <select id="provider-selector" class="app-provider-select" aria-label="AI provider"></select>
@@ -2698,20 +2698,25 @@
    </div>
   <script nonce="abc123">
    // ===== Configuration =====
+   // Derived from the page's own origin so this works both on localhost and
+   // when hosted remotely (e.g. Render) — hardcoded localhost:2020 URLs only
+   // ever worked when the browser and server were on the same machine.
+   const API_ORIGIN = window.location.origin;
+   const WS_ORIGIN = (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.host;
    const CONFIG = {
-    WS_URL: 'ws://localhost:2020/ws/chatAI',
-    MODELS_API_URL: 'http://localhost:2020/chatModels',
-    PROVIDERS_API_URL: 'http://localhost:2020/v1/aiProviders',
-    HISTORY_API_URL: 'http://localhost:2020/v1/aiUtils/chat-history',
-    RAG_FILES_API_URL: 'http://localhost:2020/v1/minio/files',
-    RAG_INGEST_API_URL: 'http://localhost:2020/v1/rag/ingest',
-    RAG_API_URL: 'http://localhost:2020/v1/rag',
+    WS_URL: `${WS_ORIGIN}/ws/chatAI`,
+    MODELS_API_URL: `${API_ORIGIN}/chatModels`,
+    PROVIDERS_API_URL: `${API_ORIGIN}/v1/aiProviders`,
+    HISTORY_API_URL: `${API_ORIGIN}/v1/aiUtils/chat-history`,
+    RAG_FILES_API_URL: `${API_ORIGIN}/v1/minio/files`,
+    RAG_INGEST_API_URL: `${API_ORIGIN}/v1/rag/ingest`,
+    RAG_API_URL: `${API_ORIGIN}/v1/rag`,
     RAG_BUCKET: 'rag-files',
-    TOTAL_TOKEN_USAGE_API_URL: 'http://localhost:2020/v1/aiUtils/total-token-usage',
-    LOADED_MODELS_API_URL: 'http://localhost:2020/v1/aiUtils/loaded-models',
-    UNLOAD_MODEL_API_URL: 'http://localhost:2020/v1/aiUtils/unload-model',
-    TTS_API_URL: 'http://localhost:2020/v1/aiUtils/text-to-speech',
-    UPLOAD_API_URL: 'http://localhost:2020/v1/minio/upload',
+    TOTAL_TOKEN_USAGE_API_URL: `${API_ORIGIN}/v1/aiUtils/total-token-usage`,
+    LOADED_MODELS_API_URL: `${API_ORIGIN}/v1/aiUtils/loaded-models`,
+    UNLOAD_MODEL_API_URL: `${API_ORIGIN}/v1/aiUtils/unload-model`,
+    TTS_API_URL: `${API_ORIGIN}/v1/aiUtils/text-to-speech`,
+    UPLOAD_API_URL: `${API_ORIGIN}/v1/minio/upload`,
     MAX_FILE_SIZE: 10 * 1024 * 1024,
     MAX_FILES: 6,
     RECONNECT_DELAY: 5000,
@@ -2731,6 +2736,7 @@
      'Doing model stuff...',
     ],
    };
+   document.getElementById('app-header-ws-meta').textContent = CONFIG.WS_URL;
 
 // ===== State Management =====
 const state = {

@@ -169,6 +169,24 @@ export const monitorService = {
     }
   },
 
+  // Persisted per-model call counters (MongoDB-backed, survives restarts) —
+  // distinct from getModelMetrics()'s live LocalAI Prometheus snapshot.
+  async getAllModelStats() {
+    try {
+      const stats = await AiModelStatsModel.find().sort({ totalCalls: -1 }).lean();
+      return stats.map((s) => ({
+        model: s.model,
+        totalCalls: s.totalCalls,
+        totalDuration: s.totalDuration,
+        avgDurationMs: s.totalCalls > 0 ? s.totalDuration / s.totalCalls : 0,
+        lastUpdated: s.lastUpdated.toISOString(),
+      }));
+    } catch (err) {
+      logger.error('[Monitor] Failed to fetch all model stats', err);
+      return [];
+    }
+  },
+
   // Pulls per-model observability straight from the LocalAI Prometheus endpoint
   // (`${LOCALAI_URL}/metrics`) plus `/system` for which models are resident in RAM.
   async getModelMetrics(): Promise<ModelMetricsSnapshot> {
@@ -269,7 +287,12 @@ export const monitorService = {
         models: modelList,
       };
     } catch (err) {
-      logger.error('[Monitor] Failed to fetch LocalAI model metrics', err);
+      // Not a critical app error — this fires on every dashboard poll (every 5s)
+      // whenever LOCALAI_URL points at a provider that doesn't expose LocalAI's
+      // /metrics and /system endpoints (e.g. Ollama, which returns 404 for both).
+      // logger.error would also spam a Slack notification per the proxy in
+      // @/server, so this stays at warn.
+      logger.warn(`[Monitor] LocalAI model metrics unavailable: ${(err as Error)?.message ?? err}`);
       return emptyModelMetrics();
     }
   },
