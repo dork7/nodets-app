@@ -125,6 +125,20 @@ app.get('/chatAI', async function (req, res) {
   res.render(path.join(__dirname, 'public', 'chatAI.ejs'));
 });
 
+app.get('/goals', async function (req, res) {
+ res.setHeader(
+  'Content-Security-Policy',
+  [
+   "default-src 'self'",
+   "script-src 'self' 'unsafe-inline'",
+   "style-src 'self' 'unsafe-inline'",
+   "img-src 'self' https: data:",
+   "connect-src 'self'",
+  ].join('; ')
+ );
+ res.render(path.join(__dirname, 'public', 'goals.ejs'));
+});
+
 app.get('/chatModels', async function (req, res) {
   const provider = String(req.query.provider || '');
   const configModels =

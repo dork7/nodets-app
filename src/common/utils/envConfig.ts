@@ -52,4 +52,5 @@ export const env = cleanEnv(process.env, {
  OLLAMA_CHAT_MODEL: str({ default: 'qwen2.5:0.5b', desc: 'Default chat/completions model for Ollama' }),
  ENABLE_REDIS: bool({ default: false, desc: 'Enable Redis' }),
  ENABLE_MINIO: bool({ default: false, desc: 'Enable MinIO' }),
+ YOUTUBE_API_KEY: str({ default: '', desc: 'API key for the YouTube Data API v3 (goal-tracker course search)' }),
 });
