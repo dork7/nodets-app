@@ -121,11 +121,7 @@ const getChatHistory = async (userId: string): Promise<ChatMessage[]> => {
 
 const saveChatHistory = async (userId: string, history: ChatMessage[]): Promise<void> => {
  try {
-  await ChatHistoryModel.findOneAndUpdate(
-   { userId },
-   { history, updatedAt: new Date() },
-   { upsert: true }
-  );
+  await ChatHistoryModel.findOneAndUpdate({ userId }, { history, updatedAt: new Date() }, { upsert: true });
  } catch (error) {
   logger.error(`Error saving chat history for user ${userId}: ${error}`);
  }
@@ -410,7 +406,7 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
    });
 
    // Actually run the tools, then attach each result as a `tool` message.
-   const toolResults = await executeToolCalls(toolCalls);
+   const toolResults = await executeToolCalls(toolCalls, { userId: ws.userId ?? null });
    for (const result of toolResults) {
     aiMessages.push({ role: 'tool', tool_call_id: result.id, content: result.output });
    }

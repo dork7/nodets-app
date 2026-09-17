@@ -49,4 +49,19 @@ export const env = cleanEnv(process.env, {
  LOCALAI_EMBEDDING_MODEL: str({ default: 'nemotron-3-embed-1b-q4', desc: 'Embedding model (canonical name)' }),
  LOCALAI_URL: str({ default: 'http://localhost:8000/v1', desc: 'URL for the LocalAI API' }),
  YOUTUBE_API_KEY: str({ default: '', desc: 'API key for the YouTube Data API v3 (goal-tracker course search)' }),
+ GOOGLE_CLIENT_ID: str({ default: '', desc: 'OAuth2 client ID for Google Sign-In / Drive access' }),
+ GOOGLE_CLIENT_SECRET: str({ default: '', desc: 'OAuth2 client secret for Google Sign-In / Drive access' }),
+ GOOGLE_REDIRECT_URI: str({
+  devDefault: testOnly('http://localhost:2020/v1/auth/google/callback'),
+  desc: 'OAuth2 redirect URI registered in the Google Cloud console',
+ }),
+ GOOGLE_DRIVE_SCOPES: str({
+  default: 'openid email profile https://www.googleapis.com/auth/drive',
+  desc: 'Space-separated OAuth scopes requested on Google sign-in',
+ }),
+ TOKEN_ENCRYPTION_KEY: str({
+  devDefault: testOnly('MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY='),
+  desc: '32-byte base64 key used to encrypt stored Google OAuth tokens at rest',
+ }),
+ SESSION_SECRET: str({ devDefault: testOnly('dev-session-secret'), desc: 'Secret used to sign the session cookie' }),
 });

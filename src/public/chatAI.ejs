@@ -193,6 +193,51 @@
      transition: all 0.2s;
     }
 
+    .app-google-auth {
+     display: flex;
+     align-items: center;
+     gap: 8px;
+     margin-inline-start: 16px;
+    }
+
+    .app-google-btn {
+     display: inline-flex;
+     align-items: center;
+     background: var(--bg-raised);
+     border: 1px solid var(--border);
+     border-radius: var(--radius);
+     padding: 8px 14px;
+     color: var(--fg);
+     font-family: var(--font-mono);
+     font-size: 11px;
+     font-weight: 500;
+     text-transform: uppercase;
+     letter-spacing: 0.1em;
+     text-decoration: none;
+     white-space: nowrap;
+     cursor: pointer;
+     transition: all 0.2s;
+    }
+
+    .app-google-btn:hover {
+     color: var(--fg);
+     border-color: var(--border-strong);
+     background: var(--bg-deep);
+    }
+
+    .app-google-btn-ghost {
+     background: transparent;
+     color: var(--fg-faint);
+    }
+
+    .app-google-account {
+     color: var(--fg-faint);
+     font-size: 0.66em;
+     text-transform: uppercase;
+     letter-spacing: 0.08em;
+     white-space: nowrap;
+    }
+
     .app-provider-select:hover {
      color: var(--fg);
      border-color: var(--border-strong);
@@ -2489,6 +2534,12 @@
      <div class="app-provider-tab">
       <label class="app-provider-label" for="provider-selector">Provider</label>
       <select id="provider-selector" class="app-provider-select" aria-label="AI provider"></select>
+     </div>
+     <div id="google-auth-status" class="app-google-auth" hidden>
+      <a id="google-signin-link" class="app-google-btn" href="/v1/auth/google" hidden>Sign in with Google</a>
+      <a id="google-connect-drive-link" class="app-google-btn" href="/v1/auth/google" hidden>Connect Drive</a>
+      <span id="google-account-info" class="app-google-account" hidden></span>
+      <button id="google-disconnect-btn" class="app-google-btn app-google-btn-ghost" type="button" hidden>Disconnect Drive</button>
      </div>
      <a
       class="app-monitor-link"
@@ -5025,6 +5076,50 @@ async ingestFile(file, btn) {
     },
    };
 
+   // ===== Google account / Drive connection =====
+   const googleAuthManager = {
+    elements: {
+     wrapper: document.getElementById('google-auth-status'),
+     signInLink: document.getElementById('google-signin-link'),
+     connectDriveLink: document.getElementById('google-connect-drive-link'),
+     accountInfo: document.getElementById('google-account-info'),
+     disconnectBtn: document.getElementById('google-disconnect-btn'),
+    },
+
+    async refresh() {
+     const { wrapper, signInLink, connectDriveLink, accountInfo, disconnectBtn } = this.elements;
+     try {
+      const res = await fetch('/v1/auth/status', { credentials: 'same-origin' });
+      const status = await res.json();
+
+      wrapper.hidden = false;
+      signInLink.hidden = status.authenticated;
+      connectDriveLink.hidden = !status.authenticated || status.driveConnected;
+      accountInfo.hidden = !status.authenticated;
+      disconnectBtn.hidden = !status.authenticated || !status.driveConnected;
+
+      if (status.authenticated) {
+       accountInfo.textContent = status.driveConnected
+        ? `${status.email} · Drive connected`
+        : status.email;
+      }
+     } catch (err) {
+      console.error('Failed to load Google auth status:', err);
+     }
+    },
+
+    init() {
+     this.elements.disconnectBtn.addEventListener('click', async () => {
+      try {
+       await fetch('/v1/auth/disconnect-drive', { method: 'POST', credentials: 'same-origin' });
+      } finally {
+       this.refresh();
+      }
+     });
+     this.refresh();
+    },
+   };
+
    // ===== Initialization =====
    document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('chatSessionId', state.sessionId);
@@ -5046,6 +5141,7 @@ async ingestFile(file, btn) {
     websocketManager.connect();
     newChatManager.init();
     ragManager.init();
+    googleAuthManager.init();
    });
 
   </script>

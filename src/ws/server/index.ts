@@ -3,6 +3,7 @@ import { WebSocketServer } from 'ws';
 
 import { env } from '@/common/utils/envConfig';
 import { genCorrelationId } from '@/common/utils/helpers';
+import { getUserIdFromCookieHeader } from '@/config/session';
 import { logger } from '@/server';
 import { monitorService } from '@/services/monitorService';
 
@@ -14,13 +15,19 @@ const { HOST } = env;
 export const startWebSocketServer = async (httpServer: any) => {
  const wss = new WebSocketServer({ server: httpServer });
 
- wss.on('connection', (ws: any, request: any) => {
+ wss.on('connection', async (ws: any, request: any) => {
   logger.info('WebSocket client connected - localhost:2020');
 
   const url = request.url;
 
   const urlParts = parse(request.url, true); // true = parse query string
   const params: any = urlParts.query;
+
+  // Resolved once per connection (not per message) - only /ws/chatAI cares about
+  // identity, since Drive tools need to know which user's account to act on.
+  // message.id (the client-generated string used elsewhere as a pseudo-userId) is
+  // NOT trustworthy for this - it's client-controlled, unlike the signed session cookie.
+  ws.userId = url.includes('/ws/chatAI') ? await getUserIdFromCookieHeader(request.headers?.cookie) : null;
 
   if (url.includes('/ws/server')) {
    ws.on('message', async (message: any) => {
@@ -46,14 +53,7 @@ export const startWebSocketServer = async (httpServer: any) => {
 
     if (!handler) {
      const errorMsg = `Unknown method: ${parsedMessage.method}`;
-     await monitorService.logCall(
-      'websocket',
-      'unknown',
-      'FAILED',
-      Date.now() - startTime,
-      rawMessage,
-      errorMsg
-     );
+     await monitorService.logCall('websocket', 'unknown', 'FAILED', Date.now() - startTime, rawMessage, errorMsg);
 
      return ws.send(
       JSON.stringify({
@@ -68,13 +68,7 @@ export const startWebSocketServer = async (httpServer: any) => {
      const result = await handler(parsedMessage);
      const durationMs = Date.now() - startTime;
 
-     await monitorService.logCall(
-      'websocket',
-      'server_handler',
-      'SUCCESS',
-      durationMs,
-      rawMessage
-     );
+     await monitorService.logCall('websocket', 'server_handler', 'SUCCESS', durationMs, rawMessage);
 
      const messageToSend = JSON.stringify({
       type: 'response',
@@ -118,7 +112,14 @@ export const startWebSocketServer = async (httpServer: any) => {
 
     if (!handler) {
      const errorMsg = `Unknown method: ${parsedMessage.method}`;
-     await monitorService.logCall('websocket', 'stream_handler', 'FAILED', Date.now() - startTime, rawMessage, errorMsg);
+     await monitorService.logCall(
+      'websocket',
+      'stream_handler',
+      'FAILED',
+      Date.now() - startTime,
+      rawMessage,
+      errorMsg
+     );
      return ws.send(JSON.stringify({ type: 'error', id: parsedMessage.id, error: errorMsg }));
     }
 
@@ -127,7 +128,14 @@ export const startWebSocketServer = async (httpServer: any) => {
      await monitorService.logCall('websocket', 'stream_handler', 'SUCCESS', Date.now() - startTime, rawMessage);
      logger.info(`Received message on /ws/stream: ${rawMessage}`);
     } catch (err: any) {
-     await monitorService.logCall('websocket', 'stream_handler', 'FAILED', Date.now() - startTime, rawMessage, err.message);
+     await monitorService.logCall(
+      'websocket',
+      'stream_handler',
+      'FAILED',
+      Date.now() - startTime,
+      rawMessage,
+      err.message
+     );
     }
    });
   } else if (url.includes('/ws/chatAI')) {
@@ -165,4 +173,3 @@ export const startWebSocketServer = async (httpServer: any) => {
 
  logger.info(`WebSocket server running on the same HTTP server ws://${HOST}:2020`);
 };
-

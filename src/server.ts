@@ -1,8 +1,10 @@
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
 import { createHandler } from 'graphql-http/lib/use/express';
 import helmet from 'helmet';
+import mongoose from 'mongoose';
 import path from 'path';
 import { pino } from 'pino';
 import { ruruHTML } from 'ruru/server';
@@ -22,12 +24,12 @@ import { reqLoggerKafka } from './common/middleware/reqLoggerKafka';
 import { readFileData } from './common/utils/fileUtils';
 import { getLocalAILLMs } from './common/utils/getLocalAILLMs';
 import { sendSlackNotification } from './common/utils/slack';
-import { OPENROUTER_FREE_MODELS } from './config/openRouterModels';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
-import { redisClient } from './config/redisStore';
-import { initMinio } from './services/minio';
-import mongoose from 'mongoose';
 import connectMongoDB from './config/mongoose';
+import { OPENROUTER_FREE_MODELS } from './config/openRouterModels';
+import { redisClient } from './config/redisStore';
+import { sessionMiddleware } from './config/session';
+import { initMinio } from './services/minio';
 const loggerOriginal = pino({ name: 'server start' });
 
 const logger = new Proxy(loggerOriginal, {
@@ -62,12 +64,13 @@ app.set('trust proxy', true);
 global.cacheHash = cacheConfig.createHash(cacheRules);
 
 if (env.ENV === 'local') {
-  redisClient.connect();
-  initMinio();
-  connectMongoDB();
-//  initKafka().catch((err) => logger.error(err));
-}if (env.ENV === 'dev') {
-  mongoose.connect(env.MONGO_URI);
+ redisClient.connect();
+ initMinio();
+ connectMongoDB();
+ //  initKafka().catch((err) => logger.error(err));
+}
+if (env.ENV === 'dev') {
+ mongoose.connect(env.MONGO_URI);
 }
 
 // Middlewares
@@ -86,6 +89,8 @@ app.use(
   extended: true,
  })
 );
+app.use(cookieParser());
+app.use(sessionMiddleware);
 app.use(proxyHandler);
 app.use(reqLoggerKafka);
 app.use(cacheConfigHandler, cacheHandler);
@@ -135,8 +140,7 @@ app.get('/goals', async function (req, res) {
 
 app.get('/chatModels', async function (req, res) {
  const provider = String(req.query.provider || '');
- const configModels =
-  provider === 'openRouterAI' ? OPENROUTER_FREE_MODELS.join(',') : (await getLocalAILLMs()) ?? [];
+ const configModels = provider === 'openRouterAI' ? OPENROUTER_FREE_MODELS.join(',') : ((await getLocalAILLMs()) ?? []);
  const models = String(configModels)
   .split(',')
   .map((m) => {
