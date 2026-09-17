@@ -9,11 +9,13 @@ import { goalsRouter } from '@/api/goals/goalsRouter';
 import { healthCheckRouter } from '@/api/healthCheck/healthCheckRouter';
 import { kafkaRouter } from '@/api/kafka/kafkaRouter';
 import { minioRouter } from '@/api/minio/minioRouter';
+import { monitorRouter } from '@/api/monitor/monitorRouter';
 import { ragRouter } from '@/api/rag/ragRouter';
 import { redisRouter } from '@/api/redis/redisRouter';
+import { settingsRouter } from '@/api/settings/settingsRouter';
+import { taskPlannerRouter } from '@/api/taskPlanner/taskPlannerRouter';
 import { nutritionRouter } from '@/api/vision/nutritionRouter';
 import { visionRouter } from '@/api/vision/visionRouter';
-import { monitorRouter } from '@/api/monitor/monitorRouter';
 import { readFileData } from '@/common/utils/fileUtils';
 
 const router = express.Router();
@@ -30,6 +32,8 @@ router.use('/minio', minioRouter);
 router.use('/rag', ragRouter);
 router.use('/aiProviders', aiProvidersRouter);
 router.use('/monitor', monitorRouter);
+router.use('/taskPlanner', taskPlannerRouter);
+router.use('/settings', settingsRouter);
 router.use('/goals', goalsRouter);
 
 router.use('/dashboard', async (req, res) => {
