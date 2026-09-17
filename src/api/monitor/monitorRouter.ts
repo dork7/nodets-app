@@ -5,6 +5,14 @@ import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse
 import { handleServiceResponse } from '@/common/utils/httpHandlers';
 import { AiCallLog, ModelMetricsSnapshot, monitorService } from '@/services/monitorService';
 
+interface PersistedModelStats {
+ model: string;
+ totalCalls: number;
+ totalDuration: number;
+ avgDurationMs: number;
+ lastUpdated: string;
+}
+
 export const monitorRouter: Router = (() => {
  const router = express.Router();
 
@@ -42,6 +50,15 @@ export const monitorRouter: Router = (() => {
     snapshot,
     StatusCodes.OK
    ),
+   res
+  );
+ });
+
+ // All persisted per-model stats (MongoDB-backed, survives restarts).
+ router.get('/stats', async (_req: Request, res: Response) => {
+  const stats = await monitorService.getAllModelStats();
+  handleServiceResponse(
+   new ServiceResponse<PersistedModelStats[]>(ResponseStatus.Success, 'Model stats retrieved', stats, StatusCodes.OK),
    res
   );
  });

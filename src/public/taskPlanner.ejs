@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects Timeline</title>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --border: 240 5.9% 90%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --accent: 240 4.8% 95.9%;
+            --destructive: 0 72% 51%;
+            --radius: 0.5rem;
+
+            --prio-low: 142 71% 45%;
+            --prio-medium: 217 91% 60%;
+            --prio-high: 30 95% 55%;
+            --prio-critical: 0 72% 51%;
+
+            --status-not-started: 240 5% 55%;
+            --status-in-progress: 217 91% 60%;
+            --status-done: 142 71% 45%;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: 240 10% 3.9%;
+                --foreground: 0 0% 98%;
+                --card: 240 10% 3.9%;
+                --card-foreground: 0 0% 98%;
+                --muted: 240 3.7% 15.9%;
+                --muted-foreground: 240 5% 64.9%;
+                --border: 240 3.7% 15.9%;
+                --primary: 0 0% 98%;
+                --primary-foreground: 240 5.9% 10%;
+                --accent: 240 3.7% 15.9%;
+                --destructive: 0 62% 52%;
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+        .page-header { margin-bottom: 1.5rem; }
+        .page-header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.025em; }
+        .page-header p { color: hsl(var(--muted-foreground)); margin-top: 0.25rem; }
+
+        /* --- tabs --- */
+        .tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid hsl(var(--border)); margin-bottom: 1.5rem; }
+        .tab-btn {
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: hsl(var(--muted-foreground));
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -1px;
+        }
+        .tab-btn:hover { color: hsl(var(--foreground)); }
+        .tab-btn.active { color: hsl(var(--foreground)); border-bottom-color: hsl(var(--primary)); }
+        .tab-panel[hidden] { display: none; }
+
+        .card {
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        .card-header { padding: 1.5rem; padding-bottom: 0.5rem; }
+        .card-content { padding: 1.5rem; padding-top: 0.5rem; }
+        .card-title-lg { font-size: 1rem; font-weight: 600; letter-spacing: -0.015em; }
+        .card-description { font-size: 0.8rem; color: hsl(var(--muted-foreground)); margin-top: 0.15rem; }
+        .section-gap { margin-top: 1.5rem; }
+
+        /* --- form --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+        @media (max-width: 900px) { .form-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+
+        .field label {
+            display: block;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 0.3rem;
+        }
+        .field .field-hint { font-size: 0.7rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem; }
+        .field input, .field select {
+            width: 100%;
+            padding: 0 0.6rem;
+            border-radius: calc(var(--radius) - 0.125rem);
+            border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-size: 0.8125rem;
+        }
+        .field input { height: 2.25rem; }
+        .field select[multiple] { height: 6rem; padding: 0.4rem 0.6rem; }
+        .field input:focus, .field select:focus { outline: 2px solid hsl(var(--primary) / 0.4); }
+
+        .form-actions { display: flex; align-items: center; gap: 0.75rem; margin-top: 1rem; }
+
+        .btn {
+            height: 2.25rem;
+            padding: 0 1rem;
+            border-radius: calc(var(--radius) - 0.125rem);
+            border: 1px solid transparent;
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .form-error { color: hsl(var(--destructive)); font-size: 0.8rem; min-height: 1.2em; }
+
+        /* --- legend --- */
+        .legend { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: hsl(var(--muted-foreground)); }
+        .legend-dot { width: 0.65rem; height: 0.65rem; border-radius: 50%; }
+
+        /* --- timeline --- */
+        .timeline-scroll { overflow-x: auto; }
+        .timeline { min-width: 760px; }
+        .timeline-row {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            border-bottom: 1px solid hsl(var(--border));
+        }
+        .timeline-row:last-child { border-bottom: 0; }
+        .timeline-label {
+            padding: 0.65rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.1rem;
+            border-right: 1px solid hsl(var(--border));
+        }
+        .timeline-label .project-name { font-weight: 500; font-size: 0.8125rem; }
+        .timeline-label .project-meta { font-size: 0.72rem; color: hsl(var(--muted-foreground)); }
+        .timeline-track { position: relative; padding: 0.5rem 0; min-height: 2.9rem; }
+        .timeline-grid-lines { position: absolute; inset: 0; display: flex; }
+        .timeline-grid-lines span { flex: 1; border-left: 1px solid hsl(var(--border) / 0.6); }
+        .timeline-bar {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            min-height: 1.9rem;
+            border-radius: calc(var(--radius) - 0.125rem);
+            display: flex;
+            align-items: center;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: default;
+        }
+        .timeline-bar .bar-name { font-size: 0.72rem; }
+        .timeline-bar .bar-meta { font-weight: 500; opacity: 0.9; font-size: 0.66rem; }
+        .timeline-ticks { display: grid; padding-left: 220px; font-size: 0.72rem; color: hsl(var(--muted-foreground)); font-weight: 500; }
+        .timeline-ticks-inner { position: relative; height: 1.6rem; }
+        .timeline-ticks-inner span { position: absolute; white-space: nowrap; }
+
+        .empty-state { padding: 2rem 0.75rem; text-align: center; color: hsl(var(--muted-foreground)); }
+
+        .table-wrap { width: 100%; overflow-x: auto; }
+        table.table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+        table.table thead th {
+            text-align: left; font-weight: 500; color: hsl(var(--muted-foreground));
+            height: 2.5rem; padding: 0.35rem 0.75rem; border-bottom: 1px solid hsl(var(--border)); white-space: nowrap;
+        }
+        table.table tbody td { padding: 0.5rem 0.75rem; border-bottom: 1px solid hsl(var(--border)); vertical-align: top; }
+        table.table tbody tr:last-child td { border-bottom: 0; }
+        .badge {
+            display: inline-flex; align-items: center; border-radius: calc(var(--radius) - 0.125rem);
+            padding: 0.125rem 0.5rem; font-size: 0.7rem; font-weight: 600; color: white;
+        }
+        .chip {
+            display: inline-flex; align-items: center; border-radius: 999px;
+            padding: 0.1rem 0.55rem; font-size: 0.7rem; font-weight: 500;
+            background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground));
+            margin: 0.1rem 0.2rem 0.1rem 0;
+        }
+        .delete-btn, .remove-btn {
+            background: none; border: none; color: hsl(var(--destructive)); cursor: pointer; font-size: 0.78rem;
+        }
+        .delete-btn:hover, .remove-btn:hover { text-decoration: underline; }
+
+        .status-select {
+            height: 1.9rem; border-radius: calc(var(--radius) - 0.125rem); border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background)); color: hsl(var(--foreground)); font-size: 0.76rem; padding: 0 0.4rem;
+        }
+        .progress-cell { display: flex; align-items: center; gap: 0.35rem; }
+        .progress-input {
+            width: 3.6rem; height: 1.9rem; border-radius: calc(var(--radius) - 0.125rem); border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background)); color: hsl(var(--foreground)); font-size: 0.76rem; padding: 0 0.4rem;
+        }
+
+        /* --- filter bar --- */
+        .filter-bar { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; }
+        .filter-bar label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: hsl(var(--muted-foreground)); }
+        .filter-bar select {
+            height: 2rem; padding: 0 0.5rem; border-radius: calc(var(--radius) - 0.125rem); border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background)); color: hsl(var(--foreground)); font-size: 0.8rem;
+        }
+
+        /* --- settings tab --- */
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 800px) { .settings-grid { grid-template-columns: 1fr; } }
+        .add-item-form { display: flex; gap: 0.5rem; }
+        .add-item-form input { flex: 1; }
+        .item-list { list-style: none; margin-top: 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
+        .item-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.5rem 0.75rem; border: 1px solid hsl(var(--border)); border-radius: calc(var(--radius) - 0.125rem);
+            font-size: 0.8125rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <h1>Projects Timeline</h1>
+            <p>Plan projects by resource, priority and date range &middot; stored in MongoDB</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="timeline-tab">Timeline</button>
+            <button class="tab-btn" data-tab="settings-tab">Settings</button>
+        </nav>
+
+        <section id="timeline-tab" class="tab-panel">
+            <section class="card">
+                <div class="card-header">
+                    <div class="card-title-lg">Add Project</div>
+                    <div class="card-description">Project name, resources, priority and date range</div>
+                </div>
+                <div class="card-content">
+                    <form id="project-form" class="form-grid">
+                        <div class="field">
+                            <label for="projectName">Project Name</label>
+                            <input id="projectName" name="projectName" type="text" required maxlength="200" placeholder="e.g. Build login page">
+                        </div>
+                        <div class="field">
+                            <label for="priority">Priority</label>
+                            <select id="priority" name="priority" required>
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                                <option value="Critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="resources">Resources</label>
+                            <select id="resources" name="resources" multiple required></select>
+                            <div class="field-hint">Hold Cmd/Ctrl to select multiple. Manage the list in Settings.</div>
+                        </div>
+                        <div class="field">
+                            <label for="tags">Tags</label>
+                            <select id="tags" name="tags" multiple></select>
+                            <div class="field-hint">Optional. Hold Cmd/Ctrl to select multiple.</div>
+                        </div>
+                        <div class="field">
+                            <label for="startDate">Start Date</label>
+                            <input id="startDate" name="startDate" type="date" required>
+                        </div>
+                        <div class="field">
+                            <label for="endDate">End Date</label>
+                            <input id="endDate" name="endDate" type="date" required>
+                        </div>
+                    </form>
+                    <div class="form-actions">
+                        <button id="submit-btn" class="btn" type="submit" form="project-form">Add Project</button>
+                        <div id="form-error" class="form-error"></div>
+                    </div>
+
+                    <div class="legend">
+                        <div class="legend-item"><span class="legend-dot" style="background-color:hsl(var(--prio-low))"></span>Low</div>
+                        <div class="legend-item"><span class="legend-dot" style="background-color:hsl(var(--prio-medium))"></span>Medium</div>
+                        <div class="legend-item"><span class="legend-dot" style="background-color:hsl(var(--prio-high))"></span>High</div>
+                        <div class="legend-item"><span class="legend-dot" style="background-color:hsl(var(--prio-critical))"></span>Critical</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card section-gap">
+                <div class="card-header">
+                    <div class="card-title-lg">Timeline</div>
+                    <div class="card-description">One row per project, bar color reflects priority</div>
+                </div>
+                <div class="card-content">
+                    <div class="filter-bar">
+                        <label for="resource-filter">Filter by resource</label>
+                        <select id="resource-filter">
+                            <option value="">All Resources</option>
+                        </select>
+                    </div>
+                    <div class="timeline-scroll">
+                        <div id="timeline-ticks" class="timeline-ticks"></div>
+                        <div id="timeline" class="timeline"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card section-gap">
+                <div class="card-header">
+                    <div class="card-title-lg">All Projects</div>
+                </div>
+                <div class="card-content">
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Resources</th>
+                                    <th>Tags</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Progress</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="projects-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <section id="settings-tab" class="tab-panel" hidden>
+            <div class="settings-grid">
+                <section class="card">
+                    <div class="card-header">
+                        <div class="card-title-lg">Resources</div>
+                        <div class="card-description">People available to assign to projects</div>
+                    </div>
+                    <div class="card-content">
+                        <form id="resource-form" class="add-item-form">
+                            <input id="resource-name" type="text" required maxlength="120" placeholder="e.g. Jane Doe">
+                            <button class="btn" type="submit">Add</button>
+                        </form>
+                        <div id="resource-error" class="form-error"></div>
+                        <ul id="resource-list" class="item-list"></ul>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="card-header">
+                        <div class="card-title-lg">Tags</div>
+                        <div class="card-description">Labels available to attach to projects</div>
+                    </div>
+                    <div class="card-content">
+                        <form id="tag-form" class="add-item-form">
+                            <input id="tag-name" type="text" required maxlength="60" placeholder="e.g. Backend">
+                            <button class="btn" type="submit">Add</button>
+                        </form>
+                        <div id="tag-error" class="form-error"></div>
+                        <ul id="tag-list" class="item-list"></ul>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const PROJECTS_ENDPOINT = '/v1/taskPlanner';
+        const RESOURCES_ENDPOINT = '/v1/settings/resources';
+        const TAGS_ENDPOINT = '/v1/settings/tags';
+        const PRIORITY_VAR = { Low: '--prio-low', Medium: '--prio-medium', High: '--prio-high', Critical: '--prio-critical' };
+        const STATUS_VAR = { 'Not Started': '--status-not-started', 'In Progress': '--status-in-progress', Done: '--status-done' };
+        const STATUSES = ['Not Started', 'In Progress', 'Done'];
+        const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+        let allProjects = [];
+        let resourceFilter = '';
+
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+        const priorityColor = (p) => `hsl(var(${PRIORITY_VAR[p] || '--prio-medium'}))`;
+        const statusColor = (s) => `hsl(var(${STATUS_VAR[s] || '--status-not-started'}))`;
+        const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        const fmtShortDate = (d) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+        const startOfMonth = (d) => new Date(d.getFullYear(), d.getMonth(), 1);
+
+        async function fetchJson(url, options) {
+            const response = await fetch(url, options);
+            const body = await response.json();
+            if (!response.ok || !body.success) throw new Error(body.message || 'Request failed');
+            return body.responseObject;
+        }
+
+        // --- tabs ---
+        document.querySelectorAll('.tab-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach((p) => { p.hidden = true; });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).hidden = false;
+            });
+        });
+
+        // --- timeline / projects ---
+        function renderEmpty() {
+            document.getElementById('timeline-ticks').innerHTML = '';
+            document.getElementById('timeline').innerHTML = '<div class="empty-state">No projects yet. Add one above to see it on the timeline.</div>';
+            document.getElementById('projects-table-body').innerHTML =
+                '<tr><td colspan="9" class="empty-state">No projects yet.</td></tr>';
+        }
+
+        function renderTimeline(projects) {
+            if (!projects.length) { renderEmpty(); return; }
+
+            const starts = projects.map((p) => startOfDay(p.startDate).getTime());
+            const ends = projects.map((p) => startOfDay(p.endDate).getTime());
+            const minDate = Math.min(...starts);
+            const maxDate = Math.max(...ends);
+            const paddedMin = minDate - MS_PER_DAY;
+            const paddedMax = maxDate + MS_PER_DAY;
+            const totalMs = Math.max(paddedMax - paddedMin, MS_PER_DAY);
+
+            const pct = (ms) => ((ms - paddedMin) / totalMs) * 100;
+
+            // Ticks: one per calendar month across the range (month + year only).
+            const ticks = [];
+            const cursor = startOfMonth(new Date(paddedMin));
+            const rangeEnd = new Date(paddedMax);
+            while (cursor.getTime() <= rangeEnd.getTime()) {
+                ticks.push(cursor.getTime());
+                cursor.setMonth(cursor.getMonth() + 1);
+            }
+            const ticksHtml = ticks.map((ms) => {
+                const left = Math.max(0, Math.min(100, pct(ms)));
+                const label = new Date(ms).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+                return `<span style="left:${left.toFixed(2)}%">${esc(label)}</span>`;
+            }).join('');
+            document.getElementById('timeline-ticks').innerHTML = `<div class="timeline-ticks-inner">${ticksHtml}</div>`;
+
+            const rowsHtml = projects.map((project) => {
+                const s = startOfDay(project.startDate).getTime();
+                const e = startOfDay(project.endDate).getTime() + MS_PER_DAY; // inclusive end
+                const left = pct(s);
+                const width = Math.max(pct(e) - left, 4);
+                const color = priorityColor(project.priority);
+                const resourceList = (project.resources || []).join(', ');
+                const dateRange = `${fmtShortDate(project.startDate)} – ${fmtShortDate(project.endDate)}`;
+                const fullTitle = `${project.projectName} (${resourceList}) ${dateRange}`;
+
+                return `
+                    <div class="timeline-row">
+                        <div class="timeline-label">
+                            <span class="project-name">${esc(project.projectName)}</span>
+                            <span class="project-meta">${esc(resourceList)} &middot; ${esc(project.priority)}</span>
+                        </div>
+                        <div class="timeline-track">
+                            <div class="timeline-grid-lines">${ticks.map(() => '<span></span>').join('')}</div>
+                            <div class="timeline-bar" style="left:${left.toFixed(2)}%;width:${width.toFixed(2)}%;background-color:${color}"
+                                 title="${esc(fullTitle)}">
+                                <span class="bar-name">${esc(project.projectName)} &middot; ${esc(resourceList)}</span>&nbsp;<span class="bar-meta">(${esc(dateRange)})</span>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            document.getElementById('timeline').innerHTML = rowsHtml;
+        }
+
+        function renderTable(projects) {
+            const tbody = document.getElementById('projects-table-body');
+            if (!projects.length) {
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No projects yet.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = projects.map((project) => `
+                <tr>
+                    <td>${esc(project.projectName)}</td>
+                    <td>${(project.resources || []).map((r) => `<span class="chip">${esc(r)}</span>`).join('')}</td>
+                    <td>${(project.tags || []).map((t) => `<span class="chip">${esc(t)}</span>`).join('') || '&mdash;'}</td>
+                    <td><span class="badge" style="background-color:${priorityColor(project.priority)}">${esc(project.priority)}</span></td>
+                    <td>
+                        <select class="status-select" data-id="${esc(project.id)}" style="background-color:${statusColor(project.status)};color:white;border-color:transparent">
+                            ${STATUSES.map((s) => `<option value="${s}"${s === project.status ? ' selected' : ''}>${s}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <div class="progress-cell">
+                            <input class="progress-input" type="number" min="0" max="100" value="${Number(project.progress) || 0}" data-id="${esc(project.id)}">
+                            <span>%</span>
+                        </div>
+                    </td>
+                    <td>${esc(fmtDate(project.startDate))}</td>
+                    <td>${esc(fmtDate(project.endDate))}</td>
+                    <td><button class="delete-btn" data-id="${esc(project.id)}">Delete</button></td>
+                </tr>`).join('');
+
+            tbody.querySelectorAll('.delete-btn').forEach((btn) => {
+                btn.addEventListener('click', () => deleteProject(btn.getAttribute('data-id')));
+            });
+            tbody.querySelectorAll('.status-select').forEach((select) => {
+                select.addEventListener('change', () => updateStatus(select.getAttribute('data-id'), select.value));
+            });
+            tbody.querySelectorAll('.progress-input').forEach((input) => {
+                input.addEventListener('change', () => updateProgress(input.getAttribute('data-id'), input.value));
+            });
+        }
+
+        async function updateStatus(id, status) {
+            try {
+                await fetchJson(`${PROJECTS_ENDPOINT}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status }),
+                });
+                await refreshProjects();
+            } catch (err) {
+                document.getElementById('form-error').textContent = err.message;
+            }
+        }
+
+        async function updateProgress(id, value) {
+            const progress = Math.min(100, Math.max(0, Number(value) || 0));
+            try {
+                await fetchJson(`${PROJECTS_ENDPOINT}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ progress }),
+                });
+                await refreshProjects();
+            } catch (err) {
+                document.getElementById('form-error').textContent = err.message;
+            }
+        }
+
+        // Deletes are soft: the project's status is set to "Deleted" instead of
+        // removing the document, so the change stays traceable. The API already
+        // excludes "Deleted" projects from the list it returns.
+        async function deleteProject(id) {
+            try {
+                await fetchJson(`${PROJECTS_ENDPOINT}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'Deleted' }),
+                });
+                await refreshProjects();
+            } catch (err) {
+                document.getElementById('form-error').textContent = err.message;
+            }
+        }
+
+        function applyFilterAndRender() {
+            const filtered = resourceFilter
+                ? allProjects.filter((p) => (p.resources || []).includes(resourceFilter))
+                : allProjects;
+            renderTimeline(filtered);
+            renderTable(filtered);
+        }
+
+        async function refreshProjects() {
+            const projects = await fetchJson(PROJECTS_ENDPOINT);
+            projects.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+            allProjects = projects;
+            applyFilterAndRender();
+        }
+
+        document.getElementById('resource-filter').addEventListener('change', (event) => {
+            resourceFilter = event.target.value;
+            applyFilterAndRender();
+        });
+
+        document.getElementById('project-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const errorEl = document.getElementById('form-error');
+            const submitBtn = document.getElementById('submit-btn');
+            errorEl.textContent = '';
+
+            const form = event.target;
+            const selected = (select) => Array.from(select.selectedOptions).map((o) => o.value);
+            const payload = {
+                projectName: form.projectName.value.trim(),
+                resources: selected(form.resources),
+                tags: selected(form.tags),
+                priority: form.priority.value,
+                startDate: form.startDate.value,
+                endDate: form.endDate.value,
+            };
+
+            if (!payload.resources.length) {
+                errorEl.textContent = 'Select at least one resource.';
+                return;
+            }
+            if (payload.endDate < payload.startDate) {
+                errorEl.textContent = 'End date must be on or after start date.';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            try {
+                await fetchJson(PROJECTS_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                form.reset();
+                await refreshProjects();
+            } catch (err) {
+                errorEl.textContent = err.message;
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        // --- settings: resources & tags ---
+        function populateMultiSelect(select, items) {
+            const previouslySelected = new Set(Array.from(select.selectedOptions).map((o) => o.value));
+            select.innerHTML = items.map((item) =>
+                `<option value="${esc(item.name)}"${previouslySelected.has(item.name) ? ' selected' : ''}>${esc(item.name)}</option>`
+            ).join('');
+        }
+
+        function renderSettingsList(listEl, items, onDelete) {
+            if (!items.length) {
+                listEl.innerHTML = '<li class="empty-state">None added yet.</li>';
+                return;
+            }
+            listEl.innerHTML = items.map((item) => `
+                <li class="item-row">
+                    <span>${esc(item.name)}</span>
+                    <button class="remove-btn" data-id="${esc(item.id)}">Remove</button>
+                </li>`).join('');
+            listEl.querySelectorAll('.remove-btn').forEach((btn) => {
+                btn.addEventListener('click', () => onDelete(btn.getAttribute('data-id')));
+            });
+        }
+
+        function populateResourceFilter(items) {
+            const select = document.getElementById('resource-filter');
+            const current = select.value;
+            select.innerHTML = '<option value="">All Resources</option>' +
+                items.map((item) => `<option value="${esc(item.name)}">${esc(item.name)}</option>`).join('');
+            select.value = items.some((item) => item.name === current) ? current : '';
+            resourceFilter = select.value;
+        }
+
+        async function refreshResources() {
+            const resources = await fetchJson(RESOURCES_ENDPOINT);
+            populateMultiSelect(document.getElementById('resources'), resources);
+            populateResourceFilter(resources);
+            renderSettingsList(document.getElementById('resource-list'), resources, deleteResource);
+        }
+
+        async function refreshTags() {
+            const tags = await fetchJson(TAGS_ENDPOINT);
+            populateMultiSelect(document.getElementById('tags'), tags);
+            renderSettingsList(document.getElementById('tag-list'), tags, deleteTag);
+        }
+
+        async function deleteResource(id) {
+            try {
+                await fetchJson(`${RESOURCES_ENDPOINT}/${id}`, { method: 'DELETE' });
+                await refreshResources();
+            } catch (err) {
+                document.getElementById('resource-error').textContent = err.message;
+            }
+        }
+
+        async function deleteTag(id) {
+            try {
+                await fetchJson(`${TAGS_ENDPOINT}/${id}`, { method: 'DELETE' });
+                await refreshTags();
+            } catch (err) {
+                document.getElementById('tag-error').textContent = err.message;
+            }
+        }
+
+        document.getElementById('resource-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const errorEl = document.getElementById('resource-error');
+            errorEl.textContent = '';
+            const input = document.getElementById('resource-name');
+            try {
+                await fetchJson(RESOURCES_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: input.value.trim() }),
+                });
+                input.value = '';
+                await refreshResources();
+            } catch (err) {
+                errorEl.textContent = err.message;
+            }
+        });
+
+        document.getElementById('tag-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const errorEl = document.getElementById('tag-error');
+            errorEl.textContent = '';
+            const input = document.getElementById('tag-name');
+            try {
+                await fetchJson(TAGS_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: input.value.trim() }),
+                });
+                input.value = '';
+                await refreshTags();
+            } catch (err) {
+                errorEl.textContent = err.message;
+            }
+        });
+
+        async function init() {
+            try {
+                await Promise.all([refreshResources(), refreshTags()]);
+                await refreshProjects();
+            } catch (err) {
+                document.getElementById('form-error').textContent = err.message;
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

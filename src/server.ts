@@ -25,35 +25,36 @@ import { readFileData } from './common/utils/fileUtils';
 import { getLocalAILLMs } from './common/utils/getLocalAILLMs';
 import { sendSlackNotification } from './common/utils/slack';
 import { cacheConfig, cacheConfigHandler } from './config/cacheConfig';
+import { redisClient } from './config/redisStore';
+import { initMinio } from './services/minio';
 import connectMongoDB from './config/mongoose';
 import { OPENROUTER_FREE_MODELS } from './config/openRouterModels';
-import { redisClient } from './config/redisStore';
 import { sessionMiddleware } from './config/session';
-import { initMinio } from './services/minio';
+
 const loggerOriginal = pino({ name: 'server start' });
 
 const logger = new Proxy(loggerOriginal, {
- get: (target, prop, receiver) => {
-  const originalValue = Reflect.get(target, prop, receiver);
+  get: (target, prop, receiver) => {
+    const originalValue = Reflect.get(target, prop, receiver);
 
-  // Only wrap functions (logging methods)
-  if (typeof originalValue === 'function') {
-   return function (...args) {
-    // --- Wrapper Logic for Logging Methods ---
+    // Only wrap functions (logging methods)
+    if (typeof originalValue === 'function') {
+      return function (...args) {
+        // --- Wrapper Logic for Logging Methods ---
 
-    if (prop === 'error' || prop === 'fatal') {
-     console.warn(`[Proxy-Alert] A critical ${prop} event is being logged.`);
-     sendSlackNotification(`${args[1]} || ${args[0].stack}`, 'ERROR');
+        if (prop === 'error' || prop === 'fatal') {
+          console.warn(`[Proxy-Alert] A critical ${prop} event is being logged.`);
+          sendSlackNotification(`${args[1]} || ${args[0].stack}`, 'ERROR');
+        }
+
+        // Call the original function on the target object
+        return originalValue.apply(target, args);
+      };
     }
 
-    // Call the original function on the target object
-    return originalValue.apply(target, args);
-   };
-  }
-
-  // Return all other properties (e.g., logger.level, logger.child, etc.) as they are
-  return originalValue;
- },
+    // Return all other properties (e.g., logger.level, logger.child, etc.) as they are
+    return originalValue;
+  },
 });
 
 const app: Express = express();
@@ -63,15 +64,21 @@ app.set('trust proxy', true);
 
 global.cacheHash = cacheConfig.createHash(cacheRules);
 
-if (env.ENV === 'local') {
- redisClient.connect();
- initMinio();
- connectMongoDB();
- //  initKafka().catch((err) => logger.error(err));
+if (env.ENV === 'local' && env.ENABLE_REDIS) {
+  if (env.ENABLE_REDIS) {
+    redisClient.connect();
+  }
+  if (env.ENABLE_MINIO) {
+    initMinio();
+  }
+  //  initKafka().catch((err) => logger.error(err));
 }
-if (env.ENV === 'dev') {
- mongoose.connect(env.MONGO_URI);
-}
+
+// Chat history and AI monitoring data must persist to MongoDB in every
+// environment (not just 'local'/'dev') — previously this only ran for those
+// two ENV values, so hosted deployments (e.g. Render) never connected and
+// silently lost all chat history and call/model metrics.
+connectMongoDB();
 
 // Middlewares
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
@@ -85,9 +92,9 @@ app.use(requestLogger);
 app.use(express.json());
 
 app.use(
- bodyParser.urlencoded({
-  extended: true,
- })
+  bodyParser.urlencoded({
+    extended: true,
+  })
 );
 app.use(cookieParser());
 app.use(sessionMiddleware);
@@ -101,27 +108,27 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public'));
 
 app.get('/dashboard', async function (req, res) {
- try {
-  const fileContent = await readFileData('file.txt');
-  const splitted = fileContent.split('\n');
+  try {
+    const fileContent = await readFileData('file.txt');
+    const splitted = fileContent.split('\n');
 
-  const objects = splitted.filter((item) => item.trim() !== '').map((item) => JSON.parse(item));
-  const recordCount = objects.length;
+    const objects = splitted.filter((item) => item.trim() !== '').map((item) => JSON.parse(item));
+    const recordCount = objects.length;
 
-  res.render(path.join(__dirname, 'public'), {
-   appUsers: [{ user_name: 'test' }, { user_name: 'test2' }],
-   fileContent: objects, //&& JSON.parse(fileContent),
-   recordCount,
-  });
- } catch (error) {
-  logger.error(`Error rendering /dashboard: ${error}`);
-  res.status(500).json({ success: false, message: 'Failed to load dashboard' });
- }
+    res.render(path.join(__dirname, 'public'), {
+      appUsers: [{ user_name: 'test' }, { user_name: 'test2' }],
+      fileContent: objects, //&& JSON.parse(fileContent),
+      recordCount,
+    });
+  } catch (error) {
+    logger.error(`Error rendering /dashboard: ${error}`);
+    res.status(500).json({ success: false, message: 'Failed to load dashboard' });
+  }
 });
 
 app.get('/chatAI', async function (req, res) {
- res.setHeader('Content-Security-Policy', "script-src 'self' 'nonce-abc123'");
- res.render(path.join(__dirname, 'public', 'chatAI.ejs'));
+  res.setHeader('Content-Security-Policy', "script-src 'self' 'nonce-abc123'");
+  res.render(path.join(__dirname, 'public', 'chatAI.ejs'));
 });
 
 app.get('/goals', async function (req, res) {
@@ -139,20 +146,21 @@ app.get('/goals', async function (req, res) {
 });
 
 app.get('/chatModels', async function (req, res) {
- const provider = String(req.query.provider || '');
- const configModels = provider === 'openRouterAI' ? OPENROUTER_FREE_MODELS.join(',') : ((await getLocalAILLMs()) ?? []);
- const models = String(configModels)
-  .split(',')
-  .map((m) => {
-   const label = m.split('/').pop(); //.charAt(0).toUpperCase() + m.split('/')[1].slice(1);
-   return { value: m, label: label || m };
-  });
- res.json({ models });
+  const provider = String(req.query.provider || '');
+  const configModels =
+    provider === 'openRouterAI' ? OPENROUTER_FREE_MODELS.join(',') : (await getLocalAILLMs()) ?? [];
+  const models = String(configModels)
+    .split(',')
+    .map((m) => {
+      const label = m.split('/').pop(); //.charAt(0).toUpperCase() + m.split('/')[1].slice(1);
+      return { value: m, label: label || m };
+    });
+  res.json({ models });
 });
 
 app.all('/graphql', createHandler({ schema }));
 app.get('/graphiql', (req, res) => {
- res.type('html').send(ruruHTML({ endpoint: '/graphql' }));
+  res.type('html').send(ruruHTML({ endpoint: '/graphql' }));
 });
 
 // Swagger UI
