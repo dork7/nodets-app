@@ -4,6 +4,7 @@ import { aiProvidersRegistry } from '@/api/aiProviders/aiProvidersRouter';
 import { aiUtilsRegistry } from '@/api/aiUtils/aiUtilsRouter';
 import { catalogueRegistery } from '@/api/catalogue/catalogueRouter';
 import { chatRegistry } from '@/api/chat/chatRouter';
+import { goalsRegistry } from '@/api/goals/goalsRouter';
 import { healthCheckRegistry } from '@/api/healthCheck/healthCheckRouter';
 import { kafkaRegistry } from '@/api/kafka/kafkaRouter';
 import { ragRegistry } from '@/api/rag/ragRouter';
@@ -25,6 +26,7 @@ export function generateOpenAPIDocument() {
   visionRegistry,
   taskPlannerRegistry,
   settingsRegistry,
+  goalsRegistry,
  ]);
  const generator = new OpenApiGeneratorV3(registry.definitions);
 

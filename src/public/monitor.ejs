@@ -7,38 +7,23 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         /*
-         * shadcn/ui design tokens (default "zinc" theme, new-york style).
-         * Hand-ported to plain CSS so the page stays a build-free static file.
+         * Matte dark tokens shared across all portals (chatAI, nutrition,
+         * goals, monitor) — warm near-black neutrals, single accent.
          */
         :root {
-            --background: 0 0% 100%;
-            --foreground: 240 10% 3.9%;
-            --card: 0 0% 100%;
-            --card-foreground: 240 10% 3.9%;
-            --muted: 240 4.8% 95.9%;
-            --muted-foreground: 240 3.8% 46.1%;
-            --border: 240 5.9% 90%;
-            --primary: 240 5.9% 10%;
-            --accent: 240 4.8% 95.9%;
-            --success: 142 71% 45%;
-            --destructive: 0 72% 51%;
+            --background: 30 25% 3.1%;
+            --foreground: 30 16.7% 90.6%;
+            --card: 30 11.8% 6.7%;
+            --card-foreground: 30 16.7% 90.6%;
+            --muted: 36 8.8% 11.2%;
+            --muted-foreground: 34 3.8% 64.1%;
+            --border: 36 4.8% 20.6%;
+            --primary: 30 28.6% 94.5%;
+            --primary-foreground: 30 25% 3.1%;
+            --accent: 24 6.2% 15.9%;
+            --success: 126 44.8% 54.5%;
+            --destructive: 4 100% 69.4%;
             --radius: 0.5rem;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --background: 240 10% 3.9%;
-                --foreground: 0 0% 98%;
-                --card: 240 10% 3.9%;
-                --card-foreground: 0 0% 98%;
-                --muted: 240 3.7% 15.9%;
-                --muted-foreground: 240 5% 64.9%;
-                --border: 240 3.7% 15.9%;
-                --primary: 0 0% 98%;
-                --accent: 240 3.7% 15.9%;
-                --success: 142 71% 45%;
-                --destructive: 0 62% 52%;
-            }
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -66,7 +51,6 @@
             color: hsl(var(--card-foreground));
             border: 1px solid hsl(var(--border));
             border-radius: var(--radius);
-            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
         }
         .card-header { padding: 1.5rem; padding-bottom: 0.5rem; }
         .card-content { padding: 1.5rem; padding-top: 0.5rem; }
@@ -478,14 +462,14 @@
             const recent = logs.slice(0, 30).reverse();
             const labels = recent.map((l) => new Date(l.timestamp).toLocaleTimeString());
             const data = recent.map((l) => l.durationMs);
+            const rootStyles = getComputedStyle(document.documentElement);
             const colors = recent.map((l) => l.status === 'FAILED'
-                ? 'hsl(0 72% 51%)'
-                : `hsl(${getComputedStyle(document.documentElement).getPropertyValue('--primary')})`);
+                ? `hsl(${rootStyles.getPropertyValue('--destructive')})`
+                : `hsl(${rootStyles.getPropertyValue('--primary')})`);
 
-            const styles = getComputedStyle(document.documentElement);
-            const border = `hsl(${styles.getPropertyValue('--primary')})`;
-            const grid = `hsl(${styles.getPropertyValue('--border')})`;
-            const tick = `hsl(${styles.getPropertyValue('--muted-foreground')})`;
+            const border = `hsl(${rootStyles.getPropertyValue('--primary')})`;
+            const grid = `hsl(${rootStyles.getPropertyValue('--border')})`;
+            const tick = `hsl(${rootStyles.getPropertyValue('--muted-foreground')})`;
 
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
@@ -496,7 +480,7 @@
                         label: 'Response time (ms)',
                         data,
                         borderColor: border,
-                        backgroundColor: `hsl(${styles.getPropertyValue('--primary')} / 0.1)`,
+                        backgroundColor: `hsl(${rootStyles.getPropertyValue('--primary')} / 0.1)`,
                         fill: true,
                         tension: 0.35,
                         pointRadius: 3,

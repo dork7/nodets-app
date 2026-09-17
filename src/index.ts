@@ -13,6 +13,8 @@ const server = app.listen(env.PORT, async () => {
  logger.info(`KAFKA UI http://${HOST}:8083/ui/clusters/kafka/all-topics`);
  logger.info(`Redis http://${HOST}:5540`);
  logger.info(`MONGODB UI http://${HOST}:8081`);
+ logger.info(`AIChat UI http://${HOST}:${PORT}/chatAi`);
+ logger.info(`AI Dashboard http://${HOST}:${PORT}/dashboard`);
  await loadHandlers();
  await loadAIProviders();
  startWebSocketServer(server);
