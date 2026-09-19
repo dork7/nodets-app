@@ -55,10 +55,7 @@ export const llamaIndexRouter: Router = (() => {
       ? StatusCodes.REQUEST_TOO_LONG
       : StatusCodes.BAD_REQUEST;
 
-    return handleServiceResponse(
-     new ServiceResponse(ResponseStatus.Failed, errorMessage, null, statusCode, err),
-     res
-    );
+    return handleServiceResponse(new ServiceResponse(ResponseStatus.Failed, errorMessage, null, statusCode, err), res);
    }
 
    const type = String(req.body?.type ?? '').trim();
@@ -88,6 +85,23 @@ export const llamaIndexRouter: Router = (() => {
   const q = String(req.query.q ?? '');
   const k = Number(req.query.k ?? 3);
   const serviceResponse = await llamaIndexService.query(q, k);
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ llamaIndexRegistry.registerPath({
+  method: 'get',
+  path: '/llamaIndex/extract',
+  tags: ['LlamaIndex'],
+  request: {
+   query: LlamaIndexQuerySchema.shape.query,
+  },
+  responses: createApiResponse(LlamaIndexQueryResponseSchema, 'Success'),
+ });
+
+ router.get('/extract', validateRequest(LlamaIndexQuerySchema), async (req: Request, res: Response) => {
+  const q = String(req.query.q ?? '');
+  const k = Number(req.query.k ?? 3);
+  const serviceResponse = await llamaIndexService.extract(q, k);
   handleServiceResponse(serviceResponse, res);
  });
 

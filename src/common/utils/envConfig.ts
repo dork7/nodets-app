@@ -87,4 +87,12 @@ export const env = cleanEnv(process.env, {
  RAG_COLLECTION_NAME: str({ default: 'knowledge_base2', desc: 'ChromaDB collection used by the RAG system' }),
  RAG_ENABLED: bool({ default: false, desc: 'Master switch for RAG retrieval in chat' }),
  RAG_TOP_K: num({ default: 3, desc: 'Number of chunks retrieved per query' }),
+
+ // Qdrant / LlamaIndex
+ QDRANT_URL: url({ default: 'http://localhost:6333', desc: 'Base URL for the Qdrant vector store' }),
+ QDRANT_API_KEY: str({ default: '', desc: 'API key for the Qdrant vector store (optional for local instances)' }),
+ QDRANT_COLLECTION_NAME: str({
+  default: 'llama_index_documents',
+  desc: 'Qdrant collection used by the LlamaIndex ingest/query routes',
+ }),
 });

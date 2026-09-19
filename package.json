@@ -22,6 +22,7 @@
     "@asteasolutions/zod-to-openapi": "^7.0.0",
     "@chroma-core/default-embed": "^0.1.8",
     "@llamaindex/openai": "^0.4.23",
+    "@llamaindex/qdrant": "^0.1.33",
     "@napi-rs/canvas": "^1.0.5",
     "@slack/web-api": "^7.8.0",
     "@stomp/stompjs": "^7.2.1",
