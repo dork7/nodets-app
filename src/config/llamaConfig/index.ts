@@ -1,28 +1,20 @@
 import { OpenAI, OpenAIEmbedding } from '@llamaindex/openai'
-import { env } from 'process';
+import { Settings } from 'llamaindex'
+import { env } from '@/common/utils/envConfig';
 
-// Point both LLM and embeddings at your LocalAI
-export const localLlmIndex = new OpenAI({
-  model: env.LOCAL_AI_MODEL, // your model name in LocalAI
-  apiKey: 'localai',
-  baseURL: 'http://localhost:8080/v1',
-})
-
-export const embedModelLlmIndex = new OpenAIEmbedding({
-  model: env.LOCAL_AI_EMBEDDING_MODEL, // your embedding model in LocalAI
-  apiKey: 'localai',
-  baseURL: 'http://localhost:8080/v1',
-})
-
-// Point both LLM and embeddings at your LocalAI
-export const openRouterLlmIndex = new OpenAI({
-  model: env.OPENROUTER_MODEL, // your model name in LocalAI
+const openRouterConfig = {
   apiKey: env.OPENROUTER_API_KEY,
   baseURL: env.OPENROUTER_BASE_URL,
-})
+}
 
-export const openRouterEmbedModelLlmIndex = new OpenAIEmbedding({
-  model: env.OPENROUTER_EMBEDDING_MODEL, // your embedding model in LocalAI
-  apiKey: env.OPENROUTER_API_KEY,
-  baseURL: env.OPENROUTER_BASE_URL,
-})
+Settings.llm = new OpenAI({
+  ...openRouterConfig,
+  model: "meta-llama/llama-3.1-8b-instruct"
+});
+
+Settings.embedModel = new OpenAIEmbedding({
+  ...openRouterConfig,
+  model: env.OPENROUTER_EMBED_MODEL ?? "text-embedding-3-small",
+});
+
+export { Settings };

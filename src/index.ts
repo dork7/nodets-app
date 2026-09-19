@@ -20,6 +20,8 @@ const server = app.listen(env.PORT, async () => {
  startWebSocketServer(server);
 });
 
+
+
 const onCloseSignal = () => {
  logger.info('sigint received, shutting down');
  server.close(() => {
