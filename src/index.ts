@@ -17,13 +17,16 @@ const server = app.listen(env.PORT, async () => {
  logger.info(`AI Dashboard http://${HOST}:${PORT}/dashboard`);
  await loadHandlers();
  await loadAIProviders();
- startWebSocketServer(server);
+ wss = await startWebSocketServer(server);
 });
 
-
+let wss: Awaited<ReturnType<typeof startWebSocketServer>> | undefined;
 
 const onCloseSignal = () => {
  logger.info('sigint received, shutting down');
+ // Terminate open WebSocket clients so their sockets don't keep the HTTP
+ // server's close() callback waiting indefinitely (e.g. an open chat tab).
+ wss?.clients.forEach((client: { terminate: () => void }) => client.terminate());
  server.close(() => {
   logger.info('server closed');
   process.exit();
