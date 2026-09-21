@@ -1,11 +1,9 @@
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
-import { createHandler } from 'graphql-http/lib/use/express';
 import helmet from 'helmet';
 import path from 'path';
 import { pino } from 'pino';
-import { ruruHTML } from 'ruru/server';
 
 import apis from '@/api';
 import { openAPIRouter } from '@/api-docs/openAPIRouter';
@@ -15,7 +13,6 @@ import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
 import { cacheRules } from '../cacheRules';
-import { schema } from './api/graphql/schema';
 import { cacheHandler } from './common/middleware/cacheHandler';
 import { proxyHandler } from './common/middleware/proxy';
 import { reqLoggerKafka } from './common/middleware/reqLoggerKafka';
@@ -28,6 +25,7 @@ import { redisClient } from './config/redisStore';
 import { initMinio } from './services/minio';
 import connectMongoDB from './config/mongoose';
 const loggerOriginal = pino({ name: 'server start' });
+import { Settings } from './config/llamaConfig';
 
 const logger = new Proxy(loggerOriginal, {
   get: (target, prop, receiver) => {
@@ -150,11 +148,6 @@ app.get('/chatModels', async function (req, res) {
       return { value: m, label: label || m };
     });
   res.json({ models });
-});
-
-app.all('/graphql', createHandler({ schema }));
-app.get('/graphiql', (req, res) => {
-  res.type('html').send(ruruHTML({ endpoint: '/graphql' }));
 });
 
 // Swagger UI

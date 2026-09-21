@@ -1,28 +1,26 @@
-import { OpenAI, OpenAIEmbedding } from '@llamaindex/openai'
-import { env } from 'process';
+import { OpenAI, OpenAIEmbedding } from '@llamaindex/openai';
+import { Settings } from 'llamaindex';
 
-// Point both LLM and embeddings at your LocalAI
-export const localLlmIndex = new OpenAI({
-  model: env.LOCAL_AI_MODEL, // your model name in LocalAI
-  apiKey: 'localai',
-  baseURL: 'http://localhost:8080/v1',
-})
+import { env } from '@/common/utils/envConfig';
 
-export const embedModelLlmIndex = new OpenAIEmbedding({
-  model: env.LOCAL_AI_EMBEDDING_MODEL, // your embedding model in LocalAI
-  apiKey: 'localai',
-  baseURL: 'http://localhost:8080/v1',
-})
+const openRouterConfig = {
+ apiKey: env.OPENROUTER_API_KEY,
+ baseURL: env.OPENROUTER_BASE_URL,
+};
 
-// Point both LLM and embeddings at your LocalAI
-export const openRouterLlmIndex = new OpenAI({
-  model: env.OPENROUTER_MODEL, // your model name in LocalAI
-  apiKey: env.OPENROUTER_API_KEY,
-  baseURL: env.OPENROUTER_BASE_URL,
-})
+Settings.llm = new OpenAI({
+ ...openRouterConfig,
+ model: 'meta-llama/llama-3.1-8b-instruct',
+});
 
-export const openRouterEmbedModelLlmIndex = new OpenAIEmbedding({
-  model: env.OPENROUTER_EMBEDDING_MODEL, // your embedding model in LocalAI
-  apiKey: env.OPENROUTER_API_KEY,
-  baseURL: env.OPENROUTER_BASE_URL,
-})
+// Exported directly (in addition to being set on `Settings`) because `llamaindex`
+// and `@llamaindex/qdrant` resolve to different installed copies of `@llamaindex/core`,
+// so code reading `Settings.embedModel` via the other copy would see it as unset.
+export const embedModel = new OpenAIEmbedding({
+ ...openRouterConfig,
+ model: env.OPENROUTER_EMBED_MODEL ?? 'text-embedding-3-small',
+});
+
+Settings.embedModel = embedModel;
+
+export { Settings };

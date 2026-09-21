@@ -7,6 +7,7 @@ import { chatRegistry } from '@/api/chat/chatRouter';
 import { goalsRegistry } from '@/api/goals/goalsRouter';
 import { healthCheckRegistry } from '@/api/healthCheck/healthCheckRouter';
 import { kafkaRegistry } from '@/api/kafka/kafkaRouter';
+import { llamaIndexRegistry } from '@/api/llamaIndex/router';
 import { ragRegistry } from '@/api/rag/ragRouter';
 import { redisRegistry } from '@/api/redis/redisRouter';
 import { settingsRegistry } from '@/api/settings/settingsRouter';
@@ -20,6 +21,7 @@ export function generateOpenAPIDocument() {
   catalogueRegistery,
   chatRegistry,
   ragRegistry,
+  llamaIndexRegistry,
   redisRegistry,
   kafkaRegistry,
   aiProvidersRegistry,
