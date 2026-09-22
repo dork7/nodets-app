@@ -7,6 +7,7 @@ import { UnsupportedFileTypeError } from '@/api/rag/extractText';
 import { LoadedDocument, loaders } from '@/api/rag/loaders';
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
 import { embedMany } from '@/config/openaiConfig/embeddings';
+import { LocalFileModel } from '@/models/localFile.model';
 import { logger } from '@/server';
 import {
  clearCollection,
@@ -17,7 +18,7 @@ import {
  upsertMany,
 } from '@/services/vectorStore';
 
-export type RagSource = 'json' | 'minio' | 'csv' | 'url';
+export type RagSource = 'json' | 'minio' | 'localStorage' | 'csv' | 'url';
 
 export interface IngestOptions {
  source: RagSource;
@@ -48,6 +49,9 @@ export const ragService = {
     case 'minio':
      documents = await loaders.minio(options.fileId as string, options.bucket);
      break;
+    case 'localStorage':
+     documents = await loaders.localStorage(options.fileId as string);
+     break;
     case 'csv':
      documents = await loaders.csv(options.content ?? '', 'upload');
      break;
@@ -76,6 +80,10 @@ export const ragService = {
      await minioRepository.updateAsync(options.fileId, { ingested: false });
     }
     await minioRepository.markIngestedAsync(options.fileId);
+   }
+
+   if (options.source === 'localStorage' && options.fileId) {
+    await LocalFileModel.updateOne({ fileId: options.fileId }, { ingested: true });
    }
 
    logger.info(`RAG ingest complete: ${chunks.length} chunks from ${documents.length} documents`);
@@ -125,14 +133,17 @@ export const ragService = {
  },
 
  /**
-  * Remove a single document's chunks from the vector store. For a MinIO-backed file
-  * (`docId` === the MinIO file id) the `ingested` flag is also flipped back so the UI
-  * reflects that it is no longer in the knowledge base.
+  * Remove a single document's chunks from the vector store. `docId` is a MinIO or
+  * local-storage file id; the matching `ingested` flag is flipped back (a no-op on
+  * whichever store doesn't have that id) so the UI reflects it left the knowledge base.
   */
  deleteFile: async (docId: string): Promise<ServiceResponse<{ removed: number } | null>> => {
   try {
    const removed = await deleteByDocId(docId);
-   await minioRepository.updateAsync(docId, { ingested: false });
+   await Promise.all([
+    minioRepository.updateAsync(docId, { ingested: false }),
+    LocalFileModel.updateOne({ fileId: docId }, { ingested: false }),
+   ]);
    logger.info(`RAG: removed ${removed} chunk(s) from the vector store for docId ${docId}`);
    return new ServiceResponse<{ removed: number }>(
     ResponseStatus.Success,
@@ -150,7 +161,10 @@ export const ragService = {
  clear: async (): Promise<ServiceResponse<boolean | null>> => {
   try {
    await clearCollection();
-   await minioRepository.resetIngestedFlagsAsync();
+   await Promise.all([
+    minioRepository.resetIngestedFlagsAsync(),
+    LocalFileModel.updateMany({ ingested: true }, { ingested: false }),
+   ]);
    return new ServiceResponse<boolean>(ResponseStatus.Success, 'Collection cleared', true, StatusCodes.OK);
   } catch (ex) {
    const errorMessage = `Failed to clear collection: ${(ex as Error).message}`;
@@ -159,40 +173,37 @@ export const ragService = {
   }
  },
 
-stats: async (): Promise<ServiceResponse<{ count: number; collections: string[] } | null>> => {
-   try {
-    const [count, collections] = await Promise.all([countCollection(), listCollections()]);
-    return new ServiceResponse<{ count: number; collections: string[] }>(
-     ResponseStatus.Success,
-     'Stats retrieved',
-     { count, collections },
-     StatusCodes.OK
-    );
-   } catch (ex) {
-    const errorMessage = `Failed to get stats: ${(ex as Error).message}`;
-    logger.error(errorMessage);
-    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
-   }
-  },
+ stats: async (): Promise<ServiceResponse<{ count: number; collections: string[] } | null>> => {
+  try {
+   const [count, collections] = await Promise.all([countCollection(), listCollections()]);
+   return new ServiceResponse<{ count: number; collections: string[] }>(
+    ResponseStatus.Success,
+    'Stats retrieved',
+    { count, collections },
+    StatusCodes.OK
+   );
+  } catch (ex) {
+   const errorMessage = `Failed to get stats: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
 
-  storeText: async (text: string, provider?: string): Promise<ServiceResponse<{ id: string } | null>> => {
-   try {
-    const [embedding] = await embedMany([text], { provider });
-    const id = `test_${Date.now()}`;
-    await upsertMany(
-     [{ id, text, metadata: { source: 'test', provider } as any }],
-     [embedding]
-    );
-    return new ServiceResponse<{ id: string }>(
-     ResponseStatus.Success,
-     'Text stored successfully',
-     { id },
-     StatusCodes.CREATED
-    );
-   } catch (ex) {
-    const errorMessage = `Failed to store text: ${(ex as Error).message}`;
-    logger.error(errorMessage);
-    return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
-   }
-  },
+ storeText: async (text: string, provider?: string): Promise<ServiceResponse<{ id: string } | null>> => {
+  try {
+   const [embedding] = await embedMany([text], { provider });
+   const id = `test_${Date.now()}`;
+   await upsertMany([{ id, text, metadata: { source: 'test', provider } as any }], [embedding]);
+   return new ServiceResponse<{ id: string }>(
+    ResponseStatus.Success,
+    'Text stored successfully',
+    { id },
+    StatusCodes.CREATED
+   );
+  } catch (ex) {
+   const errorMessage = `Failed to store text: ${(ex as Error).message}`;
+   logger.error(errorMessage);
+   return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+ },
 };

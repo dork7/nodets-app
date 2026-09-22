@@ -1,3 +1,5 @@
+import { llamaIndexService } from '@/api/llamaIndex/service';
+import { env } from '@/common/utils/envConfig';
 import { callAI } from '@/config/openaiConfig';
 import { executeToolCalls, type ToolCallRequest, toOpenAITools } from '@/config/openaiConfig/tools';
 import { ChatHistoryModel } from '@/models/chatHistory.model';
@@ -6,7 +8,6 @@ import { monitorService } from '@/services/monitorService';
 
 import { buildConversationHistory, getSummeriseHistory } from './utils/history';
 import { addAttachmentsToLastMsg, getFileText, getImageDataUrl } from './utils/imageHandler';
-import { type RagChunk, retrieveRagContext } from './utils/ragContext';
 import { isRelatedConversation } from './utils/relationCheck';
 import { saveTokenUsage, TokenUsage } from './utils/tokenUsage';
 
@@ -14,6 +15,13 @@ import { saveTokenUsage, TokenUsage } from './utils/tokenUsage';
 export interface ChatMessage {
  role: 'user' | 'assistant' | 'system';
  content: string;
+}
+
+export interface RagChunk {
+ id: string;
+ text: string;
+ score: number;
+ source?: string;
 }
 
 interface WebSocketMessage {
@@ -328,15 +336,26 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
   // Build OpenAI messages, attaching the images to the last user message if present
   const aiMessages = addAttachmentsToLastMsg(conversationHistory, imageDataUrls, fileTexts);
 
-  // RAG: when enabled, retrieve context from the vector store and inject it as a system
-  // message. Injected into `aiMessages` only (never `conversationHistory`) so the context
-  // is not persisted to MongoDB and re-injected on later turns. Fails open.
+  // RAG: when enabled, retrieve context from the LlamaIndex/Qdrant store and inject it as a
+  // system message. Injected into `aiMessages` only (never `conversationHistory`) so the
+  // context is not persisted to MongoDB and re-injected on later turns. Fails open.
   let ragSources: RagChunk[] = [];
   if (message.rag) {
-   const retrieval = await retrieveRagContext(userInput, message.ragDistance);
-   if (retrieval) {
-    aiMessages.unshift({ role: 'system', content: retrieval.systemPrompt });
-    ragSources = retrieval.sources;
+   const extraction = await llamaIndexService.extract(userInput, env.RAG_TOP_K);
+   if (extraction.success && extraction.responseObject?.extractedText.trim()) {
+    const { extractedText, sources } = extraction.responseObject;
+    aiMessages.unshift({
+     role: 'system',
+     content:
+      `Answer the user's question using only the context below. ` +
+      `If the context does not contain the answer, say you don't know. Donot give extra information. \n\nContext:\n${extractedText}`,
+    });
+    ragSources = sources.map((meta, index) => ({
+     id: `${index}`,
+     text: extractedText,
+     score: 0,
+     source: typeof meta.filename === 'string' ? meta.filename : undefined,
+    }));
     logger.info(`[chatAI] RAG injected ${ragSources.length} chunk(s) for session ${message.id}`);
    }
   }

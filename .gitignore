@@ -29,3 +29,9 @@ dist-ssr
 
 file.txt
 /models
+
+# Uploaded files ingested into LlamaIndex
+/ragStorage
+
+# Uploaded files stored via the localStorage endpoint
+/localStorage

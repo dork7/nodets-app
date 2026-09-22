@@ -26,6 +26,7 @@ const upload = multer({
 const multipartSchema = z.object({
  file: z.any(),
  type: z.string().min(1).describe('Document type/category to tag the file with'),
+ id: z.string().optional().describe('Existing file id to ingest under (e.g. a localStorage/fs-util fileId)'),
 });
 
 llamaIndexRegistry.registerPath({
@@ -66,9 +67,41 @@ export const llamaIndexRouter: Router = (() => {
     );
    }
 
-   const serviceResponse = await llamaIndexService.ingestFile(req.file, type);
+   const id = req.body?.id ? String(req.body.id).trim() || undefined : undefined;
+   const serviceResponse = await llamaIndexService.ingestFile(req.file, type, id);
    handleServiceResponse(serviceResponse, res);
   });
+ });
+
+ llamaIndexRegistry.registerPath({
+  method: 'post',
+  path: '/llamaIndex/ingest/{id}',
+  tags: ['LlamaIndex'],
+  request: {
+   params: z.object({ id: z.string() }),
+   body: {
+    content: {
+     'application/json': {
+      schema: z.object({ type: z.string().min(1).describe('Document type/category to tag the file with') }),
+     },
+    },
+    required: true,
+   },
+  },
+  responses: createApiResponse(LlamaIndexIngestResponseSchema, 'Success'),
+ });
+
+ router.post('/ingest/:id', async (req: Request, res: Response) => {
+  const type = String(req.body?.type ?? '').trim();
+  if (!type) {
+   return handleServiceResponse(
+    new ServiceResponse(ResponseStatus.Failed, 'type is required', null, StatusCodes.BAD_REQUEST),
+    res
+   );
+  }
+
+  const serviceResponse = await llamaIndexService.ingestFileFromStorage(req.params.id, type);
+  handleServiceResponse(serviceResponse, res);
  });
 
  llamaIndexRegistry.registerPath({
@@ -102,6 +135,32 @@ export const llamaIndexRouter: Router = (() => {
   const q = String(req.query.q ?? '');
   const k = Number(req.query.k ?? 3);
   const serviceResponse = await llamaIndexService.extract(q, k);
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ llamaIndexRegistry.registerPath({
+  method: 'delete',
+  path: '/llamaIndex/file/{id}',
+  tags: ['LlamaIndex'],
+  request: { params: z.object({ id: z.string() }) },
+  responses: createApiResponse(z.boolean(), 'Success'),
+ });
+
+ router.delete('/file/:id', async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const serviceResponse = await llamaIndexService.deleteFile(id);
+  handleServiceResponse(serviceResponse, res);
+ });
+
+ llamaIndexRegistry.registerPath({
+  method: 'delete',
+  path: '/llamaIndex',
+  tags: ['LlamaIndex'],
+  responses: createApiResponse(z.boolean(), 'Success'),
+ });
+
+ router.delete('/', async (_req: Request, res: Response) => {
+  const serviceResponse = await llamaIndexService.clear();
   handleServiceResponse(serviceResponse, res);
  });
 

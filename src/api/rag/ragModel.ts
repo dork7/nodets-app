@@ -3,21 +3,21 @@ import { z } from 'zod';
 
 extendZodWithOpenApi(z);
 
-export const RagSourceSchema = z.enum(['json', 'minio', 'csv', 'url']);
+export const RagSourceSchema = z.enum(['json', 'minio', 'localStorage', 'csv', 'url']);
 
 export const IngestSchema = z.object({
  body: z
   .object({
    source: RagSourceSchema,
-   fileId: z.string().optional().describe('MinIO file id (source=minio)'),
+   fileId: z.string().optional().describe('MinIO or local-storage file id (source=minio|localStorage)'),
    bucket: z.string().optional().describe('MinIO bucket (source=minio)'),
    url: z.string().url().optional().describe('Document URL (source=url)'),
    content: z.string().optional().describe('Raw content (source=csv)'),
    provider: z.string().optional().describe('AI provider used for embeddings'),
    force: z.boolean().optional().default(false).describe('Force re-ingest even if already ingested'),
   })
-  .refine((data) => data.source !== 'minio' || Boolean(data.fileId), {
-   message: 'fileId is required when source is minio',
+  .refine((data) => (data.source !== 'minio' && data.source !== 'localStorage') || Boolean(data.fileId), {
+   message: 'fileId is required when source is minio or localStorage',
    path: ['fileId'],
   })
   .refine((data) => data.source !== 'url' || Boolean(data.url), {
