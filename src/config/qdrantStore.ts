@@ -16,3 +16,11 @@ export const getQdrantVectorStore = (): QdrantVectorStore => {
  }
  return vectorStore;
 };
+
+/** Drops the cached client so the next `getQdrantVectorStore()` call builds a fresh
+ * one - needed after the underlying collection is deleted (e.g. `clear`), since the
+ * SDK caches "collection already exists" internally and would otherwise skip
+ * recreating it on the next insert. */
+export const resetQdrantVectorStore = (): void => {
+ vectorStore = null;
+};

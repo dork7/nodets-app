@@ -1,6 +1,7 @@
 import { readFile } from 'fs/promises';
 import path from 'path';
 
+import { localStorageService } from '@/api/localStorage/localStorageService';
 import { extractText } from '@/api/rag/extractText';
 import { MINIO_BUCKET, minioClient } from '@/services/minio';
 
@@ -66,6 +67,27 @@ export const loaders = {
     text,
     source: 'minio',
     meta: { source: 'minio', filename: file.name, bucket: targetBucket },
+   },
+  ];
+ },
+
+ localStorage: async (fileId: string): Promise<LoadedDocument[]> => {
+  const file = await localStorageService.getFileBuffer(fileId);
+  if (!file) {
+   throw new Error(`File ${fileId} not found in local storage`);
+  }
+
+  const text = (await extractText(file.buffer, file.reference.name)).slice(0, MAX_FILE_CHARS);
+  if (!text.trim()) {
+   throw new Error(`No extractable text found in "${file.reference.name}".`);
+  }
+
+  return [
+   {
+    id: fileId,
+    text,
+    source: 'localStorage',
+    meta: { source: 'localStorage', filename: file.reference.name, folder: file.reference.folder },
    },
   ];
  },

@@ -2550,24 +2550,6 @@
          </button>
         </div>
        </div>
-        <div class="rag-files-footer">
-         <button
-          type="button"
-          class="js-rag-ingest-all rag-ingest-all-btn"
-          title="Ingest every uploaded file that is not ingested yet"
-         >
-          Ingest All
-         </button>
-         <button
-          type="button"
-          id="rag-clear-ingestions-btn"
-          class="js-rag-clear-ingestions"
-          title="Remove all ingested data from the vector DB (uploaded files are kept)"
-         >
-          Delete All Ingestions
-         </button>
-        </div>
-       </div>
       </div>
      </div>
      <div id="main-container">
@@ -2708,15 +2690,15 @@
     MODELS_API_URL: `${API_ORIGIN}/chatModels`,
     PROVIDERS_API_URL: `${API_ORIGIN}/v1/aiProviders`,
     HISTORY_API_URL: `${API_ORIGIN}/v1/aiUtils/chat-history`,
-    RAG_FILES_API_URL: `${API_ORIGIN}/v1/minio/files`,
-    RAG_INGEST_API_URL: `${API_ORIGIN}/v1/rag/ingest`,
-    RAG_API_URL: `${API_ORIGIN}/v1/rag`,
-    RAG_BUCKET: 'rag-files',
+    RAG_FILES_API_URL: `${API_ORIGIN}/v1/fs-util/files`,
+    RAG_INGEST_API_URL: `${API_ORIGIN}/v1/llamaIndex/ingest`,
+    RAG_API_URL: `${API_ORIGIN}/v1/llamaIndex`,
+    RAG_FOLDER: 'rag-files',
     TOTAL_TOKEN_USAGE_API_URL: `${API_ORIGIN}/v1/aiUtils/total-token-usage`,
     LOADED_MODELS_API_URL: `${API_ORIGIN}/v1/aiUtils/loaded-models`,
     UNLOAD_MODEL_API_URL: `${API_ORIGIN}/v1/aiUtils/unload-model`,
     TTS_API_URL: `${API_ORIGIN}/v1/aiUtils/text-to-speech`,
-    UPLOAD_API_URL: `${API_ORIGIN}/v1/minio/upload`,
+    UPLOAD_API_URL: `${API_ORIGIN}/v1/fs-util/upload`,
     MAX_FILE_SIZE: 10 * 1024 * 1024,
     MAX_FILES: 6,
     RECONNECT_DELAY: 5000,
@@ -4548,7 +4530,7 @@ elements.messages.innerHTML = '';
       const res = await fetch(CONFIG.RAG_FILES_API_URL);
       const result = await res.json();
       this.files = Array.isArray(result.responseObject)
-       ? result.responseObject.filter((f) => f.bucket === CONFIG.RAG_BUCKET)
+       ? result.responseObject.filter((f) => f.folder === CONFIG.RAG_FOLDER)
        : [];
       this.renderPanel();
       this.renderModal();
@@ -4702,7 +4684,7 @@ elements.messages.innerHTML = '';
 
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('bucket', CONFIG.RAG_BUCKET);
+      formData.append('folder', CONFIG.RAG_FOLDER);
 
       try {
        const res = await fetch(CONFIG.UPLOAD_API_URL, { method: 'POST', body: formData });
@@ -4742,28 +4724,21 @@ elements.messages.innerHTML = '';
      elements.ragFileInput.value = '';
     },
 
-async ingestFile(file, btn) {
-      if (!btn) return;
+    // llamaIndex/ingest/:id ingests straight from fs-util/localStorage by
+    // fileId, so `file.id` (the fs-util fileId) doubles as the LlamaIndex
+    // document id - purge/ingested-flag stay correlated with no re-upload needed.
+    async ingestFile(file, btn) {
+     if (!btn) return;
 
-      try {
-       const res = await fetch(CONFIG.RAG_INGEST_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-         source: 'minio',
-         fileId: file.id,
-         bucket: CONFIG.RAG_BUCKET,
-         provider: state.selectedProvider || undefined,
-         stream: state.ragStreaming,
-        }),
-       });
+     try {
+      const res = await fetch(`${CONFIG.RAG_INGEST_API_URL}/${encodeURIComponent(file.id)}`, {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ type: CONFIG.RAG_FOLDER }),
+      });
       const result = await res.json();
       if (result.success) {
-       messageManager.append(
-        'System',
-        `Ingested "${this.displayName(file)}" (${result.responseObject?.count ?? 0} chunks).`,
-        'system'
-       );
+       messageManager.append('System', `Ingested "${this.displayName(file)}".`, 'system');
        await this.loadFiles();
       } else {
        this.openErrorPopup(`Failed to ingest "${this.displayName(file)}": ${result.message}`);
@@ -4783,11 +4758,7 @@ async ingestFile(file, btn) {
       const res = await fetch(`${CONFIG.RAG_API_URL}/file/${encodeURIComponent(file.id)}`, { method: 'DELETE' });
       const result = await res.json();
       if (result.success) {
-       messageManager.append(
-        'System',
-        `Removed "${this.displayName(file)}" from the vector DB (${result.responseObject?.removed ?? 0} chunks).`,
-        'system'
-       );
+       messageManager.append('System', `Removed "${this.displayName(file)}" from the vector DB.`, 'system');
        await this.loadFiles();
       } else {
        this.openErrorPopup(`Failed to remove "${this.displayName(file)}" from the vector DB: ${result.message}`);
@@ -4819,10 +4790,7 @@ async ingestFile(file, btn) {
       await fetch(`${CONFIG.RAG_API_URL}/file/${encodeURIComponent(file.id)}`, { method: 'DELETE' }).catch(() => {});
 
       const apiBase = CONFIG.RAG_FILES_API_URL.replace(/\/files$/, '');
-      const res = await fetch(
-       `${apiBase}/${encodeURIComponent(file.id)}?bucket=${encodeURIComponent(CONFIG.RAG_BUCKET)}`,
-       { method: 'DELETE' }
-      );
+      const res = await fetch(`${apiBase}/${encodeURIComponent(file.id)}`, { method: 'DELETE' });
       const result = await res.json();
       if (result.success) {
        messageManager.append('System', `Deleted "${this.displayName(file)}" from RAG knowledge base.`, 'system');
@@ -4853,7 +4821,7 @@ async ingestFile(file, btn) {
 
      try {
       const apiBase = CONFIG.RAG_FILES_API_URL.replace(/\/files$/, '');
-      const res = await fetch(`${apiBase}/all?bucket=${encodeURIComponent(CONFIG.RAG_BUCKET)}`, {
+      const res = await fetch(`${apiBase}/all?folder=${encodeURIComponent(CONFIG.RAG_FOLDER)}`, {
        method: 'DELETE',
       });
       const result = await res.json();
@@ -4930,15 +4898,10 @@ async ingestFile(file, btn) {
      let failed = 0;
      for (const file of pending) {
       try {
-       const res = await fetch(CONFIG.RAG_INGEST_API_URL, {
+       const res = await fetch(`${CONFIG.RAG_INGEST_API_URL}/${encodeURIComponent(file.id)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-         source: 'minio',
-         fileId: file.id,
-         bucket: CONFIG.RAG_BUCKET,
-         provider: state.selectedProvider || undefined,
-        }),
+        body: JSON.stringify({ type: CONFIG.RAG_FOLDER }),
        });
        const result = await res.json();
        if (result.success) {
