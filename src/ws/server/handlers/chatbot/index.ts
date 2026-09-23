@@ -342,13 +342,14 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
   let ragSources: RagChunk[] = [];
   if (message.rag) {
    const extraction = await llamaIndexService.extract(userInput, env.RAG_TOP_K);
-   if (extraction.success && extraction.responseObject?.extractedText.trim()) {
+   if (extraction.success && extraction.responseObject?.extractedText.trim()) 
+    {
     const { extractedText, sources } = extraction.responseObject;
     aiMessages.unshift({
      role: 'system',
      content:
       `Answer the user's question using only the context below. ` +
-      `If the context does not contain the answer, say you don't know. Donot give extra information. \n\nContext:\n${extractedText}`,
+      `If the context does not contain the answer, say you don't know. IF THE VALUE PROVIDED IN THE CONTEXT IS EMPTY OR DOESNOT PROVIDE ENOUGH CONTEXT YOU MUST RETURN I DONT KNOW,\n\nContext:\n${extractedText}`,
     });
     ragSources = sources.map((meta, index) => ({
      id: `${index}`,
