@@ -24,6 +24,7 @@
     "@llamaindex/openai": "^0.4.23",
     "@llamaindex/qdrant": "^0.1.33",
     "@napi-rs/canvas": "^1.0.5",
+    "@receptron/laya": "^0.1.2",
     "@slack/web-api": "^7.8.0",
     "@stomp/stompjs": "^7.2.1",
     "@zodyac/zod-mongoose": "^3.2.0",
