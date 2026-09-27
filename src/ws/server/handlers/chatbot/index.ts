@@ -2,12 +2,14 @@ import { llamaIndexService } from '@/api/llamaIndex/service';
 import { env } from '@/common/utils/envConfig';
 import { callAI } from '@/config/openaiConfig';
 import { executeToolCalls, type ToolCallRequest, toOpenAITools } from '@/config/openaiConfig/tools';
+import { buildRagGuardrailPrompt, DEFAULT_CHAT_PROMPT } from '@/config/prompt';
 import { ChatHistoryModel } from '@/models/chatHistory.model';
 import { logger } from '@/server';
 import { monitorService } from '@/services/monitorService';
 
 import { buildConversationHistory, getSummeriseHistory } from './utils/history';
 import { addAttachmentsToLastMsg, getFileText, getImageDataUrl } from './utils/imageHandler';
+import { isRagAnswerRelated } from './utils/ragUtils';
 import { isRelatedConversation } from './utils/relationCheck';
 import { saveTokenUsage, TokenUsage } from './utils/tokenUsage';
 
@@ -67,7 +69,6 @@ interface AIResponse {
 }
 
 // ===== Constants =====
-const DEFAULT_PROMPT = 'Hello, AI!';
 const activeAIRequests = new Map<string, AbortController>();
 
 // ===== Helper Functions =====
@@ -291,7 +292,7 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
  const requestStartTime = Date.now();
 
  // Hoisted so the monitor logging in catch/finally can see them.
- const userInput = message.params?.prompt || DEFAULT_PROMPT;
+ const userInput = message.params?.prompt || DEFAULT_CHAT_PROMPT;
  const globalModels = (global as { aiModels?: string[] })?.aiModels;
  const aiModel = message?.model || globalModels?.[0] || 'default';
  const provider = message?.provider || 'localAI';
@@ -342,22 +343,25 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
   let ragSources: RagChunk[] = [];
   if (message.rag) {
    const extraction = await llamaIndexService.extract(userInput, env.RAG_TOP_K);
-   if (extraction.success && extraction.responseObject?.extractedText.trim()) 
+   if (extraction.success && extraction.responseObject?.extractedText.trim())
     {
     const { extractedText, sources } = extraction.responseObject;
-    aiMessages.unshift({
-     role: 'system',
-     content:
-      `Answer the user's question using only the context below. ` +
-      `If the context does not contain the answer, say you don't know. IF THE VALUE PROVIDED IN THE CONTEXT IS EMPTY OR DOESNOT PROVIDE ENOUGH CONTEXT YOU MUST RETURN I DONT KNOW,\n\nContext:\n${extractedText}`,
-    });
-    ragSources = sources.map((meta, index) => ({
-     id: `${index}`,
-     text: extractedText,
-     score: 0,
-     source: typeof meta.filename === 'string' ? meta.filename : undefined,
-    }));
-    logger.info(`[chatAI] RAG injected ${ragSources.length} chunk(s) for session ${message.id}`);
+    const isRelevant = await isRagAnswerRelated(userInput, extractedText);
+    if (isRelevant) {
+     aiMessages.unshift({
+      role: 'system',
+      content: buildRagGuardrailPrompt(extractedText),
+     });
+     ragSources = sources.map((meta, index) => ({
+      id: `${index}`,
+      text: extractedText,
+      score: 0,
+      source: typeof meta.filename === 'string' ? meta.filename : undefined,
+     }));
+     logger.info(`[chatAI] RAG injected ${ragSources.length} chunk(s) for session ${message.id}`);
+    } else {
+     logger.info(`[chatAI] RAG context discarded as unrelated to query for session ${message.id}`);
+    }
    }
   }
 

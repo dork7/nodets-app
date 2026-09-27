@@ -14,21 +14,33 @@ const TEXT_EXTENSIONS = new Set([
  'csv',
  'tsv',
  'json',
+ 'jsonl',
+ 'ndjson',
  'log',
  'html',
  'htm',
  'xml',
+ 'xhtml',
+ 'svg',
  'yaml',
  'yml',
+ 'toml',
  'ini',
+ 'cfg',
+ 'conf',
+ 'properties',
+ 'env',
  'js',
  'jsx',
  'ts',
  'tsx',
  'mjs',
  'cjs',
+ 'vue',
  'py',
  'java',
+ 'kt',
+ 'scala',
  'c',
  'cc',
  'cpp',
@@ -39,11 +51,17 @@ const TEXT_EXTENSIONS = new Set([
  'rb',
  'php',
  'rs',
+ 'swift',
  'sh',
+ 'bash',
+ 'zsh',
  'sql',
+ 'graphql',
+ 'gql',
 ]);
 
-const SUPPORTED_HINT = 'Supported types: PDF, Word (.docx), and plain text (txt, md, csv, json, code files).';
+const SUPPORTED_HINT =
+ 'Supported types: PDF, Word (.docx), and plain text (txt, md, csv, json, jsonl, xml, yaml, config, and code files).';
 
 export class UnsupportedFileTypeError extends Error {
  constructor(filename: string) {

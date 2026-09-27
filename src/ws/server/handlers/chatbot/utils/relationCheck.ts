@@ -1,20 +1,14 @@
 import { env } from 'process';
 
 import { callAI, openai } from '@/config/openaiConfig';
+import { buildRelationCheckPrompt } from '@/config/prompt';
 
 export async function isRelatedConversation(
  previousMessage: string,
  currentMessage: string,
  model: string // actually use it
 ): Promise<boolean> {
- const prompt = [
-  'You classify whether a NEW message relates to the PRIOR conversation.',
-  'Respond with ONLY "yes" or "no". No explanation.',
-  '',
-  `<prior>${previousMessage}</prior>`,
-  `<new>${currentMessage}</new>`,
-  'Related?',
- ].join('\n');
+ const prompt = buildRelationCheckPrompt(previousMessage, currentMessage);
 
  try {
   const model = env.LOCALAI_RELEVANCE_MODEL as string;
