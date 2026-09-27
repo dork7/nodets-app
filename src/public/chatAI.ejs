@@ -2232,6 +2232,43 @@
      box-shadow: 0 0 0 1px var(--accent);
     }
 
+    .rag-user-id-container {
+     display: flex;
+     align-items: center;
+    }
+
+    .rag-user-id-label {
+     display: flex;
+     align-items: center;
+     gap: 6px;
+     font-size: 0.76em;
+     color: var(--fg-muted);
+     text-transform: uppercase;
+     letter-spacing: 0.06em;
+     user-select: none;
+    }
+
+    .rag-user-id-input {
+     width: 110px;
+     padding: 3px 6px;
+     font-size: 0.9em;
+     color: var(--fg);
+     background: var(--bg-deep);
+     border: 1px solid var(--border);
+     border-radius: 5px;
+    }
+
+    .rag-user-id-input:focus-visible {
+     outline: none;
+     border-color: var(--accent);
+     box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .rag-user-id-input.is-invalid {
+     border-color: #e5484d;
+     box-shadow: 0 0 0 1px #e5484d;
+    }
+
     .rag-sources-section {
      margin-top: 8px;
      padding-top: 6px;
@@ -2615,6 +2652,12 @@
                 <input type="number" id="rag-distance" class="rag-distance-input" min="0" step="0.05" placeholder="off" />
             </label>
         </div>
+        <div class="rag-user-id-container" id="rag-user-id-container">
+            <label class="rag-user-id-label" for="rag-user-id-input">
+                <span>User ID</span>
+                <input type="text" id="rag-user-id-input" class="rag-user-id-input" placeholder="required for RAG" autocomplete="off" />
+            </label>
+        </div>
      </div>
          <button id="send" type="submit">Send</button>
        <button id="stop-stream" type="button" disabled>Stop</button>
@@ -2733,6 +2776,7 @@ const state = {
     streamingEnabled: localStorage.getItem('chatStreaming') !== 'false',
     ragEnabled: localStorage.getItem('chatRAG') !== 'false',
     ragDistance: localStorage.getItem('chatRAGDistance') || '',
+    ragUserId: localStorage.getItem('chatRagUserId') || '',
     isStreaming: false,
     isConnected: false,
     ragStreaming: localStorage.getItem('chatRagStreaming') !== 'false',
@@ -2768,6 +2812,7 @@ const state = {
     ragLabel: document.getElementById('rag-label'),
     ragDistance: document.getElementById('rag-distance'),
     ragDistanceContainer: document.getElementById('rag-distance-container'),
+    ragUserIdInput: document.getElementById('rag-user-id-input'),
     modelSelector: document.getElementById('model-selector'),
     modelSearchInput: document.getElementById('model-search-input'),
     providerSelector: document.getElementById('provider-selector'),
@@ -3716,6 +3761,14 @@ const ragToggle = {
      localStorage.setItem('chatRAGDistance', state.ragDistance);
     });
    }
+   if (elements.ragUserIdInput) {
+    elements.ragUserIdInput.value = state.ragUserId;
+    elements.ragUserIdInput.addEventListener('input', () => {
+     state.ragUserId = elements.ragUserIdInput.value.trim();
+     localStorage.setItem('chatRagUserId', state.ragUserId);
+     elements.ragUserIdInput.classList.remove('is-invalid');
+    });
+   }
    elements.ragToggle.addEventListener('change', () => {
     state.ragEnabled = elements.ragToggle.checked;
     localStorage.setItem('chatRAG', String(state.ragEnabled));
@@ -3734,6 +3787,23 @@ const ragToggle = {
     if (elements.ragDistanceContainer) {
      elements.ragDistanceContainer.hidden = !elements.ragToggle.checked;
     }
+   },
+
+   // Every RAG-scoped operation (ingesting a file, sending a RAG-enabled chat
+   // message) needs a User ID so documents/queries stay scoped to one user.
+   // Flags the field and returns null when it's empty instead of silently
+   // falling back to some shared/anonymous bucket.
+   requireUserId() {
+    const userId = elements.ragUserIdInput ? elements.ragUserIdInput.value.trim() : '';
+    if (!userId) {
+     if (elements.ragUserIdInput) {
+      elements.ragUserIdInput.classList.add('is-invalid');
+      elements.ragUserIdInput.focus();
+     }
+     messageManager.append('System', 'Please provide a User ID before using RAG.', 'system');
+     return null;
+    }
+    return userId;
    },
   };
 
@@ -3839,6 +3909,14 @@ const ragToggle = {
        return;
       }
 
+      let ragUserId;
+      if (state.ragEnabled) {
+       ragUserId = ragToggle.requireUserId();
+       if (!ragUserId) {
+        return;
+       }
+      }
+
       await uploadManager.waitForUploads();
 
       const uploaded = state.pendingFiles.filter((f) => f.status === 'uploaded');
@@ -3854,6 +3932,7 @@ const ragToggle = {
         method: 'chatAI',
         stream: state.streamingEnabled,
         rag: state.ragEnabled,
+        userId: ragUserId,
         ragDistance:
           state.ragEnabled && state.ragDistance !== '' && !Number.isNaN(Number(state.ragDistance))
             ? Number(state.ragDistance)
@@ -4735,6 +4814,9 @@ elements.messages.innerHTML = '';
     async ingestFile(file, btn) {
      if (!btn) return;
 
+     const userId = ragToggle.requireUserId();
+     if (!userId) return;
+
      const originalText = btn.textContent;
      btn.disabled = true;
      btn.textContent = 'Ingesting...';
@@ -4743,7 +4825,7 @@ elements.messages.innerHTML = '';
       const res = await fetch(`${CONFIG.RAG_INGEST_API_URL}/${encodeURIComponent(file.id)}`, {
        method: 'POST',
        headers: { 'Content-Type': 'application/json' },
-       body: JSON.stringify({ type: CONFIG.RAG_FOLDER }),
+       body: JSON.stringify({ type: CONFIG.RAG_FOLDER, userId }),
       });
       const result = await res.json();
       if (result.success) {
@@ -4905,6 +4987,9 @@ elements.messages.innerHTML = '';
       return;
      }
 
+     const userId = ragToggle.requireUserId();
+     if (!userId) return;
+
      this.setActionButtonsBusy('.js-rag-ingest-all', true, 'Ingesting...');
      let ok = 0;
      let failed = 0;
@@ -4913,7 +4998,7 @@ elements.messages.innerHTML = '';
        const res = await fetch(`${CONFIG.RAG_INGEST_API_URL}/${encodeURIComponent(file.id)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: CONFIG.RAG_FOLDER }),
+        body: JSON.stringify({ type: CONFIG.RAG_FOLDER, userId }),
        });
        const result = await res.json();
        if (result.success) {

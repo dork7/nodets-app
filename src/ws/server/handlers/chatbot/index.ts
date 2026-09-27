@@ -35,6 +35,7 @@ interface WebSocketMessage {
  stream?: boolean | string;
  rag?: boolean;
  ragDistance?: number;
+ userId?: string;
  params?: {
   prompt?: string;
   imageId?: string;
@@ -301,6 +302,21 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
  let monitorError: string | undefined;
 
  try {
+  // RAG retrieval is scoped per user, so a userId is mandatory whenever RAG is
+  // requested - without it there is no way to know whose documents to search.
+  const ragUserId = message.userId?.trim();
+  if (message.rag && !ragUserId) {
+   monitorStatus = 'FAILED';
+   monitorError = 'userId is required when RAG is enabled';
+   sendWebSocketMessage(ws, {
+    sender: 'AI',
+    type: 'stream_error',
+    id: message.id,
+    error: 'Please provide a User ID to use RAG.',
+   });
+   return;
+  }
+
   // Extract and validate input
   const imageIds = message.params?.imageIds || (message.params?.imageId ? [message.params.imageId] : []);
   const fileIds = message.params?.fileIds || [];
@@ -341,8 +357,8 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
   // system message. Injected into `aiMessages` only (never `conversationHistory`) so the
   // context is not persisted to MongoDB and re-injected on later turns. Fails open.
   let ragSources: RagChunk[] = [];
-  if (message.rag) {
-   const extraction = await llamaIndexService.extract(userInput, env.RAG_TOP_K);
+  if (message.rag && ragUserId) {
+   const extraction = await llamaIndexService.extract(userInput, env.RAG_TOP_K, ragUserId);
    if (extraction.success && extraction.responseObject?.extractedText.trim())
     {
     const { extractedText, sources } = extraction.responseObject;
