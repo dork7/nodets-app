@@ -34,4 +34,5 @@ file.txt
 /ragStorage
 
 # Uploaded files stored via the localStorage endpoint
-/localStorage*.traineddata
+/localStorage
+*.traineddata
