@@ -1,7 +1,7 @@
 import { env } from '@/common/utils/envConfig';
 import { callAI, openai } from '@/config/openaiConfig';
 
-import { ChatMessage } from '..';
+import { ChatMessage } from '../..';
 
 export const buildConversationHistory = (
  userInput: string,

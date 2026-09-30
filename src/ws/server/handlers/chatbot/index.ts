@@ -7,11 +7,11 @@ import { ChatHistoryModel } from '@/models/chatHistory.model';
 import { logger } from '@/server';
 import { monitorService } from '@/services/monitorService';
 
-import { buildConversationHistory, getSummeriseHistory } from './utils/history';
-import { addAttachmentsToLastMsg, getFileText, getImageDataUrl } from './utils/imageHandler';
-import { isRagAnswerRelated } from './utils/ragUtils';
-import { isRelatedConversation } from './utils/relationCheck';
-import { saveTokenUsage, TokenUsage } from './utils/tokenUsage';
+import { addAttachmentsToLastMsg, getFileText, getImageDataUrl } from './utils/attachments/imageHandler';
+import { buildConversationHistory, getSummeriseHistory } from './utils/history/conversation';
+import { isRelatedConversation } from './utils/history/relationCheck';
+import { isRagAnswerRelated } from './utils/rag/relevanceCheck';
+import { saveTokenUsage, TokenUsage } from './utils/usage/tokenUsage';
 
 // ===== Types =====
 export interface ChatMessage {
