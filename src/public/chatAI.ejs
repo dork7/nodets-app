@@ -766,52 +766,103 @@
      font-style: italic;
     }
 
-    /* ===== Related Indicator ===== */
-    .related-indicator-section {
-     margin-bottom: 8px;
-     padding-bottom: 8px;
-     border-bottom: 1px dashed var(--border);
-     display: flex;
-     justify-content: flex-end;
+    /* Markdown tables: the wrapper scrolls sideways so wide tables never widen the chat column;
+       the toolbar sits outside it so the copy button stays put while scrolling */
+    .message .md-table-block {
+     margin: 10px 0;
+     border: 1px solid var(--border);
+     border-radius: var(--radius-sm);
+     overflow: hidden;
     }
 
-    .related-indicator {
-     font-size: 0.68em;
-     font-weight: 500;
-     text-transform: uppercase;
-     letter-spacing: 0.08em;
-     transition: all 0.2s ease;
+    .message .md-table-toolbar {
+     display: flex;
+     justify-content: flex-end;
+     padding: 4px 6px;
+     background: var(--bg-inset);
+     border-bottom: 1px solid var(--border);
+    }
+
+    .message .md-table-copy {
      display: inline-flex;
      align-items: center;
      gap: 6px;
+     min-height: 28px;
+     padding: 2px 8px;
+     background: transparent;
+     color: var(--fg-muted);
+     font: inherit;
+     font-size: 0.82em;
+     border: 1px solid var(--border);
+     border-radius: var(--radius-sm);
+     cursor: pointer;
+     transition:
+      color 0.2s,
+      border-color 0.2s,
+      background 0.2s;
     }
 
-    .related-indicator::after {
-     content: '';
-     width: 7px;
-     height: 7px;
-     border-radius: 50%;
-     transition: all 0.3s ease;
-     background-color: transparent;
-     border: 1px solid currentColor;
+    .message .md-table-copy:hover,
+    .message .md-table-copy:focus-visible {
+     color: var(--fg);
+     border-color: var(--border-strong);
+     background: var(--bg-raised);
     }
 
-    .related-indicator.related {
+    .message .md-table-copy.copied {
      color: var(--success);
-    }
-
-    .related-indicator.related::after {
-     background-color: var(--success);
      border-color: var(--success);
     }
 
-    .related-indicator.unrelated {
+    .message .md-table-copy.failed {
      color: var(--danger);
+     border-color: var(--danger);
     }
 
-    .related-indicator.unrelated::after {
-     background-color: var(--danger);
-     border-color: var(--danger);
+    .message .md-table-copy svg {
+     width: 14px;
+     height: 14px;
+     pointer-events: none;
+    }
+
+    .message .md-table-wrap {
+     max-width: 100%;
+     overflow-x: auto;
+    }
+
+    .message .md-table {
+     border-collapse: collapse;
+     min-width: 100%;
+     font-size: 0.92em;
+     line-height: 1.45;
+    }
+
+    .message .md-table th,
+    .message .md-table td {
+     padding: 7px 12px;
+     border-bottom: 1px solid var(--border);
+     text-align: left;
+     vertical-align: top;
+    }
+
+    .message .md-table th + th,
+    .message .md-table td + td {
+     border-inline-start: 1px solid var(--border);
+    }
+
+    .message .md-table th {
+     background: var(--bg-inset);
+     color: var(--fg);
+     font-weight: 600;
+     white-space: nowrap;
+    }
+
+    .message .md-table tbody tr:nth-child(even) {
+     background: var(--bg-raised);
+    }
+
+    .message .md-table tbody tr:last-child td {
+     border-bottom: none;
     }
 
     /* ===== Token Usage ===== */
@@ -2780,7 +2831,6 @@ const state = {
     isStreaming: false,
     isConnected: false,
     ragStreaming: localStorage.getItem('chatRagStreaming') !== 'false',
-    currentIsRelated: false,
     currentRagSources: [],
     combinedContent: '',
     streamStartTime: 0,
@@ -2858,10 +2908,101 @@ const state = {
 
    // ===== Utility Functions =====
    const utils = {
+    // Pipe-table helpers for parseMarkdown. A table is a header row, a separator row
+    // (e.g. `| --- | :---: |`), then body rows; tables inside ``` fences are left alone.
+    splitTableRow(line) {
+     const cells = [];
+     let current = '';
+     const trimmed = line.trim().replace(/^\|/, '').replace(/(?<!\\)\|$/, '');
+     for (let i = 0; i < trimmed.length; i += 1) {
+      const char = trimmed[i];
+      if (char === '\\' && trimmed[i + 1] === '|') {
+       current += '|';
+       i += 1;
+      } else if (char === '|') {
+       cells.push(current.trim());
+       current = '';
+      } else {
+       current += char;
+      }
+     }
+     cells.push(current.trim());
+     return cells;
+    },
+
+    // Plain markup (no listener) because messages are re-rendered via innerHTML while
+    // streaming; clicks are handled by tableCopyManager's delegated listener.
+    tableCopyButtonHtml:
+     '<button type="button" class="md-table-copy" title="Copy table" aria-label="Copy table">' +
+     '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">' +
+     '<rect x="9" y="9" width="10" height="10" rx="2"></rect>' +
+     '<path d="M5 15H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"></path></svg>' +
+     '<span class="md-table-copy-label">Copy</span></button>',
+
+    isTableSeparator(line) {
+     return line.includes('-') && /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/.test(line);
+    },
+
+    renderTables(text) {
+     const lines = text.split('\n');
+     const output = [];
+     let inFence = false;
+
+     for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i];
+      if (line.trim().startsWith('```')) {
+       inFence = !inFence;
+      }
+
+      const next = lines[i + 1];
+      if (inFence || !line.includes('|') || next === undefined || !this.isTableSeparator(next)) {
+       output.push(line);
+       continue;
+      }
+
+      const headers = this.splitTableRow(line);
+      const aligns = this.splitTableRow(next).map((cell) => {
+       const left = cell.startsWith(':');
+       const right = cell.endsWith(':');
+       if (left && right) return 'center';
+       if (right) return 'right';
+       return left ? 'left' : '';
+      });
+      if (aligns.length !== headers.length) {
+       output.push(line);
+       continue;
+      }
+
+      const cell = (tag, content, index) =>
+       `<${tag}${aligns[index] ? ` style="text-align:${aligns[index]}"` : ''}>${content}</${tag}>`;
+
+      const rows = [];
+      i += 2;
+      while (i < lines.length && lines[i].includes('|') && lines[i].trim() !== '') {
+       const values = this.splitTableRow(lines[i]);
+       rows.push(`<tr>${headers.map((_, index) => cell('td', values[index] ?? '', index)).join('')}</tr>`);
+       i += 1;
+      }
+      i -= 1;
+
+      // Emitted as a single line so the later \n -> <br> step doesn't inject breaks into the table.
+      output.push(
+       `<div class="md-table-block"><div class="md-table-toolbar">${this.tableCopyButtonHtml}</div>` +
+        `<div class="md-table-wrap"><table class="md-table"><thead><tr>${headers
+         .map((header, index) => cell('th', header, index))
+         .join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div></div>`
+      );
+     }
+
+     return output.join('\n');
+    },
+
     parseMarkdown(text) {
-     return text
-      .replace(/(?:__|\*\*)(.*?)\1/g, '<strong>$1</strong>')
-      .replace(/(?:_|\*)(.*?)\1/g, '<em>$1</em>')
+     return this.renderTables(text)
+      .replace(/(\*\*|__)(?=\S)(.*?\S)\1/g, '<strong>$2</strong>')
+      .replace(/\*(?=\S)([^*\n]*?\S)\*/g, '<em>$1</em>')
+      // `_` only counts outside words, so snake_case identifiers stay intact
+      .replace(/(^|[^\w])_(?=\S)([^_\n]*?\S)_(?!\w)/g, '$1<em>$2</em>')
       .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
       .replace(/`([^`]+)`/g, '<code>$1</code>')
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
@@ -2921,6 +3062,61 @@ const state = {
      textarea.select();
      document.execCommand('copy');
      textarea.remove();
+    },
+   };
+
+   // ===== Table Copy =====
+   const tableCopyManager = {
+    init() {
+     elements.messages.addEventListener('click', (event) => {
+      const button = event.target.closest('.md-table-copy');
+      if (!button) return;
+      event.stopPropagation();
+      const table = button.closest('.md-table-block')?.querySelector('.md-table');
+      if (table) this.copy(table, button);
+     });
+    },
+
+    // Tab-separated text pastes as columns into spreadsheets; the HTML flavour keeps the
+    // table structure when pasting into documents.
+    toTsv(table) {
+     return Array.from(table.rows)
+      .map((row) =>
+       Array.from(row.cells)
+        .map((cell) => cell.textContent.replace(/\s+/g, ' ').trim())
+        .join('\t')
+      )
+      .join('\n');
+    },
+
+    async copy(table, button) {
+     const tsv = this.toTsv(table);
+     const label = button.querySelector('.md-table-copy-label');
+     try {
+      if (window.ClipboardItem && navigator.clipboard?.write && window.isSecureContext) {
+       await navigator.clipboard.write([
+        new ClipboardItem({
+         'text/plain': new Blob([tsv], { type: 'text/plain' }),
+         'text/html': new Blob([table.outerHTML], { type: 'text/html' }),
+        }),
+       ]);
+      } else {
+       await utils.copyToClipboard(tsv);
+      }
+      this.flash(button, label, 'Copied', 'copied');
+     } catch (error) {
+      console.error('Unable to copy table:', error);
+      this.flash(button, label, 'Failed', 'failed');
+     }
+    },
+
+    flash(button, label, text, className) {
+     button.classList.add(className);
+     if (label) label.textContent = text;
+     setTimeout(() => {
+      button.classList.remove(className);
+      if (label) label.textContent = 'Copy';
+     }, 1200);
     },
    };
 
@@ -3031,23 +3227,13 @@ const state = {
         const newContentDiv = document.createElement('div');
         newContentDiv.className = 'message-content';
         newContentDiv.innerHTML = `<strong>${sender}:</strong> ${utils.parseMarkdown(message)}`;
-        // Remove old content and add new structure
-        const oldContent = lastMsg.childNodes;
-        const indicatorSection = lastMsg.querySelector('.related-indicator-section');
-        Array.from(oldContent).forEach((node) => {
-         if (
-          !node.classList ||
-          (!node.classList.contains('related-indicator-section') && !node.classList.contains('copy-message-btn'))
-         ) {
+        // Remove old content (keeping the copy button) and add the new structure
+        Array.from(lastMsg.childNodes).forEach((node) => {
+         if (!node.classList || !node.classList.contains('copy-message-btn')) {
           node.remove();
          }
         });
-        // Insert content after indicator section (if it exists) or at the beginning
-        if (indicatorSection) {
-         lastMsg.insertBefore(newContentDiv, indicatorSection.nextSibling);
-        } else {
-         lastMsg.appendChild(newContentDiv);
-        }
+        lastMsg.appendChild(newContentDiv);
        }
       } else {
        lastMsg.innerHTML = `<strong>${sender}:</strong> ${utils.parseMarkdown(message)}`;
@@ -3057,47 +3243,6 @@ const state = {
       return lastMsg;
      }
      return null;
-    },
-   };
-
-   // ===== Related Indicator Management =====
-   const indicatorManager = {
-    add(messageElement, isRelated) {
-     if (!messageElement) return;
-
-     let indicatorSection = messageElement.querySelector('.related-indicator-section');
-     if (!indicatorSection) {
-      indicatorSection = document.createElement('div');
-      indicatorSection.className = 'related-indicator-section';
-
-      const indicator = document.createElement('span');
-      indicator.className = 'related-indicator';
-      indicatorSection.appendChild(indicator);
-
-      // Insert at the beginning (top) of the message element
-      const firstChild = messageElement.firstChild;
-      if (firstChild) {
-       messageElement.insertBefore(indicatorSection, firstChild);
-      } else {
-       messageElement.appendChild(indicatorSection);
-      }
-     }
-     this.update(messageElement, isRelated);
-    },
-
-    update(messageElement, isRelated) {
-     const indicator = messageElement?.querySelector('.related-indicator');
-     if (!indicator) return;
-
-     indicator.classList.remove('related', 'unrelated');
-
-     if (isRelated === true) {
-      indicator.classList.add('related');
-      indicator.textContent = 'Related';
-     } else {
-      indicator.classList.add('unrelated');
-      indicator.textContent = 'Unrelated';
-     }
     },
    };
 
@@ -3345,10 +3490,6 @@ const state = {
      const data = JSON.parse(event.data);
      console.log('Message from server:', event.data);
 
-     if (data.isRelated !== undefined) {
-      state.currentIsRelated = data.isRelated;
-     }
-
      if (data.ragSources !== undefined && Array.isArray(data.ragSources) && data.ragSources.length > 0) {
       state.currentRagSources = data.ragSources;
      }
@@ -3359,18 +3500,11 @@ const state = {
 
      if (lastMsg) {
       if (data.sender === 'AI') {
-       const indicator = lastMsg.querySelector('.related-indicator');
-       if (indicator) {
-        indicatorManager.update(lastMsg, state.currentIsRelated);
-       } else {
-        indicatorManager.add(lastMsg, state.currentIsRelated);
-       }
        sourcesManager.add(lastMsg, state.currentRagSources);
       }
      } else {
       const msgElement = messageManager.append(data.sender, displayValue, messageType);
       if (data.sender === 'AI') {
-       indicatorManager.add(msgElement, state.currentIsRelated);
        sourcesManager.add(msgElement, state.currentRagSources);
        // Initialize token usage section for AI messages
        tokenUsageManager.add(msgElement, {});
@@ -5104,6 +5238,7 @@ elements.messages.innerHTML = '';
     ttsManager.init();
     uploadManager.init();
     codePreviewManager.init();
+    tableCopyManager.init();
     historyManager.init();
     historyManager.initConfirmModal();
     modelManager.init();
