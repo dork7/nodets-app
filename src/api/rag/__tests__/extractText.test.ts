@@ -2,6 +2,7 @@ import { createCanvas } from '@napi-rs/canvas';
 import JSZip from 'jszip';
 import mammoth from 'mammoth';
 import { createWorker } from 'tesseract.js';
+import WordExtractor from 'word-extractor';
 
 const mocks = vi.hoisted(() => ({
  env: { OCR_ENABLED: true, OCR_LANGS: 'eng' },
@@ -191,13 +192,12 @@ describe('extractText', () => {
    ['archive.zip', '.zip files are'],
    ['movie.mp4', '.mp4 files are'],
    ['sheet.xlsx', '.xlsx files are'],
-   ['legacy.doc', '.doc files are'],
   ])('throws UnsupportedFileTypeError for %s', async (filename, fragment) => {
    const err = await extractText(Buffer.from('whatever'), filename).catch((e) => e);
    expect(err).toBeInstanceOf(UnsupportedFileTypeError);
    expect(err.name).toBe('UnsupportedFileTypeError');
    expect(err.message).toContain(`Cannot ingest "${filename}": ${fragment} not supported.`);
-   expect(err.message).toContain('Supported types: PDF, Word (.docx)');
+   expect(err.message).toContain('Supported types: PDF, Word (.doc, .docx)');
   });
 
   it('throws UnsupportedFileTypeError for an extensionless binary file', async () => {
@@ -218,7 +218,7 @@ describe('extractText', () => {
    const err = await fresh.extractText(Buffer.from('x'), 'a.zip').catch((e) => e);
    expect(err).toBeInstanceOf(fresh.UnsupportedFileTypeError);
    expect(err.message).not.toContain('images');
-   expect(err.message).toContain('Supported types: PDF, Word (.docx), and plain text');
+   expect(err.message).toContain('Supported types: PDF, Word (.doc, .docx), and plain text');
   });
  });
 
@@ -289,6 +289,84 @@ describe('extractText', () => {
 
   it('propagates mammoth errors for a corrupt .docx', async () => {
    await expect(extractText(Buffer.from('not a zip'), 'broken.docx')).rejects.toThrow();
+  });
+ });
+
+ describe('doc', () => {
+  // Real Word 97-2003 files are OLE compound documents; only those go to word-extractor.
+  const ole = (rest = 'fake .doc bytes') =>
+   Buffer.concat([Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]), Buffer.from(rest)]);
+
+  const fakeDocument = (parts: { body?: string; footnotes?: string; endnotes?: string }) =>
+   ({
+    getBody: () => parts.body ?? '',
+    getFootnotes: () => parts.footnotes ?? '',
+    getEndnotes: () => parts.endnotes ?? '',
+   }) as never;
+
+  it('passes a Word 97-2003 binary to word-extractor and joins body, footnotes and endnotes', async () => {
+   const extract = vi
+    .spyOn(WordExtractor.prototype, 'extract')
+    .mockResolvedValue(fakeDocument({ body: ' Body text \n', footnotes: 'Footnote', endnotes: 'Endnote' }));
+   const buffer = ole();
+
+   const text = await extractText(buffer, 'legacy.DOC');
+
+   expect(extract).toHaveBeenCalledWith(buffer);
+   expect(text).toBe('Body text\n\nFootnote\n\nEndnote');
+  });
+
+  it('skips empty footnotes and endnotes', async () => {
+   vi.spyOn(WordExtractor.prototype, 'extract').mockResolvedValue(fakeDocument({ body: 'Only body' }));
+   await expect(extractText(ole(), 'a.doc')).resolves.toBe('Only body');
+  });
+
+  it('propagates word-extractor errors for a corrupt Word binary', async () => {
+   await expect(extractText(ole('truncated'), 'broken.doc')).rejects.toThrow();
+  });
+
+  it('extracts text from HTML saved as .doc (e.g. a Jira "Export > Word" file)', async () => {
+   const extract = vi.spyOn(WordExtractor.prototype, 'extract');
+   const html = [
+    '\uFEFF<!DOCTYPE html><html><head><title>[#TSE-1] Side panel closes</title>',
+    '<meta content="application/vnd.ms-word"><style>.grid { border-collapse: collapse; }</style></head>',
+    '<body><!-- note --><h3>Side&nbsp;panel closes</h3>',
+    '<table><tr><td><b>Status:</b></td><td>Ready for QA</td></tr></table>',
+    '<p>Steps &amp; result:<br>click &lt;Reports&gt; &#8594; panel closes</p>',
+    '<script>alert(1)</script></body></html>',
+   ].join('');
+
+   const text = await extractText(Buffer.from(html), 'TSE-1.doc');
+
+   expect(extract).not.toHaveBeenCalled();
+   expect(text.split('\n')).toEqual([
+    '[#TSE-1] Side panel closes',
+    'Side panel closes',
+    'Status: Ready for QA',
+    'Steps & result:',
+    'click <Reports> → panel closes',
+   ]);
+  });
+
+  it('reads a .docx that was renamed to .doc', async () => {
+   const docx = await makeDocx(['Renamed docx content']);
+   await expect(extractText(docx, 'renamed.doc')).resolves.toContain('Renamed docx content');
+  });
+
+  it('reads plain text saved as .doc', async () => {
+   await expect(extractText(Buffer.from('just some notes'), 'notes.doc')).resolves.toBe('just some notes');
+  });
+
+  it('rejects RTF saved as .doc with a clear message', async () => {
+   await expect(extractText(Buffer.from('{\\rtf1\\ansi hello}'), 'letter.doc')).rejects.toThrow(
+    'Cannot ingest "letter.doc": it is an RTF document saved as .doc. Re-save it as .docx or PDF.'
+   );
+  });
+
+  it('rejects other binary content as unreadable', async () => {
+   await expect(extractText(Buffer.from([0x00, 0x01, 0x02, 0x03]), 'mystery.doc')).rejects.toThrow(
+    'Cannot ingest "mystery.doc": it is not a readable Word document.'
+   );
   });
  });
 
