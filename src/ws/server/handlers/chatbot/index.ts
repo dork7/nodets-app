@@ -4,9 +4,9 @@ import { monitorService } from '@/services/monitorService';
 
 import { RagChunk, WebSocketMessage } from './types';
 import { addAttachmentsToLastMsg, getFileText, getImageDataUrl } from './utils/attachments/imageHandler';
-import { getChatHistory, getPreviousMessageContent, saveChatHistory } from './utils/history/chatHistory';
+import { getChatHistory, saveChatHistory } from './utils/history/chatHistory';
+import { compactHistory } from './utils/history/compaction';
 import { buildConversationHistory } from './utils/history/conversation';
-import { isRelatedConversation } from './utils/history/relationCheck';
 import { injectRagContext } from './utils/rag/ragContext';
 import { runToolCallingLoop } from './utils/tools/toolCallingLoop';
 import { saveTokenUsage, TokenUsage } from './utils/usage/tokenUsage';
@@ -84,20 +84,16 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
    (file): file is { text: string; name: string } => Boolean(file)
   );
 
-  // Get conversation history
-  const previousHistory = await getChatHistory(message.id);
-
-  // Check if conversation is related to previous context
-  const previousMessageContent = getPreviousMessageContent(previousHistory);
-
-  //   const summeriseHistory:any = await getSummeriseHistory(previousMessageContent);
-
-  const isRelated = await isRelatedConversation(previousMessageContent, userInput, aiModel);
+  // Get conversation history, compacting older turns into a summary once it grows too large
+  const { history: previousHistory, compacted: historyCompacted } = await compactHistory(
+   await getChatHistory(message.id),
+   { provider, model: aiModel, signal: abortController.signal }
+  );
 
   // Build conversation history
-  const conversationHistory = buildConversationHistory(userInput, previousHistory, true);
+  const conversationHistory = buildConversationHistory(userInput, previousHistory);
 
-  // Save updated history (before AI response)
+  // Save updated (and possibly compacted) history before the AI response
   await saveChatHistory(message.id, conversationHistory);
 
   // Build OpenAI messages, attaching the images to the last user message if present
@@ -114,7 +110,7 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
    sender: 'AI',
    type: 'stream_start',
    id: message.id,
-   isRelated,
+   historyCompacted,
    requestStartTime,
    ragSources,
   });
@@ -126,7 +122,6 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
    aiMessages,
    conversationHistory,
    messageId: message.id,
-   isRelated,
    isStreaming,
    abortSignal: abortController.signal,
   });
@@ -142,7 +137,6 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
    sender: 'AI',
    type: abortController.signal.aborted ? 'stream_stopped' : 'stream_end',
    id: message.id,
-   isRelated,
    tokenUsage,
    ragSources,
    requestStartTime,

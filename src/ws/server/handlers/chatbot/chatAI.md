@@ -15,11 +15,12 @@ flowchart TD
     F -- yes --> G[getImageDataUrl: fetch image from MinIO -> base64 data URL]
     F -- no --> H
 
-    G --> H[getChatHistory: load previous history from Redis]
-    H --> I[getPreviousMessageContent: last assistant message]
-    I --> J[isRelatedConversation: check if new prompt relates to previous]
-    J --> K[buildConversationHistory: prepend previous history if related]
-    K --> L[saveChatHistory: persist history to Redis]
+    G --> H[getChatHistory: load previous history from MongoDB]
+    H --> I{history over CHAT_HISTORY_COMPACT_THRESHOLD_CHARS?}
+    I -- yes --> J[compactHistory: summarize older messages into one system message]
+    I -- no --> K
+    J --> K[buildConversationHistory: append the new user message]
+    K --> L[saveChatHistory: persist the compacted history to MongoDB]
     L --> M[send stream_start over WS]
     M --> N[buildAIMessages: attach image to last user message]
     N --> O[callAI: invoke LLM with abort signal]
@@ -64,14 +65,13 @@ flowchart LR
 
     subgraph openai["@/openai"]
         AI[callAI]
-        IRC[isRelatedConversation]
-        GSH[getSummeriseHistory]
+        CH[compactHistory]
     end
 
     HS --> AI
     HNS --> AI
-    H --> IRC
-    H -. commented out .-> GSH
+    H --> CH
+    CH --> AI
 ```
 
 ## Key Functions
@@ -81,7 +81,8 @@ flowchart LR
 | `handler` | Entry point; routes stop/chat requests, orchestrates history, AI call, and token usage. |
 | `handleStreamingResponse` | Consumes `AsyncIterable<AIResponseChunk>`, streams `stream_continue` chunks, captures token usage. |
 | `handleNonStreamingResponse` | Sends a single `stream_continue` with the full response. |
-| `buildConversationHistory` | Prepends previous history when the new prompt is related. |
+| `compactHistory` | Once the stored history exceeds `CHAT_HISTORY_COMPACT_THRESHOLD_CHARS`, summarizes all but the `CHAT_HISTORY_KEEP_RECENT` latest messages into one system message, using the chat's provider/model. Fails open. |
+| `buildConversationHistory` | Appends the new user message to the (compacted) history. |
 | `getImageDataUrl` | Resolves an uploaded image id to a base64 data URL via MinIO. |
 | `saveTokenUsage` | Accumulates per-session token usage in Redis. |
 
@@ -89,7 +90,7 @@ flowchart LR
 
 | Type | When |
 | --- | --- |
-| `stream_start` | Before the AI call begins. |
+| `stream_start` | Before the AI call begins; `historyCompacted` is true when this turn compacted the history. |
 | `stream_continue` | Per response chunk (streaming) or once (non-streaming). |
 | `stream_end` | Successful completion, includes `tokenUsage`. |
 | `stream_stopped` | Request aborted via `stop_stream` or an aborted request. |

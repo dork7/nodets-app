@@ -9,8 +9,7 @@ export const handleNonStreamingResponse = async (
  ws: any,
  aiResponse: AIResponse,
  conversationHistory: ChatMessage[],
- messageId: string,
- isRelated: boolean
+ messageId: string
 ): Promise<{ tokenUsage: TokenUsage; toolCalls: ToolCallRequest[] }> => {
  try {
   const fullResponse = aiResponse.choices[0]?.message;
@@ -40,7 +39,6 @@ export const handleNonStreamingResponse = async (
    type: 'stream_continue',
    aiResponse: fullResponse,
    id: messageId,
-   isRelated,
   });
 
   return {

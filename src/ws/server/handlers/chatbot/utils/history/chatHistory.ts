@@ -20,7 +20,3 @@ export const saveChatHistory = async (userId: string, history: ChatMessage[]): P
   logger.error(`Error saving chat history for user ${userId}: ${error}`);
  }
 };
-
-export const getPreviousMessageContent = (history: ChatMessage[]): string => {
- return history.length > 0 ? history[history.length - 1].content : '';
-};

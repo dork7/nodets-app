@@ -10,7 +10,6 @@ export const handleStreamingResponse = async (
  aiResponse: AsyncIterable<AIResponseChunk>,
  conversationHistory: ChatMessage[],
  messageId: string,
- isRelated: boolean,
  abortSignal: AbortSignal
 ): Promise<{ tokenUsage: TokenUsage; toolCalls: ToolCallRequest[] }> => {
  let responseText = '';
@@ -43,7 +42,6 @@ export const handleStreamingResponse = async (
      sender: 'AI',
      type: 'stream_continue',
      aiResponse: delta,
-     isRelated,
     });
     responseText += content;
    }

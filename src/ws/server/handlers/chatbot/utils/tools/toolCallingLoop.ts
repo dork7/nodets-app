@@ -16,7 +16,6 @@ interface ToolCallingLoopOptions {
  aiMessages: any[];
  conversationHistory: ChatMessage[];
  messageId: string;
- isRelated: boolean;
  isStreaming: boolean;
  abortSignal: AbortSignal;
 }
@@ -28,7 +27,6 @@ export const runToolCallingLoop = async ({
  aiMessages,
  conversationHistory,
  messageId,
- isRelated,
  isStreaming,
  abortSignal,
 }: ToolCallingLoopOptions): Promise<TokenUsage> => {
@@ -55,7 +53,6 @@ export const runToolCallingLoop = async ({
     aiResponse as AsyncIterable<AIResponseChunk>,
     conversationHistory,
     messageId,
-    isRelated,
     abortSignal
    );
    tokenUsage = streamingResult.tokenUsage;
@@ -65,8 +62,7 @@ export const runToolCallingLoop = async ({
     ws,
     aiResponse as AIResponse,
     conversationHistory,
-    messageId,
-    isRelated
+    messageId
    );
    tokenUsage = nonStreamingResult.tokenUsage;
    toolCalls = nonStreamingResult.toolCalls;
