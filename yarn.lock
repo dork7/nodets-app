@@ -478,6 +478,11 @@
     "@types/conventional-commits-parser" "^5.0.0"
     chalk "^5.3.0"
 
+"@discoveryjs/json-ext@^0.6.1":
+  version "0.6.3"
+  resolved "https://registry.npmjs.org/@discoveryjs/json-ext/-/json-ext-0.6.3.tgz"
+  integrity sha512-4B4OijXeVNOPZlYA2oEwWOTkzyltLao+xbotHQeqN++Rv27Y6s818+n2Qkp8q+Fxhn0t/5lA5X1Mxktud8eayQ==
+
 "@esbuild/darwin-arm64@0.19.12":
   version "0.19.12"
   resolved "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.19.12.tgz"
@@ -525,10 +530,22 @@
   resolved "https://registry.npmjs.org/@finom/zod-to-json-schema/-/zod-to-json-schema-3.24.11.tgz"
   integrity sha512-fL656yBPiWebtfGItvtXLWrFNGlF1NcDFS0WdMQXMs9LluVg0CfT5E2oXYp0pidl0vVG53XkW55ysijNkU5/hA==
 
+"@huggingface/inference@^2.8.1":
+  version "2.8.1"
+  resolved "https://registry.npmjs.org/@huggingface/inference/-/inference-2.8.1.tgz"
+  integrity sha512-EfsNtY9OR6JCNaUa5bZu2mrs48iqeTz0Gutwf+fU0Kypx33xFQB4DKMhp8u4Ee6qVbLbNWvTHuWwlppLQl4p4Q==
+  dependencies:
+    "@huggingface/tasks" "^0.12.9"
+
 "@huggingface/jinja@^0.5.1":
   version "0.5.1"
   resolved "https://registry.npmjs.org/@huggingface/jinja/-/jinja-0.5.1.tgz"
   integrity sha512-yUZLld4lrM9iFxHCwFQ7D1HW2MWMwSbeB7WzWqFYDWK+rEb+WldkLdAJxUPOmgICMHZLzZGVcVjFh3w/YGubng==
+
+"@huggingface/tasks@^0.12.9":
+  version "0.12.30"
+  resolved "https://registry.npmjs.org/@huggingface/tasks/-/tasks-0.12.30.tgz"
+  integrity sha512-A1ITdxbEzx9L8wKR8pF7swyrTLxWNDFIGDLUWInxvks2ruQ8PLRBZe8r0EcjC3CDdtlj9jV1V4cgV35K/iy3GQ==
 
 "@huggingface/tokenizers@^0.2.0":
   version "0.2.0"
@@ -683,6 +700,15 @@
     js-tiktoken "^1.0.12"
     pathe "^1.1.2"
 
+"@llamaindex/huggingface@^0.1.33":
+  version "0.1.33"
+  resolved "https://registry.npmjs.org/@llamaindex/huggingface/-/huggingface-0.1.33.tgz"
+  integrity sha512-rRLVquzuDZymp9Nqsn3aRyDJDjNZpU6oWI08mLBVnvE1jU3hplkbd69/+UqO0U5wyIJCL4c+EEF++/3qb5EBvQ==
+  dependencies:
+    "@huggingface/inference" "^2.8.1"
+    "@huggingface/transformers" "^3.5.0"
+    "@llamaindex/openai" "0.4.23"
+
 "@llamaindex/node-parser@2.0.22":
   version "2.0.22"
   resolved "https://registry.npmjs.org/@llamaindex/node-parser/-/node-parser-2.0.22.tgz"
@@ -690,7 +716,7 @@
   dependencies:
     html-to-text "^9.0.5"
 
-"@llamaindex/openai@^0.4.23":
+"@llamaindex/openai@^0.4.23", "@llamaindex/openai@0.4.23":
   version "0.4.23"
   resolved "https://registry.npmjs.org/@llamaindex/openai/-/openai-0.4.23.tgz"
   integrity sha512-c7I3DI6Xu5z7JO+qmJivfu//j5TG0DynfnGCK4HUQ1xGLHHwfROIa2Di6KbxgBAZcPUfiYos0BDYakggctMVHQ==
@@ -704,10 +730,28 @@
   dependencies:
     "@qdrant/js-client-rest" "^1.14.0"
 
+"@llamaindex/readers@^3.1.22":
+  version "3.1.22"
+  resolved "https://registry.npmjs.org/@llamaindex/readers/-/readers-3.1.22.tgz"
+  integrity sha512-MtM2ADbLqet3RSGuDPAoV0KWY+1ph5cGCwWEV8CPoh6Z5Js93Co3b+hBUw0mBCOlD5aU3A4wuxnlh9LWJwPoqQ==
+  dependencies:
+    "@discoveryjs/json-ext" "^0.6.1"
+    "@xmldom/xmldom" "^0.9.8"
+    csv-parse "^5.5.6"
+    mammoth "^1.11.0"
+    unpdf "^0.12.1"
+
 "@llamaindex/workflow-core@^1.3.2":
   version "1.3.3"
   resolved "https://registry.npmjs.org/@llamaindex/workflow-core/-/workflow-core-1.3.3.tgz"
   integrity sha512-WJIcD4K2suGbNkwU5CC70jKKrA5tARba42nMs8Pou1RGzmoxqg+K+b7vyLBmiDtImR8P40YLmkayCIRVQPBmsg==
+
+"@llamaindex/workflow@^1.1.25":
+  version "1.1.25"
+  resolved "https://registry.npmjs.org/@llamaindex/workflow/-/workflow-1.1.25.tgz"
+  integrity sha512-BgKbqFwJLsD66Obfz6OoAhCRItsgVOwqupp6o/JHcftVrWp9EKiRKt2iCfZs1L/J5Z+7mu+hWqxS83HFs9YuRw==
+  dependencies:
+    "@llamaindex/workflow-core" "^1.3.2"
 
 "@llamaindex/workflow@1.1.24":
   version "1.1.24"
@@ -1861,6 +1905,11 @@
   resolved "https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.8.15.tgz"
   integrity sha512-/5NV/vDALVFDXgLmfsy9TRCBlKwO2LNBFzpzvb9iIj+jR+eSc6DLYYvVOdivT/jm7MtU6TebYuRmzEOI7w40UA==
 
+"@xmldom/xmldom@^0.9.8":
+  version "0.9.12"
+  resolved "https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.9.12.tgz"
+  integrity sha512-5AXjrcMClTryPe9LgZrygpB1lj7s0S9E0+W+AHaVKAVyHanafK86iPSvG5xHVSp/jC+VH1UXu0TAEmY279xH7A==
+
 "@zodyac/zod-mongoose@^3.2.0":
   version "3.2.0"
   resolved "https://registry.npmjs.org/@zodyac/zod-mongoose/-/zod-mongoose-3.2.0.tgz"
@@ -2869,6 +2918,11 @@ csstype@^3.1.0:
   version "3.2.3"
   resolved "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz"
   integrity sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==
+
+csv-parse@^5.5.6:
+  version "5.6.0"
+  resolved "https://registry.npmjs.org/csv-parse/-/csv-parse-5.6.0.tgz"
+  integrity sha512-l3nz3euub2QMg5ouu5U09Ew9Wf6/wQ8I++ch1loQ0ljmzhmfZYrH9fflS22i/PQEvsPvxCwxgz5q7UB8K1JO4Q==
 
 dargs@^8.0.0:
   version "8.1.0"
@@ -5593,7 +5647,7 @@ make-fetch-happen@^13.0.0, make-fetch-happen@^13.0.1:
     promise-retry "^2.0.1"
     ssri "^10.0.0"
 
-mammoth@^1.12.1:
+mammoth@^1.11.0, mammoth@^1.12.1:
   version "1.12.1"
   resolved "https://registry.npmjs.org/mammoth/-/mammoth-1.12.1.tgz"
   integrity sha512-nCH9KKjWi3jQ+i8bUKs7k1yrXtSEGpWgF8IYkzsFMcbn+5S6l4bZEBbyx2hOQErFiXPuAs9RPa6qjXVxhyx/8g==
@@ -8748,6 +8802,13 @@ universalify@^2.0.0:
   resolved "https://registry.npmjs.org/universalify/-/universalify-2.0.1.tgz"
   integrity sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==
 
+unpdf@^0.12.1:
+  version "0.12.2"
+  resolved "https://registry.npmjs.org/unpdf/-/unpdf-0.12.2.tgz"
+  integrity sha512-3eyDFfayk+Sf5+inJ4OyhecR2BtRFEeZqUfGPdq2O8aBLau9MYL9lAP+GEcSAaVd2JWqde8Dnz38z0x7KRglaA==
+  optionalDependencies:
+    canvas "^2.11.2"
+
 unpipe@~1.0.0, unpipe@1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/unpipe/-/unpipe-1.0.0.tgz"
@@ -9196,12 +9257,12 @@ zlibjs@^0.3.1:
   resolved "https://registry.npmjs.org/zlibjs/-/zlibjs-0.3.1.tgz"
   integrity sha512-+J9RrgTKOmlxFSDHo0pI1xM6BLVUv+o0ZT9ANtCxGkjIVCCUdx9alUF8Gm+dGLKbkkkidWIHFDZHDMpfITt4+w==
 
-zod@^3.20.2, zod@^3.22.4, zod@^3.23.8, zod@^3.25, "zod@^3.25 || ^4.0":
+zod@^3.20.2, zod@^3.22.4, zod@^3.23.8, zod@^3.25, "zod@^3.25 || ^4.0", "zod@^3.25.0 || ^4.0.0":
   version "3.25.76"
   resolved "https://registry.npmjs.org/zod/-/zod-3.25.76.tgz"
   integrity sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==
 
-"zod@^3.25.0 || ^4.0.0", zod@^4.0.14, zod@^4.1.5:
+zod@^4.0.14, zod@^4.1.5:
   version "4.6.5"
   resolved "https://registry.npmjs.org/zod/-/zod-4.6.5.tgz"
   integrity sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==
