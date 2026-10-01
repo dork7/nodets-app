@@ -17,14 +17,14 @@ Stores user documents as vectors in Qdrant and retrieves them per user. This is 
 
 ## Endpoints
 
-| Method | Path                                | Input                                                           | Success                                                                           |
-| ------ | ----------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| POST   | `/v1/llamaIndex/ingest`             | multipart: `file` (≤10MB), `type`, `userId`, optional `id`      | `{ id, filename, type }`                                                          |
-| POST   | `/v1/llamaIndex/ingest/:id`         | JSON `{ type, userId }`; `:id` = a localStorage/fs-util file id | `{ id, filename, type }`                                                          |
-| GET    | `/v1/llamaIndex/extract?q&k&userId` | `q` required; `k` 1–20 (default 3); `userId` required           | `{ extractedText, sources }`: raw chunks joined by `\n`, no LLM                   |
-| GET    | `/v1/llamaIndex/query?q&k&userId`   | same                                                            | `{ extractedText, sources }`: an **LLM-written answer** from the retrieved chunks |
-| DELETE | `/v1/llamaIndex/file/:id`           | —                                                               | `true`                                                                            |
-| DELETE | `/v1/llamaIndex`                    | —                                                               | `true` (drops the whole collection)                                               |
+| Method | Path                                         | Input                                                                                                                      | Success                                                                                                                   |
+| ------ | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/v1/llamaIndex/ingest`                      | multipart: `file` (≤10MB), `type`, `userId`, optional `id`                                                                 | `{ id, filename, type }`                                                                                                  |
+| POST   | `/v1/llamaIndex/ingest/:id`                  | JSON `{ type, userId }`; `:id` = a localStorage/fs-util file id                                                            | `{ id, filename, type }`                                                                                                  |
+| GET    | `/v1/llamaIndex/extract?q&k&userId&minScore` | `q` required; `k` 1–20 (default 3); `userId` required; optional `minScore` 0–1 drops chunks with a lower cosine similarity | `{ extractedText, sources, chunks }`: raw chunks joined by `\n`, plus each chunk's `text`, `score` and `metadata`; no LLM |
+| GET    | `/v1/llamaIndex/query?q&k&userId&minScore`   | same                                                                                                                       | `{ extractedText, sources }`: an **LLM-written answer** from the retrieved chunks                                         |
+| DELETE | `/v1/llamaIndex/file/:id`                    | —                                                                                                                          | `true`                                                                                                                    |
+| DELETE | `/v1/llamaIndex`                             | —                                                                                                                          | `true` (drops the whole collection)                                                                                       |
 
 ## How ingest works (`indexBuffer`, `service.ts:70`)
 

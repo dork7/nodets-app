@@ -40,7 +40,7 @@ This is the main chat experience. The `GET /chatAI` page (`src/public/chatAI.ejs
  "stream": true,
  "rag": false,
  "userId": "<required when rag is true>",
- "ragDistance": 0.5,
+ "ragMinScore": 0.7,
  "params": {
   "prompt": "…",
   "imageIds": ["<fileId>"],
@@ -70,7 +70,7 @@ To stop a response in progress, send `{ "type": "stop_stream", "id": "<sessionId
 4. **Attachments:** resolve `imageIds` to base64 data URLs, and `fileIds` to text through `extractText` (first 50,000 characters), both **from MinIO**.
 5. **History:** load the Mongo history for `id`. If it is larger than `CHAT_HISTORY_COMPACT_THRESHOLD_CHARS`, summarize all but the `CHAT_HISTORY_KEEP_RECENT` latest messages into one system message, using the chat's own provider and model. Then append the user message and save. If summarizing fails, the full history is kept.
 6. **RAG:** when enabled:
-   - Call `llamaIndexService.extract(prompt, RAG_TOP_K, userId)`.
+   - Call `llamaIndexService.extract(prompt, RAG_TOP_K, userId, ragMinScore)`. When `ragMinScore` (0–1, the "Min score" box in the UI) is set, chunks whose cosine similarity is below it are dropped. Out-of-range values are ignored.
    - If text came back and the relevance check says "yes", add `buildRagGuardrailPrompt(text)` to the front as a system message. It goes into the model messages only, not the saved history.
 7. **Model call:** send `stream_start`, then loop up to 5 times: `callAI`, then handle the streaming or non-streaming response. If the model asked for tools, run them, append the results and call again.
 8. **Finish:** add up token usage in Redis, send `stream_end` (or `stream_stopped`), save the history, and log to the monitor (skipped if aborted).
@@ -103,8 +103,6 @@ To stop a response in progress, send `{ "type": "stop_stream", "id": "<sessionId
 - **Compaction is size-based, not token-based.** The threshold counts characters, and attachments are not part of the stored history, so a turn with large attachments can still exceed the model's context.
 - **History is keyed by the session `id`, not by user**, and expires 1 hour after the last update (TTL index).
 - **Tool calling never triggers**, because `callAI` overrides `tools` with `[]` (see [ai-providers.md](ai-providers.md)).
-- **`ragDistance` is accepted but never used.**
-- **`ragSources` repeat the full text.** Every source carries the whole concatenated text and `score: 0`; the real scores are thrown away.
 - **Streamed `stream_continue` messages have no `id`**, so a client can't match chunks to requests.
 - **Wrong `env` import.** `relevanceCheck.ts` imports `env` from Node's `'process'` rather than `envConfig`, so `LOCALAI_RELEVANCE_MODEL` has no default. `.env.template` doesn't set it, so with a template-based `.env` the model is `undefined`, the RAG relevance check errors on every turn and fails open.
 - **OCR on attachments** runs synchronously inside the turn (see [text-extraction.md](text-extraction.md)).

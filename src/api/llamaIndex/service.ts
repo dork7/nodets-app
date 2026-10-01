@@ -2,7 +2,7 @@ import '@/config/llamaConfig';
 
 import fs from 'fs/promises';
 import { StatusCodes } from 'http-status-codes';
-import { Document, Metadata, MetadataMode, VectorStoreIndex } from 'llamaindex';
+import { Document, Metadata, MetadataMode, NodeWithScore, SimilarityPostprocessor, VectorStoreIndex } from 'llamaindex';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -20,7 +20,9 @@ const RAG_STORAGE_DIR = path.join(process.cwd(), 'ragStorage');
 
 class NoExtractableTextError extends Error {}
 
-export type LlamaIndexQueryResult = { extractedText: string; sources: Metadata[] };
+export type RetrievedChunk = { text: string; score: number | null; metadata: Metadata };
+
+export type LlamaIndexQueryResult = { extractedText: string; sources: Metadata[]; chunks: RetrievedChunk[] };
 
 // Lazily built vector index backed by Qdrant: the same index instance is reused
 // (and grown via `insert`) across requests, with vectors persisted in Qdrant
@@ -55,6 +57,18 @@ const ensurePayloadIndex = async (fieldName: string): Promise<void> => {
   logger.warn(`Failed to ensure ${fieldName} payload index: ${(ex as Error).message}`);
  }
 };
+
+// Drops retrieved chunks whose cosine similarity (Qdrant score, higher = closer) is
+// below `minScore`; returns undefined when no cutoff was requested.
+const similarityCutoff = (minScore?: number) =>
+ minScore === undefined ? undefined : new SimilarityPostprocessor({ similarityCutoff: minScore });
+
+const toChunks = (nodes: NodeWithScore[]): RetrievedChunk[] =>
+ nodes.map((node) => ({
+  text: node.node.getContent(MetadataMode.NONE),
+  score: typeof node.score === 'number' ? node.score : null,
+  metadata: node.node.metadata,
+ }));
 
 // A retriever/query-engine filter scoping results to documents ingested under
 // the given `userId`, so one user's chat can never retrieve another user's
@@ -166,11 +180,18 @@ export const llamaIndexService = {
 
  // Asks the LLM to synthesize an answer from the retrieved chunks, instead of
  // just returning their raw concatenated text (see `extract` for that).
- query: async (query: string, topK: number, userId: string): Promise<ServiceResponse<LlamaIndexQueryResult | null>> => {
+ query: async (
+  query: string,
+  topK: number,
+  userId: string,
+  minScore?: number
+ ): Promise<ServiceResponse<LlamaIndexQueryResult | null>> => {
   try {
    const index = await getIndex();
+   const cutoff = similarityCutoff(minScore);
    const queryEngine = index.asQueryEngine({
     retriever: index.asRetriever({ similarityTopK: topK, filters: userFilter(userId) }),
+    ...(cutoff ? { nodePostprocessors: [cutoff] } : {}),
    });
    const response = await queryEngine.query({ query });
 
@@ -180,6 +201,7 @@ export const llamaIndexService = {
     {
      extractedText: response.toString(),
      sources: (response.sourceNodes ?? []).map((node) => node.node.metadata),
+     chunks: toChunks(response.sourceNodes ?? []),
     },
     StatusCodes.OK
    );
@@ -191,18 +213,27 @@ export const llamaIndexService = {
  },
 
  // Raw retrieval: returns the retrieved chunks' concatenated text, with no LLM call.
- extract: async (query: string, topK: number, userId: string): Promise<ServiceResponse<LlamaIndexQueryResult | null>> => {
+ extract: async (
+  query: string,
+  topK: number,
+  userId: string,
+  minScore?: number
+ ): Promise<ServiceResponse<LlamaIndexQueryResult | null>> => {
   try {
    const index = await getIndex();
    const retriever = index.asRetriever({ similarityTopK: topK, filters: userFilter(userId) });
-   const response = await retriever.retrieve(query);
+   const retrieved = await retriever.retrieve(query);
+   const cutoff = similarityCutoff(minScore);
+   const nodes = cutoff ? await cutoff.postprocessNodes(retrieved) : retrieved;
+   const chunks = toChunks(nodes);
 
    return new ServiceResponse<LlamaIndexQueryResult>(
     ResponseStatus.Success,
     'Query executed successfully',
     {
-     extractedText: response.map((node) => node.node.getContent(MetadataMode.NONE)).join('\n') ?? '',
-     sources: response.map((node) => node.node.metadata) ?? [],
+     extractedText: chunks.map((chunk) => chunk.text).join('\n'),
+     sources: chunks.map((chunk) => chunk.metadata),
+     chunks,
     },
     StatusCodes.OK
    );

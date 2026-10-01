@@ -102,7 +102,7 @@ export const chatbotHandler = async (ws: any, message: WebSocketMessage): Promis
   // RAG: when enabled, inject retrieved context as a system message.
   let ragSources: RagChunk[] = [];
   if (message.rag && ragUserId) {
-   ragSources = await injectRagContext(aiMessages, userInput, ragUserId, message.id);
+   ragSources = await injectRagContext(aiMessages, userInput, ragUserId, message.id, message.ragMinScore);
   }
 
   // Send stream start notification

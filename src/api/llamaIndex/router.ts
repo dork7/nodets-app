@@ -138,7 +138,8 @@ export const llamaIndexRouter: Router = (() => {
   const q = String(req.query.q ?? '');
   const k = Number(req.query.k ?? 3);
   const userId = String(req.query.userId ?? '');
-  const serviceResponse = await llamaIndexService.query(q, k, userId);
+  const minScore = req.query.minScore === undefined ? undefined : Number(req.query.minScore);
+  const serviceResponse = await llamaIndexService.query(q, k, userId, minScore);
   handleServiceResponse(serviceResponse, res);
  });
 
@@ -156,7 +157,8 @@ export const llamaIndexRouter: Router = (() => {
   const q = String(req.query.q ?? '');
   const k = Number(req.query.k ?? 3);
   const userId = String(req.query.userId ?? '');
-  const serviceResponse = await llamaIndexService.extract(q, k, userId);
+  const minScore = req.query.minScore === undefined ? undefined : Number(req.query.minScore);
+  const serviceResponse = await llamaIndexService.extract(q, k, userId, minScore);
   handleServiceResponse(serviceResponse, res);
  });
 

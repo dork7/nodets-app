@@ -8,7 +8,7 @@ export interface ChatMessage {
 export interface RagChunk {
  id: string;
  text: string;
- score: number;
+ score: number | null;
  source?: string;
 }
 
@@ -20,7 +20,8 @@ export interface WebSocketMessage {
  provider?: string;
  stream?: boolean | string;
  rag?: boolean;
- ragDistance?: number;
+ /** Minimum cosine similarity (0-1) a retrieved RAG chunk needs to be used; omit for no cutoff. */
+ ragMinScore?: number;
  userId?: string;
  params?: {
   prompt?: string;

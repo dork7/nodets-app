@@ -13,14 +13,20 @@ export const injectRagContext = async (
  aiMessages: any[],
  userInput: string,
  ragUserId: string,
- sessionId: string
+ sessionId: string,
+ minScore?: number
 ): Promise<RagChunk[]> => {
- const extraction = await llamaIndexService.extract(userInput, env.RAG_TOP_K, ragUserId);
+ // Ignore out-of-range values from the client rather than failing the turn.
+ const cutoff = typeof minScore === 'number' && minScore >= 0 && minScore <= 1 ? minScore : undefined;
+ const extraction = await llamaIndexService.extract(userInput, env.RAG_TOP_K, ragUserId, cutoff);
  if (!extraction.success || !extraction.responseObject?.extractedText.trim()) {
+  if (extraction.success && cutoff !== undefined) {
+   logger.info(`[chatAI] No RAG chunk scored >= ${cutoff} for session ${sessionId}`);
+  }
   return [];
  }
 
- const { extractedText, sources } = extraction.responseObject;
+ const { extractedText, chunks } = extraction.responseObject;
  const isRelevant = await isRagAnswerRelated(userInput, extractedText);
  if (!isRelevant) {
   logger.info(`[chatAI] RAG context discarded as unrelated to query for session ${sessionId}`);
@@ -31,11 +37,11 @@ export const injectRagContext = async (
   role: 'system',
   content: buildRagGuardrailPrompt(extractedText),
  });
- const ragSources: RagChunk[] = sources.map((meta, index) => ({
+ const ragSources: RagChunk[] = chunks.map((chunk, index) => ({
   id: `${index}`,
-  text: extractedText,
-  score: 0,
-  source: typeof meta.filename === 'string' ? meta.filename : undefined,
+  text: chunk.text,
+  score: chunk.score,
+  source: typeof chunk.metadata.filename === 'string' ? chunk.metadata.filename : undefined,
  }));
  logger.info(`[chatAI] RAG injected ${ragSources.length} chunk(s) for session ${sessionId}`);
  return ragSources;

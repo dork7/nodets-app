@@ -2247,16 +2247,16 @@
      box-shadow: 0 0 0 1px var(--accent);
     }
 
-    .rag-distance-container {
+    .rag-min-score-container {
      display: flex;
      align-items: center;
     }
 
-    .rag-distance-container[hidden] {
+    .rag-min-score-container[hidden] {
      display: none;
     }
 
-    .rag-distance-label {
+    .rag-min-score-label {
      display: flex;
      align-items: center;
      gap: 6px;
@@ -2267,7 +2267,7 @@
      user-select: none;
     }
 
-    .rag-distance-input {
+    .rag-min-score-input {
      width: 56px;
      padding: 3px 6px;
      font-size: 0.9em;
@@ -2277,7 +2277,7 @@
      border-radius: 5px;
     }
 
-    .rag-distance-input:focus-visible {
+    .rag-min-score-input:focus-visible {
      outline: none;
      border-color: var(--accent);
      box-shadow: 0 0 0 1px var(--accent);
@@ -2697,10 +2697,10 @@
                 </span>
             </label>
         </div>
-        <div class="rag-distance-container" id="rag-distance-container" hidden>
-            <label class="rag-distance-label">
-                <span>Max dist</span>
-                <input type="number" id="rag-distance" class="rag-distance-input" min="0" step="0.05" placeholder="off" />
+        <div class="rag-min-score-container" id="rag-min-score-container" hidden>
+            <label class="rag-min-score-label">
+                <span>Min score</span>
+                <input type="number" id="rag-min-score" class="rag-min-score-input" min="0" max="1" step="0.05" placeholder="off" title="Only use document chunks whose similarity to your question is at least this (0-1). Leave empty for no cutoff." />
             </label>
         </div>
         <div class="rag-user-id-container" id="rag-user-id-container">
@@ -2826,7 +2826,7 @@ const state = {
     defaultModel: localStorage.getItem('chatDefaultModel') || '',
     streamingEnabled: localStorage.getItem('chatStreaming') !== 'false',
     ragEnabled: localStorage.getItem('chatRAG') !== 'false',
-    ragDistance: localStorage.getItem('chatRAGDistance') || '',
+    ragMinScore: localStorage.getItem('chatRAGMinScore') || '',
     ragUserId: localStorage.getItem('chatRagUserId') || '',
     isStreaming: false,
     isConnected: false,
@@ -2860,8 +2860,8 @@ const state = {
     streamingLabel: document.getElementById('streaming-label'),
     ragToggle: document.getElementById('rag-toggle'),
     ragLabel: document.getElementById('rag-label'),
-    ragDistance: document.getElementById('rag-distance'),
-    ragDistanceContainer: document.getElementById('rag-distance-container'),
+    ragMinScore: document.getElementById('rag-min-score'),
+    ragMinScoreContainer: document.getElementById('rag-min-score-container'),
     ragUserIdInput: document.getElementById('rag-user-id-input'),
     modelSelector: document.getElementById('model-selector'),
     modelSearchInput: document.getElementById('model-search-input'),
@@ -3888,11 +3888,11 @@ updateLabel() {
 const ragToggle = {
   init() {
    elements.ragToggle.checked = state.ragEnabled;
-   if (elements.ragDistance) {
-    elements.ragDistance.value = state.ragDistance;
-    elements.ragDistance.addEventListener('input', () => {
-     state.ragDistance = elements.ragDistance.value.trim();
-     localStorage.setItem('chatRAGDistance', state.ragDistance);
+   if (elements.ragMinScore) {
+    elements.ragMinScore.value = state.ragMinScore;
+    elements.ragMinScore.addEventListener('input', () => {
+     state.ragMinScore = elements.ragMinScore.value.trim();
+     localStorage.setItem('chatRAGMinScore', state.ragMinScore);
     });
    }
    if (elements.ragUserIdInput) {
@@ -3907,19 +3907,19 @@ const ragToggle = {
     state.ragEnabled = elements.ragToggle.checked;
     localStorage.setItem('chatRAG', String(state.ragEnabled));
     this.updateLabel();
-    this.updateDistanceVisibility();
+    this.updateMinScoreVisibility();
    });
    this.updateLabel();
-   this.updateDistanceVisibility();
+   this.updateMinScoreVisibility();
   },
 
    updateLabel() {
     elements.ragLabel.textContent = elements.ragToggle.checked ? 'RAG Query' : 'RAG';
    },
 
-   updateDistanceVisibility() {
-    if (elements.ragDistanceContainer) {
-     elements.ragDistanceContainer.hidden = !elements.ragToggle.checked;
+   updateMinScoreVisibility() {
+    if (elements.ragMinScoreContainer) {
+     elements.ragMinScoreContainer.hidden = !elements.ragToggle.checked;
     }
    },
 
@@ -3927,6 +3927,13 @@ const ragToggle = {
    // message) needs a User ID so documents/queries stay scoped to one user.
    // Flags the field and returns null when it's empty instead of silently
    // falling back to some shared/anonymous bucket.
+   // The cutoff to send, or undefined when empty or outside 0-1 (no cutoff).
+   getMinScore() {
+    if (state.ragMinScore === '') return undefined;
+    const value = Number(state.ragMinScore);
+    return Number.isFinite(value) && value >= 0 && value <= 1 ? value : undefined;
+   },
+
    requireUserId() {
     const userId = elements.ragUserIdInput ? elements.ragUserIdInput.value.trim() : '';
     if (!userId) {
@@ -4067,10 +4074,7 @@ const ragToggle = {
         stream: state.streamingEnabled,
         rag: state.ragEnabled,
         userId: ragUserId,
-        ragDistance:
-          state.ragEnabled && state.ragDistance !== '' && !Number.isNaN(Number(state.ragDistance))
-            ? Number(state.ragDistance)
-            : undefined,
+        ragMinScore: state.ragEnabled ? ragToggle.getMinScore() : undefined,
         model: state.selectedModel,
         provider: state.selectedProvider,
         params: {
