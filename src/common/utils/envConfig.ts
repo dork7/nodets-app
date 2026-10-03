@@ -87,6 +87,18 @@ export const env = cleanEnv(process.env, {
  RAG_COLLECTION_NAME: str({ default: 'knowledge_base2', desc: 'ChromaDB collection used by the RAG system' }),
  RAG_ENABLED: bool({ default: false, desc: 'Master switch for RAG retrieval in chat' }),
  RAG_TOP_K: num({ default: 3, desc: 'Number of chunks retrieved per query' }),
+ OCR_ENABLED: bool({ default: true, desc: 'OCR images and scanned (image-only) PDFs during RAG ingestion' }),
+ OCR_LANGS: str({ default: 'eng', desc: 'Tesseract language codes joined with "+", e.g. "eng+ara"' }),
+
+ // Chat history compaction
+ CHAT_HISTORY_COMPACT_THRESHOLD_CHARS: num({
+  default: 12000,
+  desc: 'Stored chat history larger than this (total characters) is summarized before the next turn',
+ }),
+ CHAT_HISTORY_KEEP_RECENT: num({
+  default: 6,
+  desc: 'Number of most recent chat messages kept verbatim when the history is compacted',
+ }),
 
  // Qdrant / LlamaIndex
  QDRANT_URL: url({ default: 'http://localhost:6333', desc: 'Base URL for the Qdrant vector store' }),

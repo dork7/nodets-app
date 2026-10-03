@@ -2,7 +2,7 @@ import { extractText } from '@/api/rag/extractText';
 import { logger } from '@/server';
 import { MINIO_BUCKET, minioClient } from '@/services/minio';
 
-import { ChatMessage } from '..';
+import { ChatMessage } from '../../types';
 
 const MAX_FILE_CHARS = 50000;
 

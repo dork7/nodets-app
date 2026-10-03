@@ -35,3 +35,4 @@ file.txt
 
 # Uploaded files stored via the localStorage endpoint
 /localStorage
+*.traineddata

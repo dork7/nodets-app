@@ -5,6 +5,7 @@ import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse
 import { env } from '@/common/utils/envConfig';
 import { openai } from '@/config/openaiConfig';
 import { openRouterAIInstance } from '@/config/openaiConfig/providers/openRouterAI';
+import { buildTopicSuggestionPrompt } from '@/config/prompt';
 import { logger } from '@/server';
 
 import { Course, DerivedStats, Goal, LogEntry, Topic, TopicSuggestion } from './goalsModel';
@@ -183,12 +184,7 @@ export const goalsService = {
     return new ServiceResponse(ResponseStatus.Failed, 'Goal not found', null, StatusCodes.NOT_FOUND);
    }
 
-   const prompt = [
-    `List ${count} key subtopics someone should learn to achieve this learning goal: "${goal.title}".`,
-    'Order them roughly from beginner to advanced.',
-    'Respond with ONLY a JSON array of objects like [{"name": "...", "description": "..."}].',
-    'No prose, no markdown code fences, no extra keys.',
-   ].join(' ');
+   const prompt = buildTopicSuggestionPrompt(count, goal.title);
 
    const useOpenRouter = provider?.trim().toLowerCase() === OPENROUTER_PROVIDER;
    const client = useOpenRouter ? openRouterAIInstance : openai;

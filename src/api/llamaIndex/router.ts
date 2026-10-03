@@ -26,6 +26,7 @@ const upload = multer({
 const multipartSchema = z.object({
  file: z.any(),
  type: z.string().min(1).describe('Document type/category to tag the file with'),
+ userId: z.string().min(1).describe('Id of the user the ingested document belongs to'),
  id: z.string().optional().describe('Existing file id to ingest under (e.g. a localStorage/fs-util fileId)'),
 });
 
@@ -67,8 +68,16 @@ export const llamaIndexRouter: Router = (() => {
     );
    }
 
+   const userId = String(req.body?.userId ?? '').trim();
+   if (!userId) {
+    return handleServiceResponse(
+     new ServiceResponse(ResponseStatus.Failed, 'userId is required', null, StatusCodes.BAD_REQUEST),
+     res
+    );
+   }
+
    const id = req.body?.id ? String(req.body.id).trim() || undefined : undefined;
-   const serviceResponse = await llamaIndexService.ingestFile(req.file, type, id);
+   const serviceResponse = await llamaIndexService.ingestFile(req.file, type, userId, id);
    handleServiceResponse(serviceResponse, res);
   });
  });
@@ -82,7 +91,10 @@ export const llamaIndexRouter: Router = (() => {
    body: {
     content: {
      'application/json': {
-      schema: z.object({ type: z.string().min(1).describe('Document type/category to tag the file with') }),
+      schema: z.object({
+       type: z.string().min(1).describe('Document type/category to tag the file with'),
+       userId: z.string().min(1).describe('Id of the user the ingested document belongs to'),
+      }),
      },
     },
     required: true,
@@ -100,7 +112,15 @@ export const llamaIndexRouter: Router = (() => {
    );
   }
 
-  const serviceResponse = await llamaIndexService.ingestFileFromStorage(req.params.id, type);
+  const userId = String(req.body?.userId ?? '').trim();
+  if (!userId) {
+   return handleServiceResponse(
+    new ServiceResponse(ResponseStatus.Failed, 'userId is required', null, StatusCodes.BAD_REQUEST),
+    res
+   );
+  }
+
+  const serviceResponse = await llamaIndexService.ingestFileFromStorage(req.params.id, type, userId);
   handleServiceResponse(serviceResponse, res);
  });
 
@@ -117,7 +137,9 @@ export const llamaIndexRouter: Router = (() => {
  router.get('/query', validateRequest(LlamaIndexQuerySchema), async (req: Request, res: Response) => {
   const q = String(req.query.q ?? '');
   const k = Number(req.query.k ?? 3);
-  const serviceResponse = await llamaIndexService.query(q, k);
+  const userId = String(req.query.userId ?? '');
+  const minScore = req.query.minScore === undefined ? undefined : Number(req.query.minScore);
+  const serviceResponse = await llamaIndexService.query(q, k, userId, minScore);
   handleServiceResponse(serviceResponse, res);
  });
 
@@ -134,7 +156,9 @@ export const llamaIndexRouter: Router = (() => {
  router.get('/extract', validateRequest(LlamaIndexQuerySchema), async (req: Request, res: Response) => {
   const q = String(req.query.q ?? '');
   const k = Number(req.query.k ?? 3);
-  const serviceResponse = await llamaIndexService.extract(q, k);
+  const userId = String(req.query.userId ?? '');
+  const minScore = req.query.minScore === undefined ? undefined : Number(req.query.minScore);
+  const serviceResponse = await llamaIndexService.extract(q, k, userId, minScore);
   handleServiceResponse(serviceResponse, res);
  });
 

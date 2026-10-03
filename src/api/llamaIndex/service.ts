@@ -2,7 +2,7 @@ import '@/config/llamaConfig';
 
 import fs from 'fs/promises';
 import { StatusCodes } from 'http-status-codes';
-import { Document, Metadata, MetadataMode, VectorStoreIndex } from 'llamaindex';
+import { Document, Metadata, MetadataMode, NodeWithScore, SimilarityPostprocessor, VectorStoreIndex } from 'llamaindex';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -20,7 +20,9 @@ const RAG_STORAGE_DIR = path.join(process.cwd(), 'ragStorage');
 
 class NoExtractableTextError extends Error {}
 
-export type LlamaIndexQueryResult = { extractedText: string; sources: Metadata[] };
+export type RetrievedChunk = { text: string; score: number | null; metadata: Metadata };
+
+export type LlamaIndexQueryResult = { extractedText: string; sources: Metadata[]; chunks: RetrievedChunk[] };
 
 // Lazily built vector index backed by Qdrant: the same index instance is reused
 // (and grown via `insert`) across requests, with vectors persisted in Qdrant
@@ -35,33 +37,56 @@ const getIndex = async (): Promise<VectorStoreIndex> => {
 };
 
 // Qdrant Cloud collections default to strict mode, which rejects filtered
-// delete/update requests on payload fields that have no index - so `doc_id`
-// (used by `deleteFile`'s filter-by-ref_doc_id) needs an explicit index before
-// any delete can succeed. Idempotent, so it's safe to call after every ingest;
-// reset after `clear()` recreates the collection, which drops the index too.
-let docIdIndexEnsured = false;
+// delete/update/query requests on payload fields that have no index - so `doc_id`
+// (used by `deleteFile`'s filter-by-ref_doc_id) and `userId` (used to scope
+// retrieval to the requesting user) each need an explicit index before a
+// filtered request on that field can succeed. Idempotent per field, so it's
+// safe to call after every ingest; reset after `clear()` recreates the
+// collection, which drops the indexes too.
+const ensuredPayloadIndexes = new Set<string>();
 
-const ensureDocIdIndex = async (): Promise<void> => {
- if (docIdIndexEnsured) return;
+const ensurePayloadIndex = async (fieldName: string): Promise<void> => {
+ if (ensuredPayloadIndexes.has(fieldName)) return;
  try {
   await getQdrantVectorStore().client().createPayloadIndex(env.QDRANT_COLLECTION_NAME, {
-   field_name: 'doc_id',
+   field_name: fieldName,
    field_schema: 'keyword',
   });
-  docIdIndexEnsured = true;
+  ensuredPayloadIndexes.add(fieldName);
  } catch (ex) {
-  logger.warn(`Failed to ensure doc_id payload index: ${(ex as Error).message}`);
+  logger.warn(`Failed to ensure ${fieldName} payload index: ${(ex as Error).message}`);
  }
 };
 
+// Drops retrieved chunks whose cosine similarity (Qdrant score, higher = closer) is
+// below `minScore`; returns undefined when no cutoff was requested.
+const similarityCutoff = (minScore?: number) =>
+ minScore === undefined ? undefined : new SimilarityPostprocessor({ similarityCutoff: minScore });
+
+const toChunks = (nodes: NodeWithScore[]): RetrievedChunk[] =>
+ nodes.map((node) => ({
+  text: node.node.getContent(MetadataMode.NONE),
+  score: typeof node.score === 'number' ? node.score : null,
+  metadata: node.node.metadata,
+ }));
+
+// A retriever/query-engine filter scoping results to documents ingested under
+// the given `userId`, so one user's chat can never retrieve another user's
+// ingested documents.
+const userFilter = (userId: string) => ({
+ filters: [{ key: 'userId', value: userId, operator: '==' as const }],
+});
+
 // Shared by `ingestFile` (multipart upload) and `ingestFileFromStorage` (by
 // fileId): extracts text, saves a copy under ragStorage, indexes it in Qdrant
-// under `docId`, and marks the matching LocalFileModel doc as ingested.
+// under `docId`, tagged with the ingesting user's id, and marks the matching
+// LocalFileModel doc as ingested.
 const indexBuffer = async (
  docId: string,
  buffer: Buffer,
  filename: string,
- type: string
+ type: string,
+ userId: string
 ): Promise<LlamaIndexIngestResult> => {
  const text = (await extractText(buffer, filename)).trim();
  if (!text) {
@@ -71,11 +96,12 @@ const indexBuffer = async (
  await fs.mkdir(RAG_STORAGE_DIR, { recursive: true });
  await fs.writeFile(path.join(RAG_STORAGE_DIR, `${docId}-${filename}`), buffer);
 
- const document = new Document({ id_: docId, text, metadata: { type, filename } });
+ const document = new Document({ id_: docId, text, metadata: { type, filename, userId } });
 
  const index = await getIndex();
  await index.insert(document);
- await ensureDocIdIndex();
+ await ensurePayloadIndex('doc_id');
+ await ensurePayloadIndex('userId');
  await LocalFileModel.updateOne({ fileId: docId }, { ingested: true });
 
  return { id: docId, filename, type };
@@ -97,6 +123,7 @@ export const llamaIndexService = {
  ingestFile: async (
   file: Express.Multer.File | undefined,
   type: string,
+  userId: string,
   id?: string
  ): Promise<ServiceResponse<LlamaIndexIngestResult | null>> => {
   if (!file) {
@@ -105,7 +132,7 @@ export const llamaIndexService = {
 
   try {
    const docId = id ?? uuidv4();
-   const result = await indexBuffer(docId, file.buffer, file.originalname, type);
+   const result = await indexBuffer(docId, file.buffer, file.originalname, type, userId);
    return new ServiceResponse<LlamaIndexIngestResult>(
     ResponseStatus.Success,
     'File indexed successfully',
@@ -121,7 +148,8 @@ export const llamaIndexService = {
  // it under the same id, so it's the same document `deleteFile` can remove later.
  ingestFileFromStorage: async (
   fileId: string,
-  type: string
+  type: string,
+  userId: string
  ): Promise<ServiceResponse<LlamaIndexIngestResult | null>> => {
   const file = await localStorageService.getFileBuffer(fileId);
   if (!file) {
@@ -138,7 +166,7 @@ export const llamaIndexService = {
    : file.reference.name;
 
   try {
-   const result = await indexBuffer(fileId, file.buffer, filename, type);
+   const result = await indexBuffer(fileId, file.buffer, filename, type, userId);
    return new ServiceResponse<LlamaIndexIngestResult>(
     ResponseStatus.Success,
     'File indexed successfully',
@@ -152,10 +180,19 @@ export const llamaIndexService = {
 
  // Asks the LLM to synthesize an answer from the retrieved chunks, instead of
  // just returning their raw concatenated text (see `extract` for that).
- query: async (query: string, topK: number): Promise<ServiceResponse<LlamaIndexQueryResult | null>> => {
+ query: async (
+  query: string,
+  topK: number,
+  userId: string,
+  minScore?: number
+ ): Promise<ServiceResponse<LlamaIndexQueryResult | null>> => {
   try {
    const index = await getIndex();
-   const queryEngine = index.asQueryEngine({ retriever: index.asRetriever({ similarityTopK: topK }) });
+   const cutoff = similarityCutoff(minScore);
+   const queryEngine = index.asQueryEngine({
+    retriever: index.asRetriever({ similarityTopK: topK, filters: userFilter(userId) }),
+    ...(cutoff ? { nodePostprocessors: [cutoff] } : {}),
+   });
    const response = await queryEngine.query({ query });
 
    return new ServiceResponse<LlamaIndexQueryResult>(
@@ -164,6 +201,7 @@ export const llamaIndexService = {
     {
      extractedText: response.toString(),
      sources: (response.sourceNodes ?? []).map((node) => node.node.metadata),
+     chunks: toChunks(response.sourceNodes ?? []),
     },
     StatusCodes.OK
    );
@@ -175,18 +213,27 @@ export const llamaIndexService = {
  },
 
  // Raw retrieval: returns the retrieved chunks' concatenated text, with no LLM call.
- extract: async (query: string, topK: number): Promise<ServiceResponse<LlamaIndexQueryResult | null>> => {
+ extract: async (
+  query: string,
+  topK: number,
+  userId: string,
+  minScore?: number
+ ): Promise<ServiceResponse<LlamaIndexQueryResult | null>> => {
   try {
    const index = await getIndex();
-   const retriever = index.asRetriever({ similarityTopK: topK });
-   const response = await retriever.retrieve(query);
+   const retriever = index.asRetriever({ similarityTopK: topK, filters: userFilter(userId) });
+   const retrieved = await retriever.retrieve(query);
+   const cutoff = similarityCutoff(minScore);
+   const nodes = cutoff ? await cutoff.postprocessNodes(retrieved) : retrieved;
+   const chunks = toChunks(nodes);
 
    return new ServiceResponse<LlamaIndexQueryResult>(
     ResponseStatus.Success,
     'Query executed successfully',
     {
-     extractedText: response.map((node) => node.node.getContent(MetadataMode.NONE)).join('\n') ?? '',
-     sources: response.map((node) => node.node.metadata) ?? [],
+     extractedText: chunks.map((chunk) => chunk.text).join('\n'),
+     sources: chunks.map((chunk) => chunk.metadata),
+     chunks,
     },
     StatusCodes.OK
    );
@@ -224,7 +271,7 @@ export const llamaIndexService = {
    }
    resetQdrantVectorStore();
    indexPromise = null;
-   docIdIndexEnsured = false;
+   ensuredPayloadIndexes.clear();
    await LocalFileModel.updateMany({ ingested: true }, { ingested: false });
 
    return new ServiceResponse<boolean>(ResponseStatus.Success, 'Index cleared', true, StatusCodes.OK);
