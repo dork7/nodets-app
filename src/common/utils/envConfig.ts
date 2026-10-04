@@ -54,8 +54,8 @@ export const env = cleanEnv(process.env, {
 
  // Vision (image analysis)
  VISION_BASE_URL: url({
-   default: 'https://openrouter.ai/api/v1',
-   desc: 'Base URL for the image analysis (vision) OpenAI-compatible provider',
+  default: 'https://openrouter.ai/api/v1',
+  desc: 'Base URL for the image analysis (vision) OpenAI-compatible provider',
  }),
  VISION_API_KEY: str({ default: '', desc: 'API key for the vision provider (falls back to OPENAI_API_KEY)' }),
 
@@ -74,7 +74,10 @@ export const env = cleanEnv(process.env, {
  // OpenRouter
  OPENROUTER_BASE_URL: url({ default: 'https://openrouter.ai/api/v1', desc: 'Base URL for the OpenRouter API' }),
  OPENROUTER_API_KEY: str({ default: '', desc: 'API key for the OpenRouter API' }),
- OPENROUTER_CHAT_MODEL: str({ default: 'google/gemma-4-26b-a4b-it:free', desc: 'Default chat/completions model for OpenRouter' }),
+ OPENROUTER_CHAT_MODEL: str({
+  default: 'google/gemma-4-26b-a4b-it:free',
+  desc: 'Default chat/completions model for OpenRouter',
+ }),
  OPENROUTER_VISION_MODEL: str({ default: 'google/gemma-4-26b-a4b-it:free', desc: 'Image analysis model' }),
  OPENROUTER_EMBED_MODEL: str({ default: 'text-embedding-3-small', desc: 'Embedding model for OpenRouter' }),
 
@@ -107,4 +110,34 @@ export const env = cleanEnv(process.env, {
   default: 'llama_index_documents',
   desc: 'Qdrant collection used by the LlamaIndex ingest/query routes',
  }),
+
+ // LangChain RAG pipeline (/v1/ingest, /v1/retrieve) - see src/rag
+ ANTHROPIC_API_KEY: str({ default: '', desc: 'Anthropic API key for the LangChain RAG agents' }),
+ VOYAGE_API_KEY: str({ default: '', desc: 'Voyage API key for reranking; leave empty to skip the rerank step' }),
+ RAG_ANSWER_MODEL: str({ default: 'claude-opus-5-5', desc: 'Model for the RAG answer agent' }),
+ RAG_VERIFIER_MODEL: str({ default: 'claude-opus-5-5', desc: 'Model for the RAG verifier agent' }),
+ RAG_VISION_MODEL: str({ default: 'claude-opus-5-5', desc: 'Model for the image and PDF extraction agents' }),
+ RAG_UTILITY_MODEL: str({ default: 'claude-opus-5-5', desc: 'Model for the query analyst, grader and table agent' }),
+ RAG_EMBEDDING_DIM: num({ default: 1536, desc: 'Vector size of OPENROUTER_EMBED_MODEL, used to create rag_chunks' }),
+ RAG_RERANK_MODEL: str({ default: 'rerank-2.5', desc: 'Voyage rerank model' }),
+ RAG_QDRANT_COLLECTION: str({ default: 'rag_chunks', desc: 'Qdrant collection owned by the LangChain RAG pipeline' }),
+ RAG_CHUNK_CHARS: num({ default: 3200, desc: 'Text chunk size in characters' }),
+ RAG_CHUNK_OVERLAP_CHARS: num({ default: 400, desc: 'Text chunk overlap in characters' }),
+ RAG_RETRIEVE_K: num({ default: 20, desc: 'Candidates fetched from Qdrant per search query' }),
+ RAG_RERANK_TOP_K: num({ default: 8, desc: 'Candidates kept after reranking' }),
+ RAG_MAX_ATTEMPTS: num({ default: 3, desc: 'Answer/verify attempts before the retrieval graph abstains' }),
+ RAG_MAX_UPLOAD_MB: num({ default: 50, desc: 'Per-file upload limit for /v1/ingest' }),
+ RAG_IMAGE_MAX_EDGE: num({ default: 2000, desc: 'Images are resized to fit this edge before the image agent' }),
+ RAG_PDF_EXTRACT_MODE: str({ default: 'vision', choices: ['vision', 'text'], desc: 'How PDFs are read' }),
+ RAG_PDF_PAGES_PER_CALL: num({ default: 5, desc: 'PDF pages sent to the extraction agent per model call' }),
+ RAG_WORKER_CONCURRENCY: num({ default: 2, desc: 'Ingestion jobs run at once by the worker' }),
+ RAG_JOB_LOCK_TIMEOUT_MS: num({ default: 900000, desc: 'A running job older than this can be claimed again' }),
+ RAG_MAX_JOB_ATTEMPTS: num({ default: 3, desc: 'Attempts before an ingestion job is marked failed' }),
+ RAG_LOG_RETENTION_DAYS: num({ default: 180, desc: 'TTL for rag_request_logs / rag_error_logs; 0 keeps forever' }),
+ RAG_LOG_STORE_ANSWERS: bool({ default: true, desc: 'Store answer text in rag_request_logs' }),
+ RAG_ALLOW_SHARED_ACL: bool({
+  default: false,
+  desc: 'Let callers share ingested content with "*" or other users; off until callers are authenticated',
+ }),
+ RAG_RETRIEVE_TIMEOUT_MS: num({ default: 120000, desc: 'Deadline for one /v1/retrieve request' }),
 });

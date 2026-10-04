@@ -14,6 +14,7 @@ import { redisRegistry } from '@/api/redis/redisRouter';
 import { settingsRegistry } from '@/api/settings/settingsRouter';
 import { taskPlannerRegistry } from '@/api/taskPlanner/taskPlannerRouter';
 import { visionRegistry } from '@/api/vision/visionRouter';
+import { ragPipelineRegistry } from '@/rag/api/schemas';
 
 export function generateOpenAPIDocument() {
  const registry = new OpenAPIRegistry([
@@ -31,6 +32,7 @@ export function generateOpenAPIDocument() {
   taskPlannerRegistry,
   settingsRegistry,
   goalsRegistry,
+  ragPipelineRegistry,
  ]);
  const generator = new OpenApiGeneratorV3(registry.definitions);
 

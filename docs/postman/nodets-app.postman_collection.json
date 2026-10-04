@@ -1,0 +1,3066 @@
+{
+ "info": {
+  "name": "nodets-app API",
+  "description": "All REST endpoints of nodets-app, generated from the route definitions in the code on 4 October 2026 (branch rag-system).\n\nSet the `baseUrl` collection variable to where the server runs. No endpoint requires authentication. Requests with a file field need a file chosen before sending. The WebSocket endpoints (`/ws/server`, `/ws/stream`, `/ws/chatAI`) cannot be stored in a v2.1 collection; their contract is in the endpoint spreadsheet.",
+  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+ },
+ "variable": [
+  {
+   "key": "baseUrl",
+   "value": "http://localhost:2020"
+  },
+  {
+   "key": "userId",
+   "value": "demo-user"
+  },
+  {
+   "key": "sessionId",
+   "value": "demo-session"
+  },
+  {
+   "key": "collection",
+   "value": "demo"
+  },
+  {
+   "key": "objectId",
+   "value": "000000000000000000000000"
+  },
+  {
+   "key": "fileId",
+   "value": ""
+  },
+  {
+   "key": "jobId",
+   "value": ""
+  },
+  {
+   "key": "docId",
+   "value": ""
+  },
+  {
+   "key": "model",
+   "value": ""
+  }
+ ],
+ "item": [
+  {
+   "name": "Health check",
+   "item": [
+    {
+     "name": "GET /v1/health-check",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/health-check",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "health-check"
+       ]
+      },
+      "description": "**Success:** 200, Service is healthy\n\n**Notable errors:** None\n\nSource: `src/api/healthCheck/healthCheckRouter.ts:23`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/health-check/db",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/health-check/db",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "health-check",
+        "db"
+       ]
+      },
+      "description": "**Success:** 200, MongoDB connection successful\n\n**Notable errors:** 503, MongoDB connection failed: <reason>\n\nSource: `src/api/healthCheck/healthCheckRouter.ts:35`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Catalogue",
+   "item": [
+    {
+     "name": "GET /v1/catalogue",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/catalogue",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "catalogue"
+       ],
+       "query": [
+        {
+         "key": "id",
+         "value": "101",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Query id\n\n**Success:** Upstream status; one product\n\n**Notable errors:** 404; 500 Error finding catalogue with id <n>:, ...\n\nSource: `src/api/catalogue/catalogueRouter.ts:24`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/catalogue",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/catalogue",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "catalogue"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"id\": 101,\n  \"name\": \"Sample item\",\n  \"category\": \"demo\",\n  \"stock\": 5,\n  \"price\": 9.99,\n  \"description\": \"Example catalogue entry\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { id, name, category?, stock?, price?, description? }\n\n**Success:** 201; the whole in-memory array\n\n**Notable errors:** 400 invalid body\n\nSource: `src/api/catalogue/catalogueRouter.ts:63`"
+     },
+     "response": []
+    },
+    {
+     "name": "DELETE /v1/catalogue/:id",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/catalogue/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "catalogue",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "101"
+        }
+       ]
+      },
+      "description": "**Input:** Positive numeric id\n\n**Success:** 202; true\n\n**Notable errors:** 400; 404 when the id is not in the array\n\nSource: `src/api/catalogue/catalogueRouter.ts:90`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/catalogue/:id",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/catalogue/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "catalogue",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "101"
+        }
+       ]
+      },
+      "description": "**Input:** Positive numeric id\n\n**Success:** As above\n\n**Notable errors:** 400 invalid id; 404; 500\n\nSource: `src/api/catalogue/catalogueRouter.ts:43`"
+     },
+     "response": []
+    },
+    {
+     "name": "DELETE /v1/catalogue/all",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/catalogue/all",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "catalogue",
+        "all"
+       ]
+      },
+      "description": "**Destructive:** removes data for every user. There is no authentication on this route.\n\n**Success:** 202; true\n\n**Notable errors:** 404 when the array is already empty\n\nSource: `src/api/catalogue/catalogueRouter.ts:77`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Redis key/value",
+   "item": [
+    {
+     "name": "DELETE /v1/redis/:key",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/redis/:key",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "redis",
+        ":key"
+       ],
+       "variable": [
+        {
+         "key": "key",
+         "value": "demo-key"
+        }
+       ]
+      },
+      "description": "**Success:** 200; number of keys deleted\n\n**Notable errors:** 404 Data not found; 500\n\nSource: `src/api/redis/redisRouter.ts:59`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/redis/:key",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/redis/:key",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "redis",
+        ":key"
+       ],
+       "variable": [
+        {
+         "key": "key",
+         "value": "demo-key"
+        }
+       ]
+      },
+      "description": "**Success:** 200; stored JSON\n\n**Notable errors:** 404 Data not found; 500\n\nSource: `src/api/redis/redisRouter.ts:45`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/redis/:key",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/redis/:key",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "redis",
+        ":key"
+       ],
+       "variable": [
+        {
+         "key": "key",
+         "value": "demo-key"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"id\": 1,\n  \"name\": \"example\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** Body with numeric id; the whole body is stored\n\n**Success:** 200; OK\n\n**Notable errors:** 400 missing id; 500 Cannot add data into redis:, ...\n\nSource: `src/api/redis/redisRouter.ts:31`"
+     },
+     "response": []
+    },
+    {
+     "name": "PUT /v1/redis/:key",
+     "request": {
+      "method": "PUT",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/redis/:key",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "redis",
+        ":key"
+       ],
+       "variable": [
+        {
+         "key": "key",
+         "value": "demo-key"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"id\": 1,\n  \"name\": \"updated\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** Body with numeric id\n\n**Success:** 200; shallow merge into the stored value, written without a TTL\n\n**Notable errors:** 400; 500\n\nSource: `src/api/redis/redisRouter.ts:80`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Kafka",
+   "item": [
+    {
+     "name": "POST /v1/kafka/postMessage",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/kafka/postMessage",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "kafka",
+        "postMessage"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"config\": {\n    \"topic\": \"test-topic\"\n  },\n  \"data\": {\n    \"message\": \"hello\"\n  }\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { config: { topic, ... }, data: { ... } }\n\n**Success:** 200; the producer's send result\n\n**Notable errors:** 400 missing config or data; 500 Unable to send message, <reason> (the expected result while Kafka is disabled)\n\nSource: `src/api/kafka/kafkaRouter.ts:44`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "File storage: local disk",
+   "item": [
+    {
+     "name": "DELETE /v1/localStorage/:id",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/localStorage/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "localStorage",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{fileId}}"
+        }
+       ]
+      },
+      "description": "**Input:** Backend: local disk. MinIO: ?bucket=\n\n**Success:** 200; true\n\n**Notable errors:** 404 File not found; 500\n\nSource: `src/api/localStorage/localStorageRouter.ts:169`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/localStorage/:id",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/localStorage/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "localStorage",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{fileId}}"
+        }
+       ]
+      },
+      "description": "**Input:** Backend: local disk. MinIO: ?bucket=\n\n**Success:** File bytes streamed\n\n**Notable errors:** 404 { \"error\": \"File not found\" }; 500 { \"error\": \"Failed to get file\" } (neither is a ServiceResponse)\n\nSource: `src/api/localStorage/localStorageRouter.ts:130`"
+     },
+     "response": []
+    },
+    {
+     "name": "DELETE /v1/localStorage/all",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/localStorage/all",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "localStorage",
+        "all"
+       ],
+       "query": [
+        {
+         "key": "folder",
+         "value": "",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Destructive:** removes data for every user. There is no authentication on this route.\n\n**Input:** Backend: local disk. Local and fs-util: ?folder=; MinIO: ?bucket=\n\n**Success:** 200; number deleted\n\n**Notable errors:** 500\n\nSource: `src/api/localStorage/localStorageRouter.ts:155`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/localStorage/files",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/localStorage/files",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "localStorage",
+        "files"
+       ]
+      },
+      "description": "**Input:** Backend: local disk. None\n\n**Success:** 200; file list, newest first\n\n**Notable errors:** 500 Failed to list files: ...\n\nSource: `src/api/localStorage/localStorageRouter.ts:114`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/localStorage/upload",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/localStorage/upload",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "localStorage",
+        "upload"
+       ]
+      },
+      "body": {
+       "mode": "formdata",
+       "formdata": [
+        {
+         "key": "file",
+         "type": "file",
+         "src": []
+        },
+        {
+         "key": "folder",
+         "value": "demo",
+         "type": "text",
+         "disabled": true
+        },
+        {
+         "key": "type",
+         "value": "",
+         "type": "text",
+         "disabled": true
+        },
+        {
+         "key": "metadata",
+         "value": "{}",
+         "type": "text",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Backend: local disk. Multipart file; local and fs-util: folder, type, metadata (JSON string); MinIO: bucket\n\n**Success:** 200; { id, url, name }\n\n**Notable errors:** 400 No file provided; 500 on oversize file or storage failure\n\nSource: `src/api/localStorage/localStorageRouter.ts:53`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/localStorage/upload/multiple",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/localStorage/upload/multiple",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "localStorage",
+        "upload",
+        "multiple"
+       ]
+      },
+      "body": {
+       "mode": "formdata",
+       "formdata": [
+        {
+         "key": "files",
+         "type": "file",
+         "src": []
+        },
+        {
+         "key": "folder",
+         "value": "demo",
+         "type": "text",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Backend: local disk. Multipart files (max 10), same extra fields\n\n**Success:** 200; array of { id, url, name }\n\n**Notable errors:** 400 No files provided; 500\n\nSource: `src/api/localStorage/localStorageRouter.ts:88`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "File storage: fs-util",
+   "item": [
+    {
+     "name": "DELETE /v1/fs-util/:id",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/fs-util/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "fs-util",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{fileId}}"
+        }
+       ]
+      },
+      "description": "**Input:** Backend: fs-util wrapper. MinIO: ?bucket=\n\n**Success:** 200; true\n\n**Notable errors:** 404 File not found; 500\n\nSource: `src/api/fileStorage/fileStorageRouter.ts:177`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/fs-util/:id",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/fs-util/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "fs-util",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{fileId}}"
+        }
+       ]
+      },
+      "description": "**Input:** Backend: fs-util wrapper. MinIO: ?bucket=\n\n**Success:** File bytes streamed\n\n**Notable errors:** 404 { \"error\": \"File not found\" }; 500 { \"error\": \"Failed to get file\" } (neither is a ServiceResponse)\n\nSource: `src/api/fileStorage/fileStorageRouter.ts:138`"
+     },
+     "response": []
+    },
+    {
+     "name": "DELETE /v1/fs-util/all",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/fs-util/all",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "fs-util",
+        "all"
+       ],
+       "query": [
+        {
+         "key": "folder",
+         "value": "",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Destructive:** removes data for every user. There is no authentication on this route.\n\n**Input:** Backend: fs-util wrapper. Local and fs-util: ?folder=; MinIO: ?bucket=\n\n**Success:** 200; number deleted\n\n**Notable errors:** 500\n\nSource: `src/api/fileStorage/fileStorageRouter.ts:163`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/fs-util/files",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/fs-util/files",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "fs-util",
+        "files"
+       ]
+      },
+      "description": "**Input:** Backend: fs-util wrapper. None\n\n**Success:** 200; file list, newest first\n\n**Notable errors:** 500 Failed to list files: ...\n\nSource: `src/api/fileStorage/fileStorageRouter.ts:122`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/fs-util/upload",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/fs-util/upload",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "fs-util",
+        "upload"
+       ]
+      },
+      "body": {
+       "mode": "formdata",
+       "formdata": [
+        {
+         "key": "file",
+         "type": "file",
+         "src": []
+        },
+        {
+         "key": "folder",
+         "value": "demo",
+         "type": "text",
+         "disabled": true
+        },
+        {
+         "key": "type",
+         "value": "",
+         "type": "text",
+         "disabled": true
+        },
+        {
+         "key": "metadata",
+         "value": "{}",
+         "type": "text",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Backend: fs-util wrapper. Multipart file; local and fs-util: folder, type, metadata (JSON string); MinIO: bucket\n\n**Success:** 200; { id, url, name }\n\n**Notable errors:** 400 No file provided; 500 on oversize file or storage failure\n\nSource: `src/api/fileStorage/fileStorageRouter.ts:62`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/fs-util/upload/multiple",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/fs-util/upload/multiple",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "fs-util",
+        "upload",
+        "multiple"
+       ]
+      },
+      "body": {
+       "mode": "formdata",
+       "formdata": [
+        {
+         "key": "files",
+         "type": "file",
+         "src": []
+        },
+        {
+         "key": "folder",
+         "value": "demo",
+         "type": "text",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Backend: fs-util wrapper. Multipart files (max 10), same extra fields\n\n**Success:** 200; array of { id, url, name }\n\n**Notable errors:** 400 No files provided; 500\n\nSource: `src/api/fileStorage/fileStorageRouter.ts:97`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "File storage: MinIO",
+   "item": [
+    {
+     "name": "DELETE /v1/minio/:id",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/minio/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "minio",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{fileId}}"
+        }
+       ],
+       "query": [
+        {
+         "key": "bucket",
+         "value": "",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Backend: MinIO. MinIO: ?bucket=\n\n**Success:** 200; true\n\n**Notable errors:** 404 File not found; 500\n\nSource: `src/api/minio/minioRouter.ts:145`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/minio/:id",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/minio/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "minio",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{fileId}}"
+        }
+       ],
+       "query": [
+        {
+         "key": "bucket",
+         "value": "",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Backend: MinIO. MinIO: ?bucket=\n\n**Success:** File bytes streamed\n\n**Notable errors:** 404 { \"error\": \"File not found\" }; 500 { \"error\": \"Failed to get file\" } (neither is a ServiceResponse)\n\nSource: `src/api/minio/minioRouter.ts:104`"
+     },
+     "response": []
+    },
+    {
+     "name": "DELETE /v1/minio/all",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/minio/all",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "minio",
+        "all"
+       ],
+       "query": [
+        {
+         "key": "bucket",
+         "value": "",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Destructive:** removes data for every user. There is no authentication on this route.\n\n**Input:** Backend: MinIO. Local and fs-util: ?folder=; MinIO: ?bucket=\n\n**Success:** 200; number deleted\n\n**Notable errors:** 500\n\nSource: `src/api/minio/minioRouter.ts:131`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/minio/files",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/minio/files",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "minio",
+        "files"
+       ]
+      },
+      "description": "**Input:** Backend: MinIO. None\n\n**Success:** 200; file list, newest first\n\n**Notable errors:** 500 Failed to list files: ...\n\nSource: `src/api/minio/minioRouter.ts:88`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/minio/upload",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/minio/upload",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "minio",
+        "upload"
+       ]
+      },
+      "body": {
+       "mode": "formdata",
+       "formdata": [
+        {
+         "key": "file",
+         "type": "file",
+         "src": []
+        },
+        {
+         "key": "bucket",
+         "value": "",
+         "type": "text",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Backend: MinIO. Multipart file; local and fs-util: folder, type, metadata (JSON string); MinIO: bucket\n\n**Success:** 200; { id, url, name }\n\n**Notable errors:** 400 No file provided; 500 on oversize file or storage failure\n\nSource: `src/api/minio/minioRouter.ts:38`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/minio/upload/multiple",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/minio/upload/multiple",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "minio",
+        "upload",
+        "multiple"
+       ]
+      },
+      "body": {
+       "mode": "formdata",
+       "formdata": [
+        {
+         "key": "files",
+         "type": "file",
+         "src": []
+        },
+        {
+         "key": "bucket",
+         "value": "",
+         "type": "text",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Backend: MinIO. Multipart files (max 10), same extra fields\n\n**Success:** 200; array of { id, url, name }\n\n**Notable errors:** 400 No files provided; 500\n\nSource: `src/api/minio/minioRouter.ts:69`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Task planner",
+   "item": [
+    {
+     "name": "GET /v1/taskPlanner",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/taskPlanner",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "taskPlanner"
+       ]
+      },
+      "description": "**Success:** 200; projects whose status is not Deleted, sorted by startDate\n\n**Notable errors:** 500\n\nSource: `src/api/taskPlanner/taskPlannerRouter.ts:47`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/taskPlanner",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/taskPlanner",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "taskPlanner"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"projectName\": \"Example project\",\n  \"resources\": [\n    \"Alice\"\n  ],\n  \"tags\": [\n    \"demo\"\n  ],\n  \"priority\": \"Medium\",\n  \"status\": \"Not Started\",\n  \"progress\": 0,\n  \"startDate\": \"2026-10-05\",\n  \"endDate\": \"2026-10-19\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** projectName, resources, priority, startDate, endDate; optional tags, status, progress\n\n**Success:** 201; project\n\n**Notable errors:** 400 invalid body; 400 endDate must be on or after startDate\n\nSource: `src/api/taskPlanner/taskPlannerRouter.ts:79`"
+     },
+     "response": []
+    },
+    {
+     "name": "DELETE /v1/taskPlanner/:id",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/taskPlanner/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "taskPlanner",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        }
+       ]
+      },
+      "description": "**Input:** ObjectId\n\n**Success:** 200; true\n\n**Notable errors:** 400; 404\n\nSource: `src/api/taskPlanner/taskPlannerRouter.ts:112`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/taskPlanner/:id",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/taskPlanner/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "taskPlanner",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        }
+       ]
+      },
+      "description": "**Input:** 24-hex ObjectId\n\n**Success:** 200; project\n\n**Notable errors:** 400 invalid id; 404 Project not found\n\nSource: `src/api/taskPlanner/taskPlannerRouter.ts:60`"
+     },
+     "response": []
+    },
+    {
+     "name": "PUT /v1/taskPlanner/:id",
+     "request": {
+      "method": "PUT",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/taskPlanner/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "taskPlanner",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"status\": \"In Progress\",\n  \"progress\": 40\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** Any subset of the fields\n\n**Success:** 200; project. status: \"Done\" without progress sets progress to 100\n\n**Notable errors:** 400; 404; 500 on Mongoose validation\n\nSource: `src/api/taskPlanner/taskPlannerRouter.ts:99`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/taskPlanner/dashboard",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/taskPlanner/dashboard",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "taskPlanner",
+        "dashboard"
+       ]
+      },
+      "description": "**Success:** HTML page (taskPlanner.ejs)\n\n**Notable errors:** None\n\nSource: `src/api/taskPlanner/taskPlannerRouter.ts:27`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Settings",
+   "item": [
+    {
+     "name": "GET /v1/settings/resources",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/settings/resources",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "settings",
+        "resources"
+       ]
+      },
+      "description": "**Success:** 200; [{ id, name, createdAt, updatedAt }] sorted by name\n\n**Notable errors:** 500\n\nSource: `src/api/settings/settingsRouter.ts:28`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/settings/resources",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/settings/resources",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "settings",
+        "resources"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"name\": \"Alice\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { name }\n\n**Success:** 201; the item\n\n**Notable errors:** 400; 409 Tag already exists or Resource already exists\n\nSource: `src/api/settings/settingsRouter.ts:46`"
+     },
+     "response": []
+    },
+    {
+     "name": "DELETE /v1/settings/resources/:id",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/settings/resources/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "settings",
+        "resources",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        }
+       ]
+      },
+      "description": "**Input:** ObjectId\n\n**Success:** 200; true\n\n**Notable errors:** 400; 404 Tag not found or Resource not found\n\nSource: `src/api/settings/settingsRouter.ts:58`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/settings/tags",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/settings/tags",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "settings",
+        "tags"
+       ]
+      },
+      "description": "**Success:** 200; [{ id, name, createdAt, updatedAt }] sorted by name\n\n**Notable errors:** 500\n\nSource: `src/api/settings/settingsRouter.ts:28`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/settings/tags",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/settings/tags",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "settings",
+        "tags"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"name\": \"demo\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { name }\n\n**Success:** 201; the item\n\n**Notable errors:** 400; 409 Tag already exists or Resource already exists\n\nSource: `src/api/settings/settingsRouter.ts:46`"
+     },
+     "response": []
+    },
+    {
+     "name": "DELETE /v1/settings/tags/:id",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/settings/tags/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "settings",
+        "tags",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        }
+       ]
+      },
+      "description": "**Input:** ObjectId\n\n**Success:** 200; true\n\n**Notable errors:** 400; 404 Tag not found or Resource not found\n\nSource: `src/api/settings/settingsRouter.ts:58`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Goals",
+   "item": [
+    {
+     "name": "GET /v1/goals",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals"
+       ]
+      },
+      "description": "**Success:** 200; all goals, oldest first\n\n**Notable errors:** 500 with responseObject: []\n\nSource: `src/api/goals/goalsRouter.ts:38`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/goals",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"title\": \"Learn TypeScript\",\n  \"targetDeadline\": \"2026-12-31\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { title, targetDeadline? }\n\n**Success:** 200; new goal\n\n**Notable errors:** 400\n\nSource: `src/api/goals/goalsRouter.ts:53`"
+     },
+     "response": []
+    },
+    {
+     "name": "DELETE /v1/goals/:id",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        }
+       ]
+      },
+      "description": "**Success:** 200; { deleted: true }\n\n**Notable errors:** 404\n\nSource: `src/api/goals/goalsRouter.ts:80`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/goals/:id",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        }
+       ]
+      },
+      "description": "**Success:** 200; goal\n\n**Notable errors:** 404 Goal not found\n\nSource: `src/api/goals/goalsRouter.ts:67`"
+     },
+     "response": []
+    },
+    {
+     "name": "PUT /v1/goals/:id/deadline",
+     "request": {
+      "method": "PUT",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals/:id/deadline",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals",
+        ":id",
+        "deadline"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"targetDeadline\": \"2027-01-31\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { targetDeadline } (string or null)\n\n**Success:** 200; goal\n\n**Notable errors:** 400; 404\n\nSource: `src/api/goals/goalsRouter.ts:170`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/goals/:id/log",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals/:id/log",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals",
+        ":id",
+        "log"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"hours\": 1.5,\n  \"note\": \"Read the handbook chapter\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { hours > 0, topic?, note?, date? }\n\n**Success:** 200; goal; a topic whose name equals topic gains the hours\n\n**Notable errors:** 400; 404\n\nSource: `src/api/goals/goalsRouter.ts:165`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/goals/:id/suggest-topics",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals/:id/suggest-topics",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals",
+        ":id",
+        "suggest-topics"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"count\": 8\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { count? (1\u201315, default 8), provider? }\n\n**Success:** 200; [{ name, description? }], not saved\n\n**Notable errors:** 404; 500 when the model output is not a JSON array\n\nSource: `src/api/goals/goalsRouter.ts:85`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/goals/:id/topics",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals/:id/topics",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals",
+        ":id",
+        "topics"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"topics\": [\n    {\n      \"name\": \"Generics\",\n      \"description\": \"Type parameters and constraints\"\n    }\n  ]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { topics: [{ name, description? }] }\n\n**Success:** 200; goal\n\n**Notable errors:** 400; 404\n\nSource: `src/api/goals/goalsRouter.ts:91`"
+     },
+     "response": []
+    },
+    {
+     "name": "DELETE /v1/goals/:id/topics/:topicIndex",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals/:id/topics/:topicIndex",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals",
+        ":id",
+        "topics",
+        ":topicIndex"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        },
+        {
+         "key": "topicIndex",
+         "value": "0"
+        }
+       ]
+      },
+      "description": "**Success:** 200; goal\n\n**Notable errors:** 404 Topic not found\n\nSource: `src/api/goals/goalsRouter.ts:96`"
+     },
+     "response": []
+    },
+    {
+     "name": "PUT /v1/goals/:id/topics/:topicIndex/complete",
+     "request": {
+      "method": "PUT",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals/:id/topics/:topicIndex/complete",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals",
+        ":id",
+        "topics",
+        ":topicIndex",
+        "complete"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        },
+        {
+         "key": "topicIndex",
+         "value": "0"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"completed\": true\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { completed }\n\n**Success:** 200; goal\n\n**Notable errors:** 400; 404\n\nSource: `src/api/goals/goalsRouter.ts:134`"
+     },
+     "response": []
+    },
+    {
+     "name": "PUT /v1/goals/:id/topics/:topicIndex/course",
+     "request": {
+      "method": "PUT",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals/:id/topics/:topicIndex/course",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals",
+        ":id",
+        "topics",
+        ":topicIndex",
+        "course"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        },
+        {
+         "key": "topicIndex",
+         "value": "0"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"estimatedHours\": 6\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { course?, estimatedHours }\n\n**Success:** 200; goal\n\n**Notable errors:** 400; 404\n\nSource: `src/api/goals/goalsRouter.ts:113`"
+     },
+     "response": []
+    },
+    {
+     "name": "PUT /v1/goals/:id/topics/:topicIndex/estimate",
+     "request": {
+      "method": "PUT",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals/:id/topics/:topicIndex/estimate",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals",
+        ":id",
+        "topics",
+        ":topicIndex",
+        "estimate"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        },
+        {
+         "key": "topicIndex",
+         "value": "0"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"estimatedHours\": 4\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { estimatedHours }\n\n**Success:** 200; goal\n\n**Notable errors:** 400; 404\n\nSource: `src/api/goals/goalsRouter.ts:124`"
+     },
+     "response": []
+    },
+    {
+     "name": "PUT /v1/goals/:id/topics/:topicIndex/notes",
+     "request": {
+      "method": "PUT",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals/:id/topics/:topicIndex/notes",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals",
+        ":id",
+        "topics",
+        ":topicIndex",
+        "notes"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        },
+        {
+         "key": "topicIndex",
+         "value": "0"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"notes\": \"Revisit conditional types\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { notes } (string or null)\n\n**Success:** 200; goal\n\n**Notable errors:** 400; 404\n\nSource: `src/api/goals/goalsRouter.ts:144`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/goals/:id/topics/:topicIndex/suggest-courses",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/goals/:id/topics/:topicIndex/suggest-courses",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "goals",
+        ":id",
+        "topics",
+        ":topicIndex",
+        "suggest-courses"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{objectId}}"
+        },
+        {
+         "key": "topicIndex",
+         "value": "0"
+        }
+       ],
+       "query": [
+        {
+         "key": "q",
+         "value": "",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Optional ?q=\n\n**Success:** 200; up to 3 courses, or []\n\n**Notable errors:** 404; 503 when YOUTUBE_API_KEY is empty; 500 on a YouTube error\n\nSource: `src/api/goals/goalsRouter.ts:102`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Chat (REST)",
+   "item": [
+    {
+     "name": "POST /v1/ai/chat",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/ai/chat",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "ai",
+        "chat"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Hello\"\n    }\n  ],\n  \"provider\": \"localAI\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** JSON: messages (array of { role, content }) or prompt; optional provider, model, temperature (0 to 2)\n\n**Success:** 200 with { reply, reasoning?, model, provider, usage? }\n\n**Notable errors:** 400 validation (Provide either \"messages\" or \"prompt\".); 400 all messages blank; 500 provider failure\n\nSource: `src/api/chat/chatRouter.ts:29`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "AI providers",
+   "item": [
+    {
+     "name": "GET /chatModels",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/chatModels",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "chatModels"
+       ],
+       "query": [
+        {
+         "key": "provider",
+         "value": "openRouterAI",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Optional provider query\n\n**Success:** { models: [{ value, label }] }\n\nSource: `src/server.ts:142`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/aiProviders",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/aiProviders",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "aiProviders"
+       ]
+      },
+      "description": "**Input:** none\n\n**Success:** [{ name, baseURL }] for every registered provider\n\nSource: `src/api/aiProviders/aiProvidersRouter.ts:33`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "AI utilities",
+   "item": [
+    {
+     "name": "DELETE /v1/aiUtils/chat-history/:userId",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/aiUtils/chat-history/:userId",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "aiUtils",
+        "chat-history",
+        ":userId"
+       ],
+       "variable": [
+        {
+         "key": "userId",
+         "value": "{{sessionId}}"
+        }
+       ]
+      },
+      "description": "**Input:** Session id\n\n**Success:** { cleared: true }; deletes the Mongo document and the Redis usage key\n\nSource: `src/api/aiUtils/aiUtilsRouter.ts:127`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/aiUtils/chat-history/:userId",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/aiUtils/chat-history/:userId",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "aiUtils",
+        "chat-history",
+        ":userId"
+       ],
+       "variable": [
+        {
+         "key": "userId",
+         "value": "{{sessionId}}"
+        }
+       ]
+      },
+      "description": "**Input:** Session id\n\n**Success:** User-role messages only, newest first\n\nSource: `src/api/aiUtils/aiUtilsRouter.ts:113`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/aiUtils/loaded-models",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/aiUtils/loaded-models",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "aiUtils",
+        "loaded-models"
+       ]
+      },
+      "description": "**Input:** none\n\n**Success:** [{ model }] from LocalAI GET /system\n\nSource: `src/api/aiUtils/aiUtilsRouter.ts:165`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/aiUtils/text-to-speech",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/aiUtils/text-to-speech",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "aiUtils",
+        "text-to-speech"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"text\": \"Hello from the API\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { text, voice? }\n\n**Success:** { audio: <base64 MP3>, contentType: 'audio/mpeg' }; model tts-1, default voice alloy, default provider\n\nSource: `src/api/aiUtils/aiUtilsRouter.ts:200`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/aiUtils/token-usage/:userId",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/aiUtils/token-usage/:userId",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "aiUtils",
+        "token-usage",
+        ":userId"
+       ],
+       "variable": [
+        {
+         "key": "userId",
+         "value": "{{sessionId}}"
+        }
+       ]
+      },
+      "description": "**Input:** Session id\n\n**Success:** { prompt_tokens, completion_tokens, total_tokens } from Redis, zeros if absent\n\nSource: `src/api/aiUtils/aiUtilsRouter.ts:133`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/aiUtils/total-token-usage",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/aiUtils/total-token-usage",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "aiUtils",
+        "total-token-usage"
+       ],
+       "query": [
+        {
+         "key": "sessionId",
+         "value": "{{sessionId}}",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Optional sessionId query\n\n**Success:** That session's usage, or the sum over all token_usage_* keys\n\nSource: `src/api/aiUtils/aiUtilsRouter.ts:147`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/aiUtils/unload-model",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/aiUtils/unload-model",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "aiUtils",
+        "unload-model"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"model\": \"{{model}}\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** { model }\n\n**Success:** { model, success, message } via LocalAI POST /backend/shutdown\n\nSource: `src/api/aiUtils/aiUtilsRouter.ts:182`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/aiUtils/unload-models",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/aiUtils/unload-models",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "aiUtils",
+        "unload-models"
+       ]
+      },
+      "description": "**Input:** none\n\n**Success:** { unloaded, failed, results }; runs docker model list --openai then docker model unload <model> per model; 500 if any fails\n\nSource: `src/api/aiUtils/aiUtilsRouter.ts:153`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Vision",
+   "item": [
+    {
+     "name": "POST /v1/vision/analyze",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/vision/analyze",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "vision",
+        "analyze"
+       ]
+      },
+      "body": {
+       "mode": "formdata",
+       "formdata": [
+        {
+         "key": "image",
+         "type": "file",
+         "src": []
+        },
+        {
+         "key": "prompt",
+         "value": "Describe this image",
+         "type": "text",
+         "disabled": true
+        },
+        {
+         "key": "provider",
+         "value": "openRouterAI",
+         "type": "text",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** multipart/form-data: image (image MIME type, max 5 MB), optional prompt, provider, model\n\n**Success:** 200 with { details, rawText, reasoning? }\n\n**Notable errors:** 400 no file; 400 non-image upload; 413 file over 5 MB; 500 provider failure\n\nSource: `src/api/vision/visionRouter.ts:54`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Nutrition",
+   "item": [
+    {
+     "name": "GET /v1/nutrition",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/nutrition",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "nutrition"
+       ]
+      },
+      "description": "**Input:** none\n\n**Success:** Renders src/public/nutrition.ejs with an empty report\n\n**Notable errors:** none\n\nSource: `src/api/vision/nutritionRouter.ts:70`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/nutrition",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/nutrition",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "nutrition"
+       ]
+      },
+      "body": {
+       "mode": "formdata",
+       "formdata": [
+        {
+         "key": "image",
+         "type": "file",
+         "src": []
+        },
+        {
+         "key": "prompt",
+         "value": "",
+         "type": "text",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Same multipart form (image, prompt)\n\n**Success:** Renders the page with a nutrition report\n\n**Notable errors:** Page rendered with an error message\n\nSource: `src/api/vision/nutritionRouter.ts:74`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Laya ticket triage",
+   "item": [
+    {
+     "name": "POST /v1/laya/classify-ticket",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/laya/classify-ticket",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "laya",
+        "classify-ticket"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"subject\": \"Refund request\",\n  \"body\": \"I was charged twice for my order and would like one charge refunded.\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** JSON: subject, body, optional questions (record of choice, score or noul question definitions)\n\n**Success:** 200 with { answers, usage: { input_tokens, output_tokens } }\n\n**Notable errors:** 400 validation; 500 Failed to classify ticket: ...\n\nSource: `src/api/laya/router.ts:30`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "AI monitoring",
+   "item": [
+    {
+     "name": "GET /v1/monitor/dashboard",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/monitor/dashboard",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "monitor",
+        "dashboard"
+       ]
+      },
+      "description": "**Success:** Renders src/public/monitor.ejs with a relaxed Content-Security-Policy for this page\n\nSource: `src/api/monitor/monitorRouter.ts:22`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/monitor/logs",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/monitor/logs",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "monitor",
+        "logs"
+       ]
+      },
+      "description": "**Success:** Up to 500 call logs, newest first\n\nSource: `src/api/monitor/monitorRouter.ts:35`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/monitor/models",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/monitor/models",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "monitor",
+        "models"
+       ]
+      },
+      "description": "**Success:** Live LocalAI snapshot: loaded models from /system, per-model requests and tokens parsed from the Prometheus text at /metrics, process memory, CPU and uptime; reachable: false with zeros when LocalAI cannot be read\n\nSource: `src/api/monitor/monitorRouter.ts:43`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/monitor/stats",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/monitor/stats",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "monitor",
+        "stats"
+       ]
+      },
+      "description": "**Success:** All persisted model stats with avgDurationMs\n\nSource: `src/api/monitor/monitorRouter.ts:58`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/monitor/stats/:model",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/monitor/stats/:model",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "monitor",
+        "stats",
+        ":model"
+       ],
+       "variable": [
+        {
+         "key": "model",
+         "value": "{{model}}"
+        }
+       ]
+      },
+      "description": "**Success:** One model's stats; 404 Stats not found\n\nSource: `src/api/monitor/monitorRouter.ts:65`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "RAG: Chroma",
+   "item": [
+    {
+     "name": "DELETE /v1/rag",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/rag",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "rag"
+       ]
+      },
+      "description": "**Destructive:** removes data for every user. There is no authentication on this route.\n\n**Input:** none\n\n**Success:** true (collection deleted)\n\nSource: `src/api/rag/ragRouter.ts:103`"
+     },
+     "response": []
+    },
+    {
+     "name": "DELETE /v1/rag/file/:id",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/rag/file/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "rag",
+        "file",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{fileId}}"
+        }
+       ]
+      },
+      "description": "**Input:** none\n\n**Success:** { removed }\n\nSource: `src/api/rag/ragRouter.ts:91`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/rag/ingest",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/rag/ingest",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "rag",
+        "ingest"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"source\": \"localStorage\",\n  \"fileId\": \"{{fileId}}\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** JSON source, optional fileId, bucket, url, content, provider, force\n\n**Success:** 201 { count } (chunks indexed)\n\nSource: `src/api/rag/ragRouter.ts:59`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/rag/search",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/rag/search?q=leave policy",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "rag",
+        "search"
+       ],
+       "query": [
+        {
+         "key": "q",
+         "value": "leave policy"
+        },
+        {
+         "key": "k",
+         "value": "3",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** q (required), k 1-20 (default 3)\n\n**Success:** { results: [{ id, text, score }] }\n\nSource: `src/api/rag/ragRouter.ts:74`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/rag/stats",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/rag/stats",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "rag",
+        "stats"
+       ]
+      },
+      "description": "**Input:** none\n\n**Success:** { count, collections }\n\nSource: `src/api/rag/ragRouter.ts:115`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/rag/test-embed",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/rag/test-embed",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "rag",
+        "test-embed"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"text\": \"A sentence to embed\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** text, optional provider\n\n**Success:** 201 { id }\n\nSource: `src/api/rag/ragRouter.ts:54`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "RAG: LlamaIndex",
+   "item": [
+    {
+     "name": "DELETE /v1/llamaIndex",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/llamaIndex",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "llamaIndex"
+       ]
+      },
+      "description": "**Destructive:** removes data for every user. There is no authentication on this route.\n\n**Input:** none\n\n**Success:** true (drops the whole collection)\n\nSource: `src/api/llamaIndex/router.ts:185`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/llamaIndex/extract",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/llamaIndex/extract?q=leave policy&userId={{userId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "llamaIndex",
+        "extract"
+       ],
+       "query": [
+        {
+         "key": "q",
+         "value": "leave policy"
+        },
+        {
+         "key": "userId",
+         "value": "{{userId}}"
+        },
+        {
+         "key": "k",
+         "value": "3",
+         "disabled": true
+        },
+        {
+         "key": "minScore",
+         "value": "0.5",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** q, userId (required), k 1-20 (default 3), minScore 0-1\n\n**Success:** { extractedText, sources, chunks }; raw chunks, no LLM call\n\nSource: `src/api/llamaIndex/router.ts:155`"
+     },
+     "response": []
+    },
+    {
+     "name": "DELETE /v1/llamaIndex/file/:id",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/llamaIndex/file/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "llamaIndex",
+        "file",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{fileId}}"
+        }
+       ]
+      },
+      "description": "**Input:** none\n\n**Success:** true\n\nSource: `src/api/llamaIndex/router.ts:172`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/llamaIndex/ingest",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/llamaIndex/ingest",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "llamaIndex",
+        "ingest"
+       ]
+      },
+      "body": {
+       "mode": "formdata",
+       "formdata": [
+        {
+         "key": "file",
+         "type": "file",
+         "src": []
+        },
+        {
+         "key": "type",
+         "value": "policy",
+         "type": "text"
+        },
+        {
+         "key": "userId",
+         "value": "{{userId}}",
+         "type": "text"
+        }
+       ]
+      },
+      "description": "**Input:** multipart file (max 10 MB, memory storage), type, userId, optional id\n\n**Success:** { id, filename, type }\n\nSource: `src/api/llamaIndex/router.ts:50`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/llamaIndex/ingest/:id",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/llamaIndex/ingest/:id",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "llamaIndex",
+        "ingest",
+        ":id"
+       ],
+       "variable": [
+        {
+         "key": "id",
+         "value": "{{fileId}}"
+        }
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"type\": \"policy\",\n  \"userId\": \"{{userId}}\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** JSON type, userId; :id is a local-storage file id\n\n**Success:** { id, filename, type }\n\nSource: `src/api/llamaIndex/router.ts:105`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/llamaIndex/query",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/llamaIndex/query?q=leave policy&userId={{userId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "llamaIndex",
+        "query"
+       ],
+       "query": [
+        {
+         "key": "q",
+         "value": "leave policy"
+        },
+        {
+         "key": "userId",
+         "value": "{{userId}}"
+        },
+        {
+         "key": "k",
+         "value": "3",
+         "disabled": true
+        },
+        {
+         "key": "minScore",
+         "value": "0.5",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** Same as extract\n\n**Success:** Same shape; extractedText is an LLM-written answer\n\nSource: `src/api/llamaIndex/router.ts:136`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "RAG: LangChain",
+   "item": [
+    {
+     "name": "DELETE /v1/documents/:docId",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/documents/:docId?userId={{userId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "documents",
+        ":docId"
+       ],
+       "variable": [
+        {
+         "key": "docId",
+         "value": "{{docId}}"
+        }
+       ],
+       "query": [
+        {
+         "key": "userId",
+         "value": "{{userId}}"
+        }
+       ]
+      },
+      "description": "**Input:** none\n\n**Success:** { deleted: true, docId }\n\nSource: `src/rag/api/ingest.router.ts:101`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/ingest",
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/ingest",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "ingest"
+       ]
+      },
+      "body": {
+       "mode": "formdata",
+       "formdata": [
+        {
+         "key": "files",
+         "type": "file",
+         "src": []
+        },
+        {
+         "key": "collection",
+         "value": "{{collection}}",
+         "type": "text"
+        },
+        {
+         "key": "userId",
+         "value": "{{userId}}",
+         "type": "text"
+        },
+        {
+         "key": "text",
+         "value": "",
+         "type": "text",
+         "disabled": true
+        },
+        {
+         "key": "textFormat",
+         "value": "plain",
+         "type": "text",
+         "disabled": true
+        },
+        {
+         "key": "metadata",
+         "value": "{\"team\":\"demo\"}",
+         "type": "text",
+         "disabled": true
+        },
+        {
+         "key": "acl",
+         "value": "[\"user:{{userId}}\"]",
+         "type": "text",
+         "disabled": true
+        }
+       ]
+      },
+      "description": "**Input:** multipart: files (max 20, each up to RAG_MAX_UPLOAD_MB), collection, userId, optional text, textFormat (plain or markdown), metadata (JSON object), acl (JSON array)\n\n**Success:** 202 { jobs: [{ jobId, docId, filename, status }] }\n\nSource: `src/rag/api/ingest.router.ts:34`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /v1/ingest/:jobId",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/ingest/:jobId?userId={{userId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "ingest",
+        ":jobId"
+       ],
+       "variable": [
+        {
+         "key": "jobId",
+         "value": "{{jobId}}"
+        }
+       ],
+       "query": [
+        {
+         "key": "userId",
+         "value": "{{userId}}"
+        }
+       ]
+      },
+      "description": "**Input:** none\n\n**Success:** { jobId, docId, status, stage, counts, errorId }\n\nSource: `src/rag/api/ingest.router.ts:83`"
+     },
+     "response": []
+    },
+    {
+     "name": "POST /v1/retrieve",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/v1/retrieve",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "retrieve"
+       ]
+      },
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"question\": \"What does the document say about leave?\",\n  \"collection\": \"{{collection}}\",\n  \"userId\": \"{{userId}}\",\n  \"mode\": \"answer\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "description": "**Input:** JSON question (max 4000 chars), collection, userId, optional filters, topK (1-50), mode (answer or chunks)\n\n**Success:** { answer, verified, verification, citations, requestId }\n\nSource: `src/rag/api/retrieve.router.ts:60`"
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Pages and docs",
+   "item": [
+    {
+     "name": "GET /",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": []
+      },
+      "description": "Swagger UI. Mounted with router.use(\"/\"), so it also answers paths no other route handles.\n\n**Success:** HTML page\n\nSource: `src/api-docs/openAPIRouter.ts:15`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /chatAI",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/chatAI",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "chatAI"
+       ]
+      },
+      "description": "Server-rendered chat client (chatAI.ejs).\n\n**Success:** HTML page\n\nSource: `src/server.ts:123`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /dashboard",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/dashboard",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "dashboard"
+       ]
+      },
+      "description": "Server-rendered page: request-log records read from file.txt.\n\n**Success:** HTML page\n\n**Notable errors:** 500 JSON if the file cannot be read\n\nSource: `src/server.ts:104`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /goals",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/goals",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "goals"
+       ]
+      },
+      "description": "Server-rendered goals tracker page (goals.ejs).\n\n**Success:** HTML page\n\nSource: `src/server.ts:128`"
+     },
+     "response": []
+    },
+    {
+     "name": "GET /swagger.json",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/swagger.json",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "swagger.json"
+       ]
+      },
+      "description": "Generated OpenAPI 3 document.\n\n**Success:** The OpenAPI document as JSON\n\nSource: `src/api-docs/openAPIRouter.ts:9`"
+     },
+     "response": []
+    },
+    {
+     "name": "/v1/dashboard (any method)",
+     "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/v1/dashboard",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "v1",
+        "dashboard"
+       ]
+      },
+      "description": "Legacy page mounted with router.use; renders the public index view.\n\n**Success:** HTML page\n\n**Notable errors:** 500 JSON if file.txt cannot be read\n\nSource: `src/api/index.ts:47`"
+     },
+     "response": []
+    }
+   ]
+  }
+ ]
+}

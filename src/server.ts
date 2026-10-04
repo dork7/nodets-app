@@ -11,6 +11,7 @@ import errorHandler from '@/common/middleware/errorHandler';
 import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
+import { mountRag } from '@/rag';
 
 import { cacheRules } from '../cacheRules';
 import { cacheHandler } from './common/middleware/cacheHandler';
@@ -95,6 +96,8 @@ app.use(reqLoggerKafka);
 app.use(cacheConfigHandler, cacheHandler);
 // Routes
 app.use('/v1', apis);
+// LangChain RAG pipeline: /v1/ingest, /v1/retrieve (see src/rag)
+mountRag(app);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public'));

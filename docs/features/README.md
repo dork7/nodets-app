@@ -15,7 +15,8 @@ Everything here was written from reading the code on branch `rag-system` (2026-0
 | WebSocket RPC (`ping`, `getTime`, `stream`, …)                             | [websocket-rpc.md](websocket-rpc.md)       | `ws://…/ws/server`, `ws://…/ws/stream`                               |
 | RAG: LlamaIndex + Qdrant (used by chat)                                    | [rag-llamaindex.md](rag-llamaindex.md)     | `/v1/llamaIndex/*`                                                   |
 | RAG: Chroma (REST only)                                                    | [rag-chroma.md](rag-chroma.md)             | `/v1/rag/*`                                                          |
-| Text extraction and OCR (shared by both RAG pipelines and chat)            | [text-extraction.md](text-extraction.md)   | `extractText()`                                                      |
+| RAG: LangChain multi-agent pipeline with a verifier                        | [rag-langchain.md](rag-langchain.md)       | `/v1/ingest`, `/v1/retrieve`, `npm run rag:worker`                   |
+| Text extraction and OCR (shared by the two older RAG pipelines and chat)   | [text-extraction.md](text-extraction.md)   | `extractText()`                                                      |
 | File storage: local disk, fs-util wrapper, MinIO                           | [file-storage.md](file-storage.md)         | `/v1/localStorage/*`, `/v1/fs-util/*`, `/v1/minio/*`                 |
 | AI utilities: chat history, token usage, model load/unload, TTS            | [ai-utils.md](ai-utils.md)                 | `/v1/aiUtils/*`                                                      |
 | Monitoring dashboard and AI call logs                                      | [monitoring.md](monitoring.md)             | `/v1/monitor/*`                                                      |
@@ -26,7 +27,7 @@ Everything here was written from reading the code on branch `rag-system` (2026-0
 | Catalogue and response caching                                             | [catalogue-cache.md](catalogue-cache.md)   | `/v1/catalogue/*`, cache middleware                                  |
 | Redis key/value API and Kafka                                              | [redis-kafka.md](redis-kafka.md)           | `/v1/redis/*`, `/v1/kafka/*`                                         |
 
-`docs/RAG_GUIDE.md` is an older guide to the RAG setup. The two RAG docs above describe the current code.
+`docs/RAG_GUIDE.md` is an older guide to the RAG setup. The three RAG docs above describe the current code.
 
 ## Shared error model
 
