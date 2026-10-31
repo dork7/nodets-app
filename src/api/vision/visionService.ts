@@ -6,11 +6,10 @@ import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse
 import { env } from '@/common/utils/envConfig';
 import { openai } from '@/config/openaiConfig';
 import { openRouterAIInstance } from '@/config/openaiConfig/providers/openRouterAI';
+import { DEFAULT_VISION_PROMPT } from '@/config/prompt';
 import { logger } from '@/server';
 
 const FALLBACK_MESSAGE = 'No readable text detected in the provided image.';
-const DEFAULT_PROMPT =
- 'Analyze this image and describe what you see in detail, including any text present in it.';
 
 const extractJson = (content: string): unknown | string => {
  const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -76,7 +75,7 @@ export const visionService = {
        {
         type: 'text',
         text:
-         `${prompt?.trim() ?? DEFAULT_PROMPT}`, 
+         `${prompt?.trim() ?? DEFAULT_VISION_PROMPT}`,
        },
        { type: 'image_url', image_url: { url: imageDataUrl } },
       ],

@@ -1,7 +1,8 @@
-import { Answer, ChoiceQuestion, Laya, NoulQuestion, Question, ScoreQuestion } from '@receptron/laya';
+import { Answer, Laya, Question } from '@receptron/laya';
 import { StatusCodes } from 'http-status-codes';
 
 import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
+import { DEFAULT_TICKET_QUESTIONS } from '@/config/prompt';
 import { logger } from '@/server';
 
 export type TicketInput = { subject: string; body: string };
@@ -23,30 +24,6 @@ const getLaya = (): Promise<Laya> => {
   });
  }
  return layaPromise;
-};
-
-// Default support-ticket triage, used when the caller doesn't supply its own
-// `questions`: which department should own it, how urgent it is, and whether
-// the customer is asking for a refund.
-const DEFAULT_TICKET_QUESTIONS: { department: ChoiceQuestion; urgency: ScoreQuestion; refundRisk: NoulQuestion } = {
- department: {
-  type: 'choice',
-  instructions: 'Which department should handle this support ticket?',
-  criteria: {
-   billing: 'Payment, invoicing, subscription, or refund issues',
-   technical: 'Bugs, errors, or product functionality issues',
-   general: 'Account questions, feedback, or anything else',
-  },
- },
- urgency: {
-  type: 'score',
-  instructions: 'How urgently does this ticket need a response?',
-  criteria: ['low', 'medium', 'high', 'critical'],
- },
- refundRisk: {
-  type: 'noul',
-  instructions: 'Is the customer asking for a refund?',
- },
 };
 
 export const layaService = {
